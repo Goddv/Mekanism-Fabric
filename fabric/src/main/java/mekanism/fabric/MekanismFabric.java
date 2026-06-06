@@ -2,6 +2,7 @@ package mekanism.fabric;
 
 import com.mojang.logging.LogUtils;
 import mekanism.fabric.energy.FabricEnergySelfTest;
+import mekanism.fabric.registration.FabricRegistrationSelfTest;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import org.slf4j.Logger;
@@ -21,10 +22,11 @@ public final class MekanismFabric implements ModInitializer {
     @Override
     public void onInitialize() {
         LOGGER.info("[Mekanism/Fabric] Fabric build initialized — Architectury no-remap toolchain OK.");
-        // Throwaway bring-up validation for the energy slice; dev-only and removed once real energy
-        // providers are registered against MekanismFabricEnergy.SIDED in Phase 3.
+        // Throwaway bring-up validation; dev-only. Removed once real energy providers are registered
+        // against MekanismFabricEnergy.SIDED and the registration framework is rebased onto Architectury (Phase 3).
         if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
             FabricEnergySelfTest.run();
+            FabricRegistrationSelfTest.run();
         }
     }
 }

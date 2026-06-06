@@ -313,6 +313,8 @@ architectury {
 repositories {
     // MDG added this automatically; loom needs it declared explicitly to resolve NeoForge.
     maven { url = 'https://maven.neoforged.net/releases/' }
+    // Architectury API artifacts (architectury-neoforge) live here.
+    maven { url = 'https://maven.architectury.dev/' }
 }
 
 dependencies {
@@ -320,8 +322,9 @@ dependencies {
     // minecraft dependency and the neoForge dependency (no `mappings` line — 26.1 is deobfuscated).
     minecraft "com.mojang:minecraft:${minecraft_version}"
     neoForge "net.neoforged:neoforge:${neo_version}"
-    // NOTE: architectury-neoforge will be added when :common code (using the Architectury API) is
-    // bundled here in Phase 2. Not added yet (neoforge-first has no Architectury-API usage).
+    // Architectury API (NeoForge platform impl) — provides the runtime backing for the loader-neutral
+    // Architectury registration API that :common now uses (bundled into this jar).
+    implementation "dev.architectury:architectury-neoforge:${architectury_api_version}"
 }
 
 // ---- Make every extra source set Minecraft + NeoForge aware (loom-no-remap) ----
