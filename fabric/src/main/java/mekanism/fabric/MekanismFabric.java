@@ -1,8 +1,10 @@
 package mekanism.fabric;
 
+import com.mojang.logging.LogUtils;
 import mekanism.fabric.energy.FabricEnergySelfTest;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
+import org.slf4j.Logger;
 
 /**
  * Fabric entrypoint for the Mekanism multi-loader port.
@@ -14,9 +16,13 @@ import net.fabricmc.loader.api.FabricLoader;
  */
 public final class MekanismFabric implements ModInitializer {
 
+    private static final Logger LOGGER = LogUtils.getLogger();
+
     @Override
     public void onInitialize() {
-        System.out.println("[Mekanism/Fabric] Fabric build initialized — Architectury no-remap toolchain OK.");
+        LOGGER.info("[Mekanism/Fabric] Fabric build initialized — Architectury no-remap toolchain OK.");
+        // Throwaway bring-up validation for the energy slice; dev-only and removed once real energy
+        // providers are registered against MekanismFabricEnergy.SIDED in Phase 3.
         if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
             FabricEnergySelfTest.run();
         }

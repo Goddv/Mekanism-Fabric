@@ -724,9 +724,20 @@ def bundleCommonInto = { jarProvider ->
         from({ configurations.shadowCommon.collect { zipTree(it) } })
     }
 }
+// The -api jar is API-only by contract, so restrict its :common bundle to the mekanism.api.* packages.
+// :common also holds hoisted mekanism.common.* implementation classes (e.g. BasicEnergyContainer) which
+// belong in the main/-all jars but must NOT leak into the consumer-facing -api artifact.
+def bundleCommonApiInto = { jarProvider ->
+    jarProvider.configure {
+        dependsOn(configurations.shadowCommon)
+        from({ configurations.shadowCommon.collect { zipTree(it) } }) {
+            include 'mekanism/api/**'
+        }
+    }
+}
 bundleCommonInto(tasks.named('jar', Jar))
 bundleCommonInto(allJar)
-bundleCommonInto(apiJar)
+bundleCommonApiInto(apiJar)
 
 tasks.register('optimizePng', OptimizePng) {
     def pngPatterns = ['**/*.png']

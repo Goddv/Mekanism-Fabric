@@ -8,16 +8,18 @@ import java.util.function.Predicate;
 import mekanism.api.AutomationType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
+import org.jetbrains.annotations.ApiStatus.Internal;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Loader-neutral foundation of {@link ConstantPredicates}, holding the constant predicates/suppliers that carry no
- * loader-specific coupling so they can live in {@code :common}. Access these through {@link ConstantPredicates} as before;
+ * Loader-neutral foundation of {@code ConstantPredicates}, holding the constant predicates/suppliers that carry no
+ * loader-specific coupling so they can live in {@code :common}. Access these through {@code ConstantPredicates} as before;
  * they are exposed here only so loader-neutral code can share them. This split is transitional: once {@code FluidStack}
- * and {@code ChemicalStack} are loader-neutral, the {@link ConstantPredicates} members can move down here and the two
+ * and {@code ChemicalStack} are loader-neutral, the {@code ConstantPredicates} members can move down here and the two
  * classes collapse into one.
  */
 @SuppressWarnings("unchecked")
+@Internal
 public class ConstantPredicatesBase {
 
     protected ConstantPredicatesBase() {

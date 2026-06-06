@@ -12,15 +12,16 @@ import org.jetbrains.annotations.ApiStatus.Internal;
 import org.slf4j.Logger;
 
 /**
- * Loader-neutral foundation of {@link MekanismAPI}. Holds the parts of the API entry-point that carry no loader-specific
+ * Loader-neutral foundation of {@code MekanismAPI}. Holds the parts of the API entry-point that carry no loader-specific
  * coupling (the service locator, version/id constants, the shared logger and the registry-name helpers) so they can live in
  * {@code :common} and be consumed by loader-neutral API code.
  *
- * @apiNote Access these members through {@link MekanismAPI} as before; they are exposed here only so they can be shared
+ * @apiNote Access these members through {@code MekanismAPI} as before; they are exposed here only so they can be shared
  * across loaders. This split is transitional: once the chemical/module/robit-skin registry types are themselves
- * loader-neutral, the {@link MekanismAPI} registry fields can move down here and the two classes will collapse into one.
+ * loader-neutral, the {@code MekanismAPI} registry fields can move down here and the two classes will collapse into one.
  */
 @NothingNullByDefault
+@Internal
 public class MekanismAPIBase {
 
     protected MekanismAPIBase() {
