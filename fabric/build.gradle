@@ -10,10 +10,23 @@ repositories {
     maven { url = 'https://maven.architectury.dev/' }
 }
 
+configurations {
+    common { canBeResolved = true; canBeConsumed = false }
+    shadowCommon { canBeResolved = true; canBeConsumed = false }
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentFabric.extendsFrom common
+}
+
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+
+    // Consume :common on the compile/runtime classpath and bundle its Fabric-transformed output
+    // into the Fabric mod jar, so all loader-neutral code (e.g. the energy API) ships on Fabric.
+    common(project(path: ':common')) { transitive = false }
+    shadowCommon(project(path: ':common', configuration: 'transformProductionFabric')) { transitive = false }
 }
 
 java {
@@ -32,4 +45,9 @@ processResources {
     filesMatching('fabric.mod.json') {
         expand version: project.version
     }
+}
+
+tasks.named('jar', Jar) {
+    dependsOn(configurations.shadowCommon)
+    from({ configurations.shadowCommon.collect { zipTree(it) } })
 }
