@@ -6,6 +6,7 @@ architectury {
 }
 
 repositories {
+    mavenCentral()
     maven { url = 'https://maven.neoforged.net/releases/' }
     maven { url = 'https://maven.architectury.dev/' }
 }
@@ -14,6 +15,9 @@ dependencies {
     // 26.1 deobfuscated -> no `mappings` line (no-remap)
     minecraft "com.mojang:minecraft:${minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    // JSR-305 nullability annotations used by mekanism.api.annotations (compile-time only; NeoForge
+    // provides these transitively, Fabric does not — they are static-analysis only, never read at runtime).
+    compileOnly "com.google.code.findbugs:jsr305:3.0.2"
 }
 
 java {

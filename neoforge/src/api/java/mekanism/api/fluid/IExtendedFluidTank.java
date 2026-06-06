@@ -261,7 +261,7 @@ public interface IExtendedFluidTank extends IFluidTank, IValueIOSerializable, IC
     @Override
     @Deprecated
     default int fill(FluidStack stack, FluidAction action) {
-        return stack.amount() - insert(stack, Action.fromFluidAction(action), AutomationType.EXTERNAL).amount();
+        return stack.amount() - insert(stack, FluidActions.from(action), AutomationType.EXTERNAL).amount();
     }
 
     /**
@@ -273,7 +273,7 @@ public interface IExtendedFluidTank extends IFluidTank, IValueIOSerializable, IC
     @Deprecated
     default FluidStack drain(FluidStack stack, FluidAction action) {
         if (!isEmpty() && isFluidEqual(stack)) {
-            return extract(stack.amount(), Action.fromFluidAction(action), AutomationType.EXTERNAL);
+            return extract(stack.amount(), FluidActions.from(action), AutomationType.EXTERNAL);
         }
         return FluidStack.EMPTY;
     }
@@ -286,6 +286,6 @@ public interface IExtendedFluidTank extends IFluidTank, IValueIOSerializable, IC
     @Override
     @Deprecated
     default FluidStack drain(int amount, FluidAction action) {
-        return extract(amount, Action.fromFluidAction(action), AutomationType.EXTERNAL);
+        return extract(amount, FluidActions.from(action), AutomationType.EXTERNAL);
     }
 }

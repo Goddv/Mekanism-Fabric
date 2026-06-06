@@ -122,7 +122,7 @@ public interface IExtendedFluidHandler extends IFluidHandler {
     @Override
     @Deprecated
     default int fill(FluidStack stack, FluidAction action) {
-        return stack.amount() - insertFluid(stack, Action.fromFluidAction(action)).amount();
+        return stack.amount() - insertFluid(stack, FluidActions.from(action)).amount();
     }
 
     /**
@@ -133,7 +133,7 @@ public interface IExtendedFluidHandler extends IFluidHandler {
     @Override
     @Deprecated
     default FluidStack drain(FluidStack stack, FluidAction action) {
-        return extractFluid(stack, Action.fromFluidAction(action));
+        return extractFluid(stack, FluidActions.from(action));
     }
 
     /**
@@ -144,6 +144,6 @@ public interface IExtendedFluidHandler extends IFluidHandler {
     @Override
     @Deprecated
     default FluidStack drain(int amount, FluidAction action) {
-        return extractFluid(amount, Action.fromFluidAction(action));
+        return extractFluid(amount, FluidActions.from(action));
     }
 }

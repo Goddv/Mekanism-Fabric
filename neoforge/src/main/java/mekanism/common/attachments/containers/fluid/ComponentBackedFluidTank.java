@@ -4,6 +4,7 @@ import java.util.function.BiPredicate;
 import java.util.function.IntSupplier;
 import java.util.function.Predicate;
 import mekanism.api.Action;
+import mekanism.api.fluid.FluidActions;
 import mekanism.api.AutomationType;
 import mekanism.api.SerializationConstants;
 import mekanism.api.annotations.NothingNullByDefault;
@@ -210,7 +211,7 @@ public class ComponentBackedFluidTank extends ComponentBackedContainer<FluidStac
         AttachedFluids attachedFluids = getAttached();
         FluidStack stored = getContents(attachedFluids);
         if (!stored.isEmpty() && FluidStack.isSameFluidSameComponents(stored, stack)) {
-            return extract(attachedFluids, stored, stack.amount(), Action.fromFluidAction(action), AutomationType.EXTERNAL);
+            return extract(attachedFluids, stored, stack.amount(), FluidActions.from(action), AutomationType.EXTERNAL);
         }
         return FluidStack.EMPTY;
     }
