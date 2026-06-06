@@ -9,12 +9,12 @@ import mekanism.api.chemical.attribute.ChemicalAttributeValidator;
 import net.minecraft.core.Holder;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.common.util.ValueIOSerializable;
+import mekanism.api.IValueIOSerializable;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 
 @NothingNullByDefault
-public interface IChemicalTank extends ValueIOSerializable, IContentsListener {
+public interface IChemicalTank extends IValueIOSerializable, IContentsListener {
 
     /**
      * Returns the {@link ChemicalStack} in this tank.

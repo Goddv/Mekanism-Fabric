@@ -7,11 +7,11 @@ import java.util.List;
 import mekanism.api.IContentsListener;
 import mekanism.api.annotations.NothingNullByDefault;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.util.ValueIOSerializable;
+import mekanism.api.IValueIOSerializable;
 import org.jetbrains.annotations.Nullable;
 
 @NothingNullByDefault
-public abstract class ComponentBackedHandler<TYPE, CONTAINER extends ValueIOSerializable, ATTACHED extends IAttachedContainers<TYPE, ATTACHED>> extends AbstractList<CONTAINER>
+public abstract class ComponentBackedHandler<TYPE, CONTAINER extends IValueIOSerializable, ATTACHED extends IAttachedContainers<TYPE, ATTACHED>> extends AbstractList<CONTAINER>
       implements IContentsListener {
 
     protected final ItemStack attachedTo;
@@ -41,7 +41,7 @@ public abstract class ComponentBackedHandler<TYPE, CONTAINER extends ValueIOSeri
         //Lazily initialize the list of containers
         if (containers == null) {
             //Note: Use an Arrays#asList to allow for null elements and force it to be the size we want it to be
-            containers = Arrays.asList((CONTAINER[]) new ValueIOSerializable[totalContainers]);
+            containers = Arrays.asList((CONTAINER[]) new IValueIOSerializable[totalContainers]);
             numNotInitialized = totalContainers;
         }
         return containers;

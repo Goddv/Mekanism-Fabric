@@ -6,11 +6,11 @@ import mekanism.api.IContentsListener;
 import mekanism.api.SerializationConstants;
 import mekanism.api.annotations.NothingNullByDefault;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.common.util.ValueIOSerializable;
+import mekanism.api.IValueIOSerializable;
 import org.jetbrains.annotations.Range;
 
 @NothingNullByDefault
-public interface IEnergyContainer extends ValueIOSerializable, IContentsListener {
+public interface IEnergyContainer extends IValueIOSerializable, IContentsListener {
 
     /**
      * Returns the energy in this container.

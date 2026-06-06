@@ -32,7 +32,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
-import net.neoforged.neoforge.common.util.ValueIOSerializable;
+import mekanism.api.IValueIOSerializable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -89,7 +89,7 @@ public interface RecipeUpgradeData<TYPE extends RecipeUpgradeData<TYPE>> {
     }
 
     @Nullable
-    private static <CONTAINER extends ValueIOSerializable, TYPE extends RecipeUpgradeData<TYPE>> TYPE getContainerUpgradeData(@NotNull ItemStack stack,
+    private static <CONTAINER extends IValueIOSerializable, TYPE extends RecipeUpgradeData<TYPE>> TYPE getContainerUpgradeData(@NotNull ItemStack stack,
           ContainerType<CONTAINER, ?, ?> containerType, Function<List<CONTAINER>, TYPE> creator) {
         List<CONTAINER> containers = containerType.getAttachmentContainersIfPresent(stack);
         return containers.isEmpty() ? null : creator.apply(containers);

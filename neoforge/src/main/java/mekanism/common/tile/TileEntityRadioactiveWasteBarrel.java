@@ -145,14 +145,14 @@ public class TileEntityRadioactiveWasteBarrel extends TileEntityMekanism impleme
     @Override
     public void writeReducedUpdatedTag(@NotNull ValueOutput output) {
         super.writeReducedUpdatedTag(output);
-        output.putChild(SerializationConstants.CHEMICAL, chemicalTank);
+        chemicalTank.serialize(output.child(SerializationConstants.CHEMICAL));
         output.putInt(SerializationConstants.PROGRESS, processTicks);
     }
 
     @Override
     public void handleUpdateTag(@NotNull ValueInput input) {
         super.handleUpdateTag(input);
-        input.readChild(SerializationConstants.CHEMICAL, chemicalTank);
+        input.child(SerializationConstants.CHEMICAL).ifPresent(chemicalTank::deserialize);
         processTicks = input.getIntOr(SerializationConstants.PROGRESS, processTicks);
     }
 

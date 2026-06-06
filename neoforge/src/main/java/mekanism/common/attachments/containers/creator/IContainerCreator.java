@@ -2,9 +2,9 @@ package mekanism.common.attachments.containers.creator;
 
 import mekanism.common.attachments.containers.IAttachedContainers;
 import net.minecraft.nbt.CompoundTag;
-import net.neoforged.neoforge.common.util.ValueIOSerializable;
+import mekanism.api.IValueIOSerializable;
 
-public interface IContainerCreator<CONTAINER extends ValueIOSerializable, ATTACHED extends IAttachedContainers<?, ATTACHED>> extends IBasicContainerCreator<CONTAINER> {
+public interface IContainerCreator<CONTAINER extends IValueIOSerializable, ATTACHED extends IAttachedContainers<?, ATTACHED>> extends IBasicContainerCreator<CONTAINER> {
 
     int totalContainers();
 

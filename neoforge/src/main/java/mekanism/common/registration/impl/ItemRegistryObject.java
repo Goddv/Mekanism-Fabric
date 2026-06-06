@@ -22,7 +22,7 @@ import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.level.ItemLike;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.common.util.ValueIOSerializable;
+import mekanism.api.IValueIOSerializable;
 import org.jetbrains.annotations.ApiStatus.Internal;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -74,7 +74,7 @@ public class ItemRegistryObject<ITEM extends Item> extends MekanismDeferredHolde
     }
 
     @Internal
-    public <CONTAINER extends ValueIOSerializable> ItemRegistryObject<ITEM> addAttachmentOnlyContainers(ContainerType<CONTAINER, ?, ?> containerType,
+    public <CONTAINER extends IValueIOSerializable> ItemRegistryObject<ITEM> addAttachmentOnlyContainers(ContainerType<CONTAINER, ?, ?> containerType,
           Supplier<IContainerCreator<? extends CONTAINER, ?>> defaultCreator) {
         if (defaultCreators == null) {
             //In case any containers have deps on others make this linked even though it really shouldn't matter
@@ -88,7 +88,7 @@ public class ItemRegistryObject<ITEM extends Item> extends MekanismDeferredHolde
     }
 
     @Internal
-    public <CONTAINER extends ValueIOSerializable> ItemRegistryObject<ITEM> addAttachedContainerCapabilities(ContainerType<CONTAINER, ?, ?> containerType,
+    public <CONTAINER extends IValueIOSerializable> ItemRegistryObject<ITEM> addAttachedContainerCapabilities(ContainerType<CONTAINER, ?, ?> containerType,
           Supplier<IContainerCreator<? extends CONTAINER, ?>> defaultCreator, IMekanismConfig... requiredConfigs) {
         addAttachmentOnlyContainers(containerType, defaultCreator);
         return addContainerCapability(containerType, requiredConfigs);

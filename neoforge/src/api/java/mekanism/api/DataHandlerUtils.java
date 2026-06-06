@@ -7,7 +7,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueInput.ValueInputList;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.ValueOutput.ValueOutputList;
-import net.neoforged.neoforge.common.util.ValueIOSerializable;
+import mekanism.api.IValueIOSerializable;
 
 @NothingNullByDefault
 public class DataHandlerUtils {
@@ -18,7 +18,7 @@ public class DataHandlerUtils {
     /**
      * Helper to read and load a list of handler contents from a {@link ListTag}
      */
-    public static void readContents(ValueInputList storedContents, String key, List<? extends ValueIOSerializable> contents) {
+    public static void readContents(ValueInputList storedContents, String key, List<? extends IValueIOSerializable> contents) {
         //TODO - 26.1: Test these read/write methods work properly
         int size = contents.size();
         for (ValueInput storedContent : storedContents) {
@@ -32,7 +32,7 @@ public class DataHandlerUtils {
     /**
      * Helper to read and load a list of handler contents to a {@link ListTag}
      */
-    public static void writeContents(ValueOutputList outputList, String key, List<? extends ValueIOSerializable> contents) {
+    public static void writeContents(ValueOutputList outputList, String key, List<? extends IValueIOSerializable> contents) {
         for (int tank = 0; tank < contents.size(); tank++) {
             ValueOutput output = outputList.addChild();
             contents.get(tank).serialize(output);

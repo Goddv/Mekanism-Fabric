@@ -26,7 +26,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.common.util.ValueIOSerializable;
+import mekanism.api.IValueIOSerializable;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -41,10 +41,10 @@ public class MultiblockCache<T extends MultiblockData> implements IMekanismInven
     private final List<IHeatCapacitor> heatCapacitors = new ArrayList<>();
 
     public void apply(T data) {
-        for (CacheSubstance<?, ValueIOSerializable> type : CacheSubstance.VALUES) {
-            List<? extends ValueIOSerializable> containers = type.getContainerList(data);
+        for (CacheSubstance<?, IValueIOSerializable> type : CacheSubstance.VALUES) {
+            List<? extends IValueIOSerializable> containers = type.getContainerList(data);
             if (containers != null) {
-                List<? extends ValueIOSerializable> cacheContainers = type.getContainerList(this);
+                List<? extends IValueIOSerializable> cacheContainers = type.getContainerList(this);
                 for (int i = 0; i < cacheContainers.size(); i++) {
                     if (i < containers.size()) {
                         type.copy(cacheContainers.get(i), containers.get(i));
@@ -55,10 +55,10 @@ public class MultiblockCache<T extends MultiblockData> implements IMekanismInven
     }
 
     public void sync(T data) {
-        for (CacheSubstance<?, ValueIOSerializable> type : CacheSubstance.VALUES) {
-            List<? extends ValueIOSerializable> containersToCopy = type.getContainerList(data);
+        for (CacheSubstance<?, IValueIOSerializable> type : CacheSubstance.VALUES) {
+            List<? extends IValueIOSerializable> containersToCopy = type.getContainerList(data);
             if (containersToCopy != null) {
-                List<? extends ValueIOSerializable> cacheContainers = type.getContainerList(this);
+                List<? extends IValueIOSerializable> cacheContainers = type.getContainerList(this);
                 if (cacheContainers.isEmpty()) {
                     type.prefab(this, containersToCopy.size());
                 }
@@ -70,20 +70,20 @@ public class MultiblockCache<T extends MultiblockData> implements IMekanismInven
     }
 
     public void load(@NotNull ValueInput input) {
-        for (CacheSubstance<?, ValueIOSerializable> type : CacheSubstance.VALUES) {
+        for (CacheSubstance<?, IValueIOSerializable> type : CacheSubstance.VALUES) {
             type.readFrom(input, this);
         }
     }
 
     public void save(@NotNull ValueOutput output) {
-        for (CacheSubstance<?, ValueIOSerializable> type : CacheSubstance.VALUES) {
+        for (CacheSubstance<?, IValueIOSerializable> type : CacheSubstance.VALUES) {
             type.saveTo(output, this);
         }
     }
 
     public void merge(MultiblockCache<T> mergeCache, RejectContents rejectContents) {
         // prefab enough containers for each substance type to support the merge cache
-        for (CacheSubstance<?, ValueIOSerializable> type : CacheSubstance.VALUES) {
+        for (CacheSubstance<?, IValueIOSerializable> type : CacheSubstance.VALUES) {
             type.preHandleMerge(this, mergeCache);
         }
 
@@ -140,7 +140,7 @@ public class MultiblockCache<T extends MultiblockData> implements IMekanismInven
         public final List<ChemicalStack> rejectedChemicals = new ArrayList<>();
     }
 
-    public abstract static class CacheSubstance<HANDLER, ELEMENT extends ValueIOSerializable> {
+    public abstract static class CacheSubstance<HANDLER, ELEMENT extends IValueIOSerializable> {
 
         public static final CacheSubstance<IMekanismInventory, IInventorySlot> ITEMS = new CacheSubstance<>(ContainerType.ITEM) {
             @Override
@@ -231,7 +231,7 @@ public class MultiblockCache<T extends MultiblockData> implements IMekanismInven
         };
 
         @SuppressWarnings("unchecked")
-        public static final CacheSubstance<?, ValueIOSerializable>[] VALUES = new CacheSubstance[]{
+        public static final CacheSubstance<?, IValueIOSerializable>[] VALUES = new CacheSubstance[]{
               CHEMICAL,
               ITEMS,
               FLUID,

@@ -57,13 +57,13 @@ import net.neoforged.neoforge.capabilities.ICapabilityProvider;
 import net.neoforged.neoforge.capabilities.ItemCapability;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.util.Lazy;
-import net.neoforged.neoforge.common.util.ValueIOSerializable;
+import mekanism.api.IValueIOSerializable;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
 import org.jetbrains.annotations.Nullable;
 
 @NothingNullByDefault//TODO - 26.1: move these to resource handlers?
-public class ContainerType<CONTAINER extends ValueIOSerializable, ATTACHED extends IAttachedContainers<?, ATTACHED>,
+public class ContainerType<CONTAINER extends IValueIOSerializable, ATTACHED extends IAttachedContainers<?, ATTACHED>,
       HANDLER extends ComponentBackedHandler<?, CONTAINER, ATTACHED>> {
 
     private static final List<ContainerType<?, ?, ?>> TYPES_INTERNAL = new ArrayList<>();
@@ -356,20 +356,20 @@ public class ContainerType<CONTAINER extends ValueIOSerializable, ATTACHED exten
     }
 
     @FunctionalInterface
-    public interface CopyToTile<CONTAINER extends ValueIOSerializable, ATTACHED extends IAttachedContainers<?, ATTACHED>> {
+    public interface CopyToTile<CONTAINER extends IValueIOSerializable, ATTACHED extends IAttachedContainers<?, ATTACHED>> {
 
         void copy(TileEntityMekanism tile, DataComponentGetter input, List<CONTAINER> containers, ATTACHED attachedData);
     }
 
     @FunctionalInterface
-    public interface CopyFromTile<CONTAINER extends ValueIOSerializable, ATTACHED extends IAttachedContainers<?, ATTACHED>> {
+    public interface CopyFromTile<CONTAINER extends IValueIOSerializable, ATTACHED extends IAttachedContainers<?, ATTACHED>> {
 
         @Nullable
         ATTACHED copy(TileEntityMekanism tile, DataComponentMap.Builder builder, List<CONTAINER> containers);
     }
 
     @FunctionalInterface
-    public interface CopyHandler<CONTAINER extends ValueIOSerializable> {
+    public interface CopyHandler<CONTAINER extends IValueIOSerializable> {
 
         void copy(CONTAINER from, CONTAINER to);
     }

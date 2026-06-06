@@ -5,10 +5,10 @@ import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.common.attachments.containers.ContainerType;
 import mekanism.common.attachments.containers.IAttachedContainers;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.util.ValueIOSerializable;
+import mekanism.api.IValueIOSerializable;
 
 @NothingNullByDefault
-public abstract class BaseContainerCreator<ATTACHED extends IAttachedContainers<?, ATTACHED>, CONTAINER extends ValueIOSerializable> implements IContainerCreator<CONTAINER, ATTACHED> {
+public abstract class BaseContainerCreator<ATTACHED extends IAttachedContainers<?, ATTACHED>, CONTAINER extends IValueIOSerializable> implements IContainerCreator<CONTAINER, ATTACHED> {
 
     private final List<IBasicContainerCreator<? extends CONTAINER>> creators;
 

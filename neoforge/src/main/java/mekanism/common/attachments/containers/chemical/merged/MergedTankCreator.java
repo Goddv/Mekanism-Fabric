@@ -7,7 +7,7 @@ import mekanism.common.attachments.containers.creator.IBasicContainerCreator;
 import mekanism.common.attachments.containers.fluid.ComponentBackedFluidTank;
 import mekanism.common.capabilities.merged.MergedTank;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.util.ValueIOSerializable;
+import mekanism.api.IValueIOSerializable;
 
 //TODO: Re-evaluate/rethink this as using rawtypes to get around things like this is very cursed
 @NothingNullByDefault
@@ -31,7 +31,7 @@ public class MergedTankCreator implements IBasicContainerCreator {
     }
 
     @Override
-    public ValueIOSerializable create(ContainerType containerType, ItemStack attachedTo, int containerIndex) {
+    public IValueIOSerializable create(ContainerType containerType, ItemStack attachedTo, int containerIndex) {
         if (containerType == ContainerType.FLUID) {
             return createMergedTank(containerType, attachedTo, containerIndex).getFluidTank();
         } else if (containerType == ContainerType.CHEMICAL) {

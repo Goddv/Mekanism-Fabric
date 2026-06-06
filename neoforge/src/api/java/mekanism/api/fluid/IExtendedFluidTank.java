@@ -7,14 +7,14 @@ import mekanism.api.SerializationConstants;
 import mekanism.api.annotations.NothingNullByDefault;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.common.util.ValueIOSerializable;
+import mekanism.api.IValueIOSerializable;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
 
 @NothingNullByDefault
-public interface IExtendedFluidTank extends IFluidTank, ValueIOSerializable, IContentsListener {
+public interface IExtendedFluidTank extends IFluidTank, IValueIOSerializable, IContentsListener {
 
     /**
      * Overrides the stack in this {@link IExtendedFluidTank}.

@@ -5,10 +5,10 @@ import mekanism.api.SerializationConstants;
 import mekanism.api.annotations.NothingNullByDefault;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.common.util.ValueIOSerializable;
+import mekanism.api.IValueIOSerializable;
 
 @NothingNullByDefault
-public interface IHeatCapacitor extends ValueIOSerializable, IContentsListener {
+public interface IHeatCapacitor extends IValueIOSerializable, IContentsListener {
 
     /**
      * Returns the temperature of this capacitor.

@@ -100,13 +100,13 @@ public class TileEntityBioGenerator extends TileEntityGenerator {
     public void writeReducedUpdatedTag(@NotNull ValueOutput output) {
         super.writeReducedUpdatedTag(output);
         //TODO - 26.1: Do we want to further trim this and similar cases by skipping adding the fluid key if the tank is empty?
-        output.putChild(SerializationConstants.FLUID, bioFuelTank);
+        bioFuelTank.serialize(output.child(SerializationConstants.FLUID));
     }
 
     @Override
     public void handleUpdateTag(@NotNull ValueInput input) {
         super.handleUpdateTag(input);
-        input.readChild(SerializationConstants.FLUID, bioFuelTank);
+        input.child(SerializationConstants.FLUID).ifPresent(bioFuelTank::deserialize);
     }
 
     @Override

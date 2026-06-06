@@ -9,7 +9,7 @@ import mekanism.api.annotations.NothingNullByDefault;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.common.util.ValueIOSerializable;
+import mekanism.api.IValueIOSerializable;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -17,7 +17,7 @@ import org.jetbrains.annotations.Nullable;
 
 //TODO - 26.1: make this implement/supply ItemAccess/ResourceHandler? It currently has a pseudo ItemHandler impl, so might be better to move everything away from single-slot context?
 @NothingNullByDefault
-public interface IInventorySlot extends ValueIOSerializable, IContentsListener {
+public interface IInventorySlot extends IValueIOSerializable, IContentsListener {
 
     /**
      * Returns the {@link ItemStack} in this {@link IInventorySlot}.
