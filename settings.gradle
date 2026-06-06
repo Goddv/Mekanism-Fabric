@@ -1,6 +1,20 @@
-
-plugins {
-    id('org.gradle.toolchains.foojay-resolver-convention') version('1.0.0')
+pluginManagement {
+    repositories {
+        maven { url = 'https://maven.architectury.dev/' }
+        maven { url = 'https://maven.neoforged.net/releases/' }
+        maven { url = 'https://maven.fabricmc.net/' }
+        gradlePluginPortal()
+        mavenCentral()
+    }
 }
 
-include('annotation-processor')
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
+rootProject.name = 'Mekanism'
+
+include 'annotation-processor'
+include 'common'
+include 'neoforge'
+include 'fabric'

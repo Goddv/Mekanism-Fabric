@@ -23,3 +23,8 @@ MDK.zip
 /logs
 /annotation-processor/bin
 libs/
+
+# Multi-loader subproject outputs + OS junk
+.DS_Store
+**/.gradle/
+**/runs/

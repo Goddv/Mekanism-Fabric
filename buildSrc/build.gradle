@@ -4,4 +4,13 @@ repositories {
 
 dependencies {
     implementation('org.ajoberstar.grgit:grgit-gradle:5.3.3')
+    // grgit-gradle drags in gson 2.8.6, which can't reflectively set final fields on Java 25 and
+    // (being on the buildSrc/parent classpath) shadows Architectury Loom's newer gson. Force a modern one.
+    implementation('com.google.code.gson:gson:2.13.2')
+}
+
+configurations.all {
+    resolutionStrategy {
+        force('com.google.code.gson:gson:2.13.2')
+    }
 }
