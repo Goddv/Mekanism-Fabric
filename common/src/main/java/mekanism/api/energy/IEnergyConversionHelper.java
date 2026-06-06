@@ -1,6 +1,6 @@
 package mekanism.api.energy;
 
-import mekanism.api.MekanismAPI;
+import mekanism.api.MekanismAPIBase;
 
 /**
  * Helper that provides access to Mekanism's configured energy conversion rates.
@@ -12,7 +12,7 @@ public interface IEnergyConversionHelper {
     /**
      * Provides access to Mekanism's implementation of {@link IEnergyConversionHelper}.
      */
-    IEnergyConversionHelper INSTANCE = MekanismAPI.getService(IEnergyConversionHelper.class);
+    IEnergyConversionHelper INSTANCE = MekanismAPIBase.getService(IEnergyConversionHelper.class);
 
     /**
      * @return The conversion rate config between Joules and Joules.
