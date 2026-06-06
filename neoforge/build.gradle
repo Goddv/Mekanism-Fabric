@@ -692,6 +692,34 @@ artifacts {
     archives sourcesJar
 }
 
+// ============================================================================
+// Phase 2: consume + bundle the :common project (multi-loader hoist target).
+// :common holds loader-neutral code; it is compiled against MC+fabric-loader+architectury and its
+// NeoForge-transformed output (transformProductionNeoForge) is bundled into our jars here.
+// ============================================================================
+configurations {
+    common { canBeResolved = true; canBeConsumed = false }
+    shadowCommon { canBeResolved = true; canBeConsumed = false }
+}
+dependencies {
+    common(project(path: ':common')) { transitive = false }
+    shadowCommon(project(path: ':common', configuration: 'transformProductionNeoForge')) { transitive = false }
+}
+// Put :common's classes on every source set's compile/runtime classpath.
+project.afterEvaluate {
+    sourceSets.configureEach { ss ->
+        def cc = configurations.findByName(ss.compileClasspathConfigurationName)
+        def rc = configurations.findByName(ss.runtimeClasspathConfigurationName)
+        if (cc != null) cc.extendsFrom(configurations.common)
+        if (rc != null) rc.extendsFrom(configurations.common)
+    }
+}
+// Bundle :common's NeoForge-transformed classes into the main jar (apiJar/allJar to follow as code is hoisted).
+tasks.named('jar', Jar) {
+    dependsOn(configurations.shadowCommon)
+    from({ configurations.shadowCommon.collect { zipTree(it) } })
+}
+
 tasks.register('optimizePng', OptimizePng) {
     def pngPatterns = ['**/*.png']
     //Ensure the logo is minimized (we add this file to each jar)

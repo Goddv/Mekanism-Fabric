@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "mekanism",
+  "version": "${version}",
+  "name": "Mekanism",
+  "description": "Mekanism — early Fabric port test build (toolchain validation; features land as code is hoisted to :common).",
+  "authors": ["Aidan C. Brady", "Mekanism Team"],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "mekanism.fabric.MekanismFabric"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.18.0",
+    "minecraft": "*",
+    "fabric-api": "*"
+  }
+}

@@ -7,8 +7,6 @@ import mekanism.api.SerializationConstants;
 import mekanism.api.annotations.NothingNullByDefault;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.common.util.ValueIOSerializable;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import org.jetbrains.annotations.Range;
 
 @NothingNullByDefault
@@ -36,7 +34,7 @@ public interface IEnergyContainer extends ValueIOSerializable, IContentsListener
      * <p>
      * Inserts energy into this {@link IEnergyContainer} and return the remainder.
      * </p>
-     * Note: This behaviour is subtly different from {@link IFluidHandler#fill(FluidStack, IFluidHandler.FluidAction)}
+     * Note: This behaviour is subtly different from a fluid handler's fill(stack, action).
      *
      * @param amount         Energy to insert. Must be positive.
      * @param action         The action to perform, either {@link Action#EXECUTE} or {@link Action#SIMULATE}
