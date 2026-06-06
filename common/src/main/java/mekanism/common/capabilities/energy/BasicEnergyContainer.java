@@ -9,7 +9,7 @@ import mekanism.api.IContentsListener;
 import mekanism.api.SerializationConstants;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.energy.IEnergyContainer;
-import mekanism.api.functions.ConstantPredicates;
+import mekanism.api.functions.ConstantPredicatesBase;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.NotNull;
@@ -24,15 +24,15 @@ public class BasicEnergyContainer implements IEnergyContainer {
     public static final Predicate<@NotNull AutomationType> notExternal = automationType -> automationType != AutomationType.EXTERNAL;
 
     public static BasicEnergyContainer create(long maxEnergy, @Nullable IContentsListener listener) {
-        return new BasicEnergyContainer(maxEnergy, ConstantPredicates.alwaysTrue(), ConstantPredicates.alwaysTrue(), listener);
+        return new BasicEnergyContainer(maxEnergy, ConstantPredicatesBase.alwaysTrue(), ConstantPredicatesBase.alwaysTrue(), listener);
     }
 
     public static BasicEnergyContainer input(long maxEnergy, @Nullable IContentsListener listener) {
-        return new BasicEnergyContainer(maxEnergy, notExternal, ConstantPredicates.alwaysTrue(), listener);
+        return new BasicEnergyContainer(maxEnergy, notExternal, ConstantPredicatesBase.alwaysTrue(), listener);
     }
 
     public static BasicEnergyContainer output(long maxEnergy, @Nullable IContentsListener listener) {
-        return new BasicEnergyContainer(maxEnergy, ConstantPredicates.alwaysTrue(), internalOnly, listener);
+        return new BasicEnergyContainer(maxEnergy, ConstantPredicatesBase.alwaysTrue(), internalOnly, listener);
     }
 
     public static BasicEnergyContainer create(long maxEnergy, Predicate<@NotNull AutomationType> canExtract, Predicate<@NotNull AutomationType> canInsert,
