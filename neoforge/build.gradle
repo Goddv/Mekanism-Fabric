@@ -714,11 +714,19 @@ project.afterEvaluate {
         if (rc != null) rc.extendsFrom(configurations.common)
     }
 }
-// Bundle :common's NeoForge-transformed classes into the main jar (apiJar/allJar to follow as code is hoisted).
-tasks.named('jar', Jar) {
-    dependsOn(configurations.shadowCommon)
-    from({ configurations.shadowCommon.collect { zipTree(it) } })
+// Bundle :common's NeoForge-transformed classes into the SELF-CONTAINED jars: the main jar, the fat
+// -all jar, and the -api jar (for API consumers). Module jars (additions/generators/tools) load
+// ALONGSIDE the main jar and resolve :common from it at runtime, so they are NOT bundled — doing so
+// would cause duplicate-class errors when several Mekanism jars are loaded together.
+def bundleCommonInto = { jarProvider ->
+    jarProvider.configure {
+        dependsOn(configurations.shadowCommon)
+        from({ configurations.shadowCommon.collect { zipTree(it) } })
+    }
 }
+bundleCommonInto(tasks.named('jar', Jar))
+bundleCommonInto(allJar)
+bundleCommonInto(apiJar)
 
 tasks.register('optimizePng', OptimizePng) {
     def pngPatterns = ['**/*.png']
