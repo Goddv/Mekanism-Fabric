@@ -9,6 +9,8 @@ import mekanism.api.energy.IEnergyContainer;
 import mekanism.api.energy.IMekanismStrictEnergyHandler;
 import mekanism.api.energy.IStrictEnergyHandler;
 import mekanism.common.capabilities.energy.BasicEnergyContainer;
+import mekanism.fabric.content.energy.DemoEnergyBlockEntity;
+import mekanism.fabric.content.energy.FabricEnergyBlockDemo;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -46,7 +48,13 @@ public final class FabricEnergySelfTest {
     public static void run() {
         boolean apiOk = runApiTest();
         registerLookupProbe();
-        ServerLifecycleEvents.SERVER_STARTED.register(server -> runLookupTest(server.overworld(), apiOk));
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            ServerLevel level = server.overworld();
+            boolean lookupOk = runLookupTest(level);
+            boolean blockEntityOk = runBlockEntityTest(level);
+            LOGGER.info("{} RESULT: api={} lookup={} blockEntity={} => {}", TAG, apiOk, lookupOk, blockEntityOk,
+                  (apiOk && lookupOk && blockEntityOk) ? "PASS" : "FAIL");
+        });
     }
 
     /** Tier 1 — the hoisted common energy classes load and compute correctly at runtime on Fabric. */
@@ -70,8 +78,8 @@ public final class FabricEnergySelfTest {
               pos.equals(PROBE_POS.get()) ? PROBE_HANDLER : null);
     }
 
-    /** Tier 2 — the BlockApiLookup find()->provider->handler path works end-to-end at runtime on Fabric. */
-    private static void runLookupTest(ServerLevel level, boolean apiOk) {
+    /** Tier 2 — the BlockApiLookup find()->fallback-provider->handler path works end-to-end at runtime on Fabric. */
+    private static boolean runLookupTest(ServerLevel level) {
         boolean lookupOk = false;
         try {
             BlockPos pos = new BlockPos(0, 64, 0);
@@ -94,7 +102,34 @@ public final class FabricEnergySelfTest {
             PROBE_POS.set(null);
             LOGGER.error("{} FAIL lookup test threw", TAG, t);
         }
-        LOGGER.info("{} RESULT: api={} lookup={} => {}", TAG, apiOk, lookupOk, (apiOk && lookupOk) ? "PASS" : "FAIL");
+        return lookupOk;
+    }
+
+    /** Tier 3 — a REAL functional energy block-entity exposes its capability via registerForBlockEntity, end-to-end. */
+    private static boolean runBlockEntityTest(ServerLevel level) {
+        boolean beOk = false;
+        try {
+            BlockPos pos = new BlockPos(0, 64, 4);
+            level.getChunk(pos.getX() >> 4, pos.getZ() >> 4);
+            level.setBlock(pos, FabricEnergyBlockDemo.BLOCK.get().defaultBlockState(), 3);
+            boolean placed = level.getBlockEntity(pos) instanceof DemoEnergyBlockEntity;
+            IStrictEnergyHandler handler = MekanismFabricEnergy.getStrictEnergyHandler(level, pos, null);
+            if (placed && handler != null) {
+                long insertRemainder = handler.insertEnergy(750L, Action.EXECUTE);
+                long stored = handler.getEnergy(0);
+                long extracted = handler.extractEnergy(250L, Action.EXECUTE);
+                long after = handler.getEnergy(0);
+                beOk = insertRemainder == 0L && stored == 750L && extracted == 250L && after == 500L;
+                log(beOk, "functional energy BlockEntity via registerForBlockEntity: stored=" + stored + " after=" + after
+                        + " (insertRemainder=" + insertRemainder + " extracted=" + extracted + ")");
+            } else {
+                log(false, "demo energy block: placed=" + placed + " handlerResolved=" + (handler != null));
+            }
+            level.removeBlock(pos, false);
+        } catch (Throwable t) {
+            LOGGER.error("{} FAIL block-entity test threw", TAG, t);
+        }
+        return beOk;
     }
 
     private static IStrictEnergyHandler handlerOf(IEnergyContainer container) {
