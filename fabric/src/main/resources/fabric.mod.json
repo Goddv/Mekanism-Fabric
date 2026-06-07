@@ -10,6 +10,9 @@
   "entrypoints": {
     "main": [
       "mekanism.fabric.MekanismFabric"
+    ],
+    "client": [
+      "mekanism.fabric.MekanismFabricClient"
     ]
   },
   "depends": {

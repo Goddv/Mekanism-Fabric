@@ -6,6 +6,7 @@ import mekanism.common.registries.MekanismParticleTypes;
 import mekanism.common.registries.MekanismSounds;
 import mekanism.fabric.content.FabricBringUpContent;
 import mekanism.fabric.content.energy.FabricEnergyBlockDemo;
+import mekanism.fabric.content.machine.FabricMachineMenus;
 import mekanism.fabric.content.machine.FabricRealMachines;
 import mekanism.fabric.energy.FabricEnergySelfTest;
 import mekanism.fabric.registration.FabricRegistrationSelfTest;
@@ -41,6 +42,9 @@ public final class MekanismFabric implements ModInitializer {
         // Transitional: REAL Mekanism machine blocks (enrichment chamber, crusher, ...) — real ids/models with
         // facing+active states, backed by a functional machine block-entity (energy + item I/O + processing).
         FabricRealMachines.init();
+        // Transitional: the machine container-menu (GUI) type — opened from the machine block's use handler;
+        // the client screen is registered in MekanismFabricClient.
+        FabricMachineMenus.init();
         // Dev-only bring-up validation; skipped in production.
         if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
             FabricEnergySelfTest.run();

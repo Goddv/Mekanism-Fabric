@@ -41,15 +41,18 @@ public final class FabricRegistrationSelfTest {
             boolean itemOk = check("item", BuiltInRegistries.ITEM.containsKey(enrichedIron), BuiltInRegistries.ITEM.getValue(enrichedIron) != null, enrichedIron);
             boolean blockOk = check("block", BuiltInRegistries.BLOCK.containsKey(blockOsmium), BuiltInRegistries.ITEM.containsKey(blockOsmium), blockOsmium);
             boolean tabOk = check("creative_tab", BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(mekTab), true, mekTab);
+            var machineMenu = net.minecraft.resources.Identifier.fromNamespaceAndPath("mekanism", "machine");
+            boolean menuOk = check("menu", BuiltInRegistries.MENU.containsKey(machineMenu), BuiltInRegistries.MENU.getValue(machineMenu) != null, machineMenu);
             long mekSounds = BuiltInRegistries.SOUND_EVENT.keySet().stream().filter(k -> k.getNamespace().equals("mekanism")).count();
             long mekGameEvents = BuiltInRegistries.GAME_EVENT.keySet().stream().filter(k -> k.getNamespace().equals("mekanism")).count();
             long mekParticles = BuiltInRegistries.PARTICLE_TYPE.keySet().stream().filter(k -> k.getNamespace().equals("mekanism")).count();
             long mekItems = BuiltInRegistries.ITEM.keySet().stream().filter(k -> k.getNamespace().equals("mekanism")).count();
             long mekBlocks = BuiltInRegistries.BLOCK.keySet().stream().filter(k -> k.getNamespace().equals("mekanism")).count();
-            ok = soundOk && gameEventOk && particleOk && itemOk && blockOk && tabOk;
-            LOGGER.info("{} {} Architectury registration: sounds={} gameEvents={} particles={} items={} blocks={} tabs={}",
+            long mekMenus = BuiltInRegistries.MENU.keySet().stream().filter(k -> k.getNamespace().equals("mekanism")).count();
+            ok = soundOk && gameEventOk && particleOk && itemOk && blockOk && tabOk && menuOk;
+            LOGGER.info("{} {} Architectury registration: sounds={} gameEvents={} particles={} items={} blocks={} tabs={} menus={}",
                   TAG, ok ? "OK  " : "FAIL", mekSounds, mekGameEvents, mekParticles, mekItems, mekBlocks,
-                  BuiltInRegistries.CREATIVE_MODE_TAB.keySet().stream().filter(k -> k.getNamespace().equals("mekanism")).count());
+                  BuiltInRegistries.CREATIVE_MODE_TAB.keySet().stream().filter(k -> k.getNamespace().equals("mekanism")).count(), mekMenus);
         } catch (Throwable t) {
             LOGGER.error("{} FAIL registration test threw", TAG, t);
         }

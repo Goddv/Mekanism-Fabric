@@ -9,9 +9,13 @@ import mekanism.common.capabilities.energy.BasicEnergyContainer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -26,7 +30,7 @@ import org.jetbrains.annotations.Nullable;
  * {@code active} state (so the real active model/glow shows while working). Exposes energy + item capabilities. The
  * processing here is a demo loop; the real recipe system replaces it when the machine framework is migrated to :common.
  */
-public class MachineBlockEntity extends BlockEntity implements Container, IMekanismStrictEnergyHandler {
+public class MachineBlockEntity extends BlockEntity implements Container, IMekanismStrictEnergyHandler, MenuProvider {
 
     private static final long ENERGY_PER_OP = 200L;
 
@@ -120,6 +124,18 @@ public class MachineBlockEntity extends BlockEntity implements Container, IMekan
     @Override
     public void clearContent() {
         items.clear();
+    }
+
+    // ---- menu (GUI) ----
+    @Override
+    public Component getDisplayName() {
+        return getBlockState().getBlock().getName();
+    }
+
+    @Nullable
+    @Override
+    public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
+        return new MachineMenu(containerId, playerInventory, this);
     }
 
     // ---- persistence ----
