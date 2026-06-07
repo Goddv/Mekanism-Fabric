@@ -9,6 +9,7 @@ import mekanism.fabric.content.energy.FabricEnergyBlockDemo;
 import mekanism.fabric.content.machine.FabricMachineMenus;
 import mekanism.fabric.content.machine.FabricRealMachines;
 import mekanism.fabric.energy.FabricEnergySelfTest;
+import mekanism.fabric.heat.FabricHeatSelfTest;
 import mekanism.fabric.registration.FabricRegistrationSelfTest;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
@@ -48,6 +49,7 @@ public final class MekanismFabric implements ModInitializer {
         // Dev-only bring-up validation; skipped in production.
         if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
             FabricEnergySelfTest.run();
+            FabricHeatSelfTest.run();
             FabricRegistrationSelfTest.run();
         }
     }

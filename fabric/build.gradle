@@ -6,6 +6,13 @@ architectury {
     fabric()
 }
 
+loom {
+    // The shared access widener (canonical home: this project's resources, so Fabric Loader finds it as the
+    // mekanism mod's classTweaker in dev + jar, and named in fabric.mod.json). :common reads the same file for
+    // compile-time widening.
+    accessWidenerPath = file("src/main/resources/mekanism.accesswidener")
+}
+
 repositories {
     maven { url = 'https://maven.architectury.dev/' }
 }

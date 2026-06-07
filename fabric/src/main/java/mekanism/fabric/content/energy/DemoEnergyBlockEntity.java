@@ -3,7 +3,10 @@ package mekanism.fabric.content.energy;
 import java.util.List;
 import mekanism.api.energy.IEnergyContainer;
 import mekanism.api.energy.IMekanismStrictEnergyHandler;
+import mekanism.api.heat.IHeatCapacitor;
+import mekanism.api.heat.IMekanismHeatHandler;
 import mekanism.common.capabilities.energy.BasicEnergyContainer;
+import mekanism.common.capabilities.heat.BasicHeatCapacitor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -13,23 +16,43 @@ import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Transitional Fabric bring-up: a minimal functional energy block-entity that stores energy in the hoisted
- * {@link BasicEnergyContainer} and exposes it as an {@link mekanism.api.energy.IStrictEnergyHandler} (via
- * {@link IMekanismStrictEnergyHandler}). Registered against {@code MekanismFabricEnergy.SIDED} so neighbours can query its
- * energy capability — the foundation pattern for real Mekanism machines on Fabric.
+ * Transitional Fabric bring-up: a minimal functional block-entity that stores energy AND heat in the hoisted
+ * {@code :common} {@link BasicEnergyContainer}/{@link BasicHeatCapacitor} and exposes both as Mekanism capabilities
+ * (energy via {@link IMekanismStrictEnergyHandler}, heat via {@link IMekanismHeatHandler}). Registered against
+ * {@code MekanismFabricEnergy.SIDED} and {@code MekanismFabricHeat.SIDED} so neighbours can query both — the foundation
+ * pattern for real Mekanism machines on Fabric, and proof the BlockApiLookup capability shape generalizes beyond energy.
  */
-public class DemoEnergyBlockEntity extends BlockEntity implements IMekanismStrictEnergyHandler {
+public class DemoEnergyBlockEntity extends BlockEntity implements IMekanismStrictEnergyHandler, IMekanismHeatHandler {
+
+    private static final double HEAT_CAPACITY = 1_000.0D;
 
     private final BasicEnergyContainer energy = BasicEnergyContainer.create(1_000_000L, this);
     private final List<IEnergyContainer> containers = List.of(energy);
+    private final BasicHeatCapacitor heat = BasicHeatCapacitor.create(HEAT_CAPACITY, null, this);
+    private final List<IHeatCapacitor> capacitors = List.of(heat);
 
     public DemoEnergyBlockEntity(BlockPos pos, BlockState state) {
         super(FabricEnergyBlockDemo.BE_TYPE.get(), pos, state);
     }
 
+    // ---- energy capability ----
     @Override
     public List<IEnergyContainer> getEnergyContainers(@Nullable Direction side) {
         return containers;
+    }
+
+    // ---- heat capability ----
+    @Override
+    public List<IHeatCapacitor> getHeatCapacitors(@Nullable Direction side) {
+        return capacitors;
+    }
+
+    /**
+     * Applies any buffered heat to stored heat. {@link BasicHeatCapacitor#handleHeat(double)} only buffers; real tiles
+     * flush it from their tick. Exposed so the dev self-test can flush without a ticking block.
+     */
+    public void updateHeat() {
+        heat.update();
     }
 
     @Override
@@ -40,12 +63,15 @@ public class DemoEnergyBlockEntity extends BlockEntity implements IMekanismStric
     @Override
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
+        // Flat serialization is safe here: energy writes "stored", BasicHeatCapacitor writes only "heatCapacity".
         energy.serialize(output);
+        heat.serialize(output);
     }
 
     @Override
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
         energy.deserialize(input);
+        heat.deserialize(input);
     }
 }

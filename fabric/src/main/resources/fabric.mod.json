@@ -7,6 +7,7 @@
   "authors": ["Aidan C. Brady", "Mekanism Team"],
   "license": "MIT",
   "environment": "*",
+  "accessWidener": "mekanism.accesswidener",
   "entrypoints": {
     "main": [
       "mekanism.fabric.MekanismFabric"

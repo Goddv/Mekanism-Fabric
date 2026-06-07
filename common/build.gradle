@@ -5,6 +5,14 @@ architectury {
     common 'neoforge', 'fabric'
 }
 
+loom {
+    // Widen vanilla members that NeoForge ATs expose but vanilla MC keeps private/protected, so hoisted
+    // :common code compiles against the deobf vanilla classpath. The canonical file lives in :fabric resources
+    // (so Fabric Loader finds it as the mekanism mod's classTweaker at dev + jar runtime); :common only reads it
+    // for compile-time widening. NeoForge gets the same widening from its accesstransformer.cfg.
+    accessWidenerPath = rootProject.file("fabric/src/main/resources/mekanism.accesswidener")
+}
+
 repositories {
     mavenCentral()
     maven { url = 'https://maven.neoforged.net/releases/' }

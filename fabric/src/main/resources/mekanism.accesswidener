@@ -1,0 +1,11 @@
+accessWidener	v2	official
+
+# Mekanism multi-loader access widener (Fabric/:common side).
+# 26.1 is deobfuscated, so members are referenced by their plain (named) signatures.
+# On NeoForge the equivalent widening is provided by the existing accesstransformer.cfg files; this widener
+# only needs to cover members that NeoForge's ATs widen but vanilla MC (what :common/:fabric compile against)
+# keeps private/protected. Add entries here as hoists to :common hit the vanilla-vs-NeoForge access gap.
+
+# HeatAPI.getAmbientTemp(LevelReader, BlockPos) calls Biome#getTemperature(BlockPos, int) (position-adjusted),
+# which is private in vanilla but public under NeoForge.
+accessible	method	net/minecraft/world/level/biome/Biome	getTemperature	(Lnet/minecraft/core/BlockPos;I)F

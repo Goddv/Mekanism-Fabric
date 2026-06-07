@@ -3,6 +3,7 @@ package mekanism.fabric.content.energy;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import mekanism.fabric.energy.MekanismFabricEnergy;
+import mekanism.fabric.heat.MekanismFabricHeat;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -39,11 +40,12 @@ public final class FabricEnergyBlockDemo {
     private FabricEnergyBlockDemo() {
     }
 
-    /** Finalize registrations (blocks -> BE types -> items so cross-references resolve), then register the energy provider. */
+    /** Finalize registrations (blocks -> BE types -> items so cross-references resolve), then register the energy + heat providers. */
     public static void init() {
         BLOCKS.register();
         BE_TYPES.register();
         ITEMS.register();
         MekanismFabricEnergy.SIDED.registerForBlockEntity((be, context) -> be, BE_TYPE.get());
+        MekanismFabricHeat.SIDED.registerForBlockEntity((be, context) -> be, BE_TYPE.get());
     }
 }
