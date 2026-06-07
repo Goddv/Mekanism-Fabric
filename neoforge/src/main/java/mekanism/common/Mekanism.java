@@ -234,7 +234,7 @@ public class Mekanism {
         MekanismDataComponents.DATA_COMPONENTS.register(modEventBus);
         MekanismEntityTypes.ENTITY_TYPES.register(modEventBus);
         MekanismTileEntityTypes.TILE_ENTITY_TYPES.register(modEventBus);
-        MekanismGameEvents.GAME_EVENTS.register(modEventBus);
+        MekanismGameEvents.GAME_EVENTS.register();
         MekanismSounds.SOUND_EVENTS.register();
         MekanismParticleTypes.PARTICLE_TYPES.register(modEventBus);
         MekanismHeightProviderTypes.HEIGHT_PROVIDER_TYPES.register(modEventBus);

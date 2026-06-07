@@ -1,6 +1,7 @@
 package mekanism.fabric;
 
 import com.mojang.logging.LogUtils;
+import mekanism.common.registries.MekanismGameEvents;
 import mekanism.common.registries.MekanismSounds;
 import mekanism.fabric.energy.FabricEnergySelfTest;
 import mekanism.fabric.registration.FabricRegistrationSelfTest;
@@ -23,8 +24,9 @@ public final class MekanismFabric implements ModInitializer {
     @Override
     public void onInitialize() {
         LOGGER.info("[Mekanism/Fabric] Fabric build initialized — Architectury no-remap toolchain OK.");
-        // Real content registration (shared loader-neutral path; finalized per-loader). Mekanism sounds first.
+        // Real content registration (shared loader-neutral path; finalized per-loader).
         MekanismSounds.SOUND_EVENTS.register();
+        MekanismGameEvents.GAME_EVENTS.register();
         // Dev-only bring-up validation; skipped in production.
         if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
             FabricEnergySelfTest.run();
