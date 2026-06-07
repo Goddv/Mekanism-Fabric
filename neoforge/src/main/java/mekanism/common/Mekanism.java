@@ -236,7 +236,7 @@ public class Mekanism {
         MekanismTileEntityTypes.TILE_ENTITY_TYPES.register(modEventBus);
         MekanismGameEvents.GAME_EVENTS.register();
         MekanismSounds.SOUND_EVENTS.register();
-        MekanismParticleTypes.PARTICLE_TYPES.register(modEventBus);
+        MekanismParticleTypes.PARTICLE_TYPES.register();
         MekanismHeightProviderTypes.HEIGHT_PROVIDER_TYPES.register(modEventBus);
         MekanismIntProviderTypes.INT_PROVIDER_TYPES.register(modEventBus);
         MekanismPlacementModifiers.PLACEMENT_MODIFIERS.register(modEventBus);

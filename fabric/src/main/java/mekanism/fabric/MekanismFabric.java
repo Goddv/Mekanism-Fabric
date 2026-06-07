@@ -2,6 +2,7 @@ package mekanism.fabric;
 
 import com.mojang.logging.LogUtils;
 import mekanism.common.registries.MekanismGameEvents;
+import mekanism.common.registries.MekanismParticleTypes;
 import mekanism.common.registries.MekanismSounds;
 import mekanism.fabric.energy.FabricEnergySelfTest;
 import mekanism.fabric.registration.FabricRegistrationSelfTest;
@@ -27,6 +28,7 @@ public final class MekanismFabric implements ModInitializer {
         // Real content registration (shared loader-neutral path; finalized per-loader).
         MekanismSounds.SOUND_EVENTS.register();
         MekanismGameEvents.GAME_EVENTS.register();
+        MekanismParticleTypes.PARTICLE_TYPES.register();
         // Dev-only bring-up validation; skipped in production.
         if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
             FabricEnergySelfTest.run();
