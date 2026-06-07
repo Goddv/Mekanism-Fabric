@@ -35,12 +35,18 @@ public final class FabricRegistrationSelfTest {
                   MekanismGameEvents.JETPACK_BURN.get() != null, MekanismGameEvents.JETPACK_BURN.getId());
             boolean particleOk = check("particle", BuiltInRegistries.PARTICLE_TYPE.containsKey(MekanismParticleTypes.LASER.getId()),
                   MekanismParticleTypes.LASER.get() != null, MekanismParticleTypes.LASER.getId());
+            var enrichedIron = net.minecraft.resources.Identifier.fromNamespaceAndPath("mekanism", "enriched_iron");
+            var mekTab = net.minecraft.resources.Identifier.fromNamespaceAndPath("mekanism", "mekanism");
+            boolean itemOk = check("item", BuiltInRegistries.ITEM.containsKey(enrichedIron), BuiltInRegistries.ITEM.getValue(enrichedIron) != null, enrichedIron);
+            boolean tabOk = check("creative_tab", BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(mekTab), true, mekTab);
             long mekSounds = BuiltInRegistries.SOUND_EVENT.keySet().stream().filter(k -> k.getNamespace().equals("mekanism")).count();
             long mekGameEvents = BuiltInRegistries.GAME_EVENT.keySet().stream().filter(k -> k.getNamespace().equals("mekanism")).count();
             long mekParticles = BuiltInRegistries.PARTICLE_TYPE.keySet().stream().filter(k -> k.getNamespace().equals("mekanism")).count();
-            ok = soundOk && gameEventOk && particleOk;
-            LOGGER.info("{} {} Architectury registration: mekanismSounds={} mekanismGameEvents={} mekanismParticles={}",
-                  TAG, ok ? "OK  " : "FAIL", mekSounds, mekGameEvents, mekParticles);
+            long mekItems = BuiltInRegistries.ITEM.keySet().stream().filter(k -> k.getNamespace().equals("mekanism")).count();
+            ok = soundOk && gameEventOk && particleOk && itemOk && tabOk;
+            LOGGER.info("{} {} Architectury registration: sounds={} gameEvents={} particles={} items={} tabs={}",
+                  TAG, ok ? "OK  " : "FAIL", mekSounds, mekGameEvents, mekParticles, mekItems,
+                  BuiltInRegistries.CREATIVE_MODE_TAB.keySet().stream().filter(k -> k.getNamespace().equals("mekanism")).count());
         } catch (Throwable t) {
             LOGGER.error("{} FAIL registration test threw", TAG, t);
         }
