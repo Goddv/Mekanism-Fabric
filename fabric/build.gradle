@@ -50,6 +50,18 @@ processResources {
     }
 }
 
+// Pull in Mekanism's datagen-generated ASSETS (sounds.json, lang/en_us, models, blockstates, item models,
+// atlases) as a resource source dir so they reach BOTH the dev run (which uses source dirs, not the jar)
+// and the built jar. They are loader-neutral but currently live under :neoforge because datagen runs there;
+// the hand-written assets (textures, .ogg, shaders) ship via :common. Generated DATA (recipes/loot/tags) is
+// EXCLUDED for now — it references blocks/items not yet registered on Fabric and would spam "unknown item"
+// errors. TODO: once datagen targets :common (and blocks/items are migrated), drop this and ship all
+// generated resources via :common.
+sourceSets.main.resources {
+    srcDir project(':neoforge').file('src/datagen/generated/mekanism')
+    exclude 'data/**'
+}
+
 tasks.named('jar', Jar) {
     dependsOn(configurations.shadowCommon)
     from({ configurations.shadowCommon.collect { zipTree(it) } })
