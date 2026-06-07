@@ -1,6 +1,5 @@
 package mekanism.fabric.content.machine;
 
-import dev.architectury.registry.menu.MenuRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
@@ -51,7 +50,10 @@ public class MachineBlock extends Block implements EntityBlock {
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer
               && level.getBlockEntity(pos) instanceof MachineBlockEntity machine) {
-            MenuRegistry.openMenu(serverPlayer, machine);
+            // Vanilla open path: sends the OpenScreen packet keyed to the menu type, which the client resolves via
+            // the MenuScreens registration in MekanismFabricClient. (Avoids mixing Architectury's open path with
+            // vanilla screen registration.)
+            serverPlayer.openMenu(machine);
         }
         return InteractionResult.SUCCESS;
     }
