@@ -22,6 +22,11 @@ license="MIT"
     versionRange="${neo_version}"
     side="BOTH"
 [[dependencies.mekanism]]
+    modId="architectury"
+    type="required"
+    versionRange="[20.0.0,)"
+    side="BOTH"
+[[dependencies.mekanism]]
     modId="jei"
     type="optional"
     versionRange="${jei_version}"

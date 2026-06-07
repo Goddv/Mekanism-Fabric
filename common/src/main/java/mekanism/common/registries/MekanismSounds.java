@@ -1,6 +1,6 @@
 package mekanism.common.registries;
 
-import mekanism.common.Mekanism;
+import mekanism.api.MekanismAPIBase;
 import mekanism.common.registration.impl.SoundEventDeferredRegister;
 import mekanism.common.registration.impl.SoundEventRegistryObject;
 import net.minecraft.sounds.SoundEvent;
@@ -10,7 +10,7 @@ public final class MekanismSounds {
     private MekanismSounds() {
     }
 
-    public static final SoundEventDeferredRegister SOUND_EVENTS = new SoundEventDeferredRegister(Mekanism.MODID);
+    public static final SoundEventDeferredRegister SOUND_EVENTS = new SoundEventDeferredRegister(MekanismAPIBase.MEKANISM_MODID);
 
     public static final SoundEventRegistryObject<SoundEvent> CHARGEPAD = SOUND_EVENTS.register("tile.machine.chargepad");
     public static final SoundEventRegistryObject<SoundEvent> CHEMICAL_CRYSTALLIZER = SOUND_EVENTS.register("tile.machine.chemical_crystallizer");

@@ -71,7 +71,7 @@ public class MekanismAdditions implements IModModule {
         AdditionsBlocks.BLOCKS.register(modEventBus);
         AdditionsCreativeTabs.CREATIVE_TABS.register(modEventBus);
         AdditionsEntityTypes.ENTITY_TYPES.register(modEventBus);
-        AdditionsSounds.SOUND_EVENTS.register(modEventBus);
+        AdditionsSounds.SOUND_EVENTS.register();
         AdditionsBiomeModifierSerializers.BIOME_MODIFIER_SERIALIZERS.register(modEventBus);
         AdditionsStructureModifierSerializers.STRUCTURE_MODIFIER_SERIALIZERS.register(modEventBus);
     }
