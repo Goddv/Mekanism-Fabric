@@ -2,23 +2,35 @@ package mekanism.fabric.content.machine;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 
 /**
- * Transitional Fabric bring-up: a minimal screen for {@link MachineMenu}. 26.1 replaced the old
- * {@code renderBg(GuiGraphics,...)} hook with a render-state extraction model: the background is drawn by overriding
- * {@link #extractBackground(GuiGraphicsExtractor, int, int, float)} (as vanilla {@code ContainerScreen}/
- * {@code DispenserScreen} do). This draws a plain panel + slot backings via {@link GuiGraphicsExtractor#fill} so the GUI
- * is visible without shipping a bespoke GUI atlas; the vanilla menu sync drives the slot contents. The real Mekanism GUI
- * artwork/widgets (energy bar, progress arrow, side-config) arrive with the machine-framework migration to {@code :common}.
+ * Transitional Fabric bring-up: a screen for {@link MachineMenu} that renders with Mekanism's REAL GUI textures + layout,
+ * reproducing the enrichment-chamber look (GuiElectricMachine) without the full GuiElement widget framework. Draws:
+ * Mekanism's 9-sliced {@code base} window sprite, the real slot textures (input/output/normal), the up-arrow, the
+ * progress bar, and the energy-bar frame ({@code bar/base} sprite) — all at the real electric-machine positions
+ * (input 64,17 / output 116,35 / up-arrow 68,38 / progress 86,38 / energy-bar 164,16).
+ *
+ * <p>26.1 draws GUI backgrounds via the render-state extraction model: {@link #extractBackground} +
+ * {@link GuiGraphicsExtractor} (blitSprite for atlas sprites at {@code textures/gui/sprites/}, blit for the direct
+ * textures at {@code assets/mekanism/gui/...}). Live values (energy fill, recipe progress) need the container sync
+ * framework — that, plus the real GuiElement widgets/tabs, arrives with the machine-framework migration to {@code :common}.
  */
 public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
 
-    private static final int PANEL = 0xFFC6C6C6;       // light grey panel (vanilla container tone)
-    private static final int PANEL_SHADOW = 0xFF555555; // panel border
-    private static final int SLOT = 0xFF8B8B8B;        // slot interior
+    // Atlas sprites (assets/mekanism/textures/gui/sprites/), drawn via blitSprite.
+    private static final Identifier BASE = Identifier.fromNamespaceAndPath("mekanism", "base");
+    private static final Identifier BAR_FRAME = Identifier.fromNamespaceAndPath("mekanism", "bar/base");
+    // Direct textures (assets/mekanism/gui/...), drawn via blit (path used as-is under assets/<ns>/).
+    private static final Identifier SLOT_INPUT = Identifier.fromNamespaceAndPath("mekanism", "gui/slot/input.png");
+    private static final Identifier SLOT_OUTPUT = Identifier.fromNamespaceAndPath("mekanism", "gui/slot/output.png");
+    private static final Identifier SLOT_NORMAL = Identifier.fromNamespaceAndPath("mekanism", "gui/slot/normal.png");
+    private static final Identifier UP_ARROW = Identifier.fromNamespaceAndPath("mekanism", "gui/up_arrow.png");
+    private static final Identifier PROGRESS_BAR = Identifier.fromNamespaceAndPath("mekanism", "gui/progress/bar.png");
 
     public MachineScreen(MachineMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -32,17 +44,23 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
     }
 
     @Override
-    public void extractBackground(GuiGraphicsExtractor extractor, int mouseX, int mouseY, float partialTick) {
-        super.extractBackground(extractor, mouseX, mouseY, partialTick); // dims the world behind the GUI
+    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        super.extractBackground(graphics, mouseX, mouseY, partialTick); // dims the world behind the GUI
         int x = this.leftPos;
         int y = this.topPos;
-        // Panel with a 1px border so it reads as a window.
-        extractor.fill(x - 1, y - 1, x + this.imageWidth + 1, y + this.imageHeight + 1, PANEL_SHADOW);
-        extractor.fill(x, y, x + this.imageWidth, y + this.imageHeight, PANEL);
-        // Slot backings (machine input/output + the full player inventory) so each slot reads as a slot.
-        for (Slot slot : this.menu.slots) {
-            extractor.fill(x + slot.x - 1, y + slot.y - 1, x + slot.x + 17, y + slot.y + 17, PANEL_SHADOW);
-            extractor.fill(x + slot.x, y + slot.y, x + slot.x + 16, y + slot.y + 16, SLOT);
+        // Mekanism's real window panel (9-sliced atlas sprite) — same call GuiMekanism makes.
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BASE, x, y, this.imageWidth, this.imageHeight);
+        // Slot frames at each slot position, using the real Mekanism slot textures (18x18, frame offset -1,-1).
+        for (int i = 0; i < this.menu.slots.size(); i++) {
+            Slot slot = this.menu.slots.get(i);
+            Identifier tex = i == 0 ? SLOT_INPUT : i == 1 ? SLOT_OUTPUT : SLOT_NORMAL;
+            graphics.blit(RenderPipelines.GUI_TEXTURED, tex, x + slot.x - 1, y + slot.y - 1, 0.0F, 0.0F, 18, 18, 18, 18);
         }
+        // Up-arrow (8x10) + progress bar (25x9) between input and output (GuiUpArrow 68,38 / GuiProgress BAR 86,38).
+        graphics.blit(RenderPipelines.GUI_TEXTURED, UP_ARROW, x + 68, y + 38, 0.0F, 0.0F, 8, 10, 8, 10);
+        // bar.png is 25x27 (3 stacked frames: empty/filled/warning). Draw only the top (empty) 25x9 frame.
+        graphics.blit(RenderPipelines.GUI_TEXTURED, PROGRESS_BAR, x + 86, y + 38, 0.0F, 0.0F, 25, 9, 25, 27);
+        // Energy-bar frame on the right (GuiVerticalPowerBar 164,16; frame = bar/base sprite, texWidth+2 x texHeight+2).
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BAR_FRAME, x + 164, y + 16, 6, 54);
     }
 }

@@ -29,7 +29,8 @@ public class MachineMenu extends AbstractContainerMenu {
         super(FabricMachineMenus.MACHINE.get(), containerId);
         checkContainerSize(machine, MACHINE_SLOTS);
         this.machine = machine;
-        addSlot(new Slot(machine, 0, 56, 35));   // input
+        // Positions match Mekanism's electric machine (GuiElectricMachine / TileEntityElectricMachine).
+        addSlot(new Slot(machine, 0, 64, 17));   // input
         addSlot(new Slot(machine, 1, 116, 35));  // output
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {

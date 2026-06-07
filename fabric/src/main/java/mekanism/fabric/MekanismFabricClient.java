@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import mekanism.fabric.content.machine.FabricMachineMenus;
 import mekanism.fabric.content.machine.MachineScreen;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.gui.screens.MenuScreens;
 import org.slf4j.Logger;
 
@@ -20,5 +21,10 @@ public final class MekanismFabricClient implements ClientModInitializer {
     public void onInitializeClient() {
         MenuScreens.register(FabricMachineMenus.MACHINE.get(), MachineScreen::new);
         LOGGER.info("[Mekanism/Fabric] Client init — machine screen registered.");
+        // Dev-only GUI screenshot harness (opens the machine screen + saves a PNG for visual review). Dormant unless
+        // MEKANISM_GUI_SHOT=1 is set, so normal dev runs aren't interrupted by an auto-opening screen.
+        if (FabricLoader.getInstance().isDevelopmentEnvironment() && "1".equals(System.getenv("MEKANISM_GUI_SHOT"))) {
+            MekanismFabricGuiScreenshot.init();
+        }
     }
 }
