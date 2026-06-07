@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import java.util.function.IntFunction;
 import mekanism.api.annotations.NothingNullByDefault;
-import mekanism.api.text.IHasTranslationKey.IHasEnumNameTranslationKey;
+import mekanism.api.text.IHasEnumNameTranslationKey;
 import mekanism.api.text.ILangEntry;
 import mekanism.common.MekanismLang;
 import mekanism.common.content.network.transmitter.Transmitter;

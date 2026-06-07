@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 import mekanism.api.text.IHasTranslationKey;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.damagesource.DamageEffects;
@@ -55,6 +56,6 @@ public record MekanismDamageType(ResourceKey<DamageType> key, float exhaustion, 
     }
 
     private Holder<DamageType> holder(RegistryAccess registryAccess) {
-        return registryAccess.holderOrThrow(key());
+        return registryAccess.lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(key());
     }
 }

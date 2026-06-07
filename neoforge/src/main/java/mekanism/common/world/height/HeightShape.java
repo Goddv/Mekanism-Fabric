@@ -1,6 +1,6 @@
 package mekanism.common.world.height;
 
-import mekanism.api.text.IHasTranslationKey.IHasEnumNameTranslationKey;
+import mekanism.api.text.IHasEnumNameTranslationKey;
 import mekanism.api.text.ILangEntry;
 import mekanism.common.MekanismLang;
 import org.jetbrains.annotations.NotNull;

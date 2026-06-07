@@ -19,7 +19,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import mekanism.api.Action;
 import mekanism.api.inventory.IInventorySlot;
-import mekanism.api.text.IHasTranslationKey.IHasEnumNameTranslationKey;
+import mekanism.api.text.IHasEnumNameTranslationKey;
 import mekanism.api.text.ILangEntry;
 import mekanism.common.Mekanism;
 import mekanism.common.MekanismLang;

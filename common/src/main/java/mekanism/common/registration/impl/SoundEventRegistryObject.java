@@ -2,6 +2,7 @@ package mekanism.common.registration.impl;
 
 import dev.architectury.registry.registries.RegistrySupplier;
 import mekanism.api.annotations.NothingNullByDefault;
+import mekanism.api.text.IHasTranslationKey;
 import mekanism.common.registration.MekanismRegistryObject;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Util;
@@ -11,7 +12,7 @@ import net.minecraft.util.Util;
  * datagen) on top of the shared {@link MekanismRegistryObject} (Holder + Supplier + INamedEntry, backed by Architectury).
  */
 @NothingNullByDefault
-public class SoundEventRegistryObject<SOUND extends SoundEvent> extends MekanismRegistryObject<SoundEvent> {
+public class SoundEventRegistryObject<SOUND extends SoundEvent> extends MekanismRegistryObject<SoundEvent> implements IHasTranslationKey {
 
     private final String translationKey;
 
@@ -20,6 +21,7 @@ public class SoundEventRegistryObject<SOUND extends SoundEvent> extends Mekanism
         this.translationKey = Util.makeDescriptionId("sound_event", holder.getId());
     }
 
+    @Override
     public String getTranslationKey() {
         return translationKey;
     }

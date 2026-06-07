@@ -18,7 +18,6 @@ import mekanism.common.config.IMekanismConfig;
 import mekanism.common.registration.impl.BlockRegistryObject;
 import mekanism.common.registration.impl.FluidRegistryObject;
 import mekanism.common.registration.impl.MekanismDamageType;
-import mekanism.common.registration.impl.SoundEventRegistryObject;
 import net.minecraft.util.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.data.CachedOutput;
@@ -86,10 +85,6 @@ public abstract class BaseLanguageProvider extends LanguageProvider {
             }
         }
         add(key.getTranslationKey(), value);
-    }
-
-    protected void add(SoundEventRegistryObject<?> soundEvent, String value) {
-        add(soundEvent.getTranslationKey(), value);
     }
 
     protected void add(BlockRegistryObject<?, ?> blockRO, String value, String containerName) {

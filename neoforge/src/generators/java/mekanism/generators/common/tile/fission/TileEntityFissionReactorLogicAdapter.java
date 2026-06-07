@@ -9,7 +9,7 @@ import mekanism.api.SerializationConstants;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.math.MathUtils;
 import mekanism.api.text.EnumColor;
-import mekanism.api.text.IHasTranslationKey.IHasEnumNameTranslationKey;
+import mekanism.api.text.IHasEnumNameTranslationKey;
 import mekanism.api.text.ILangEntry;
 import mekanism.common.MekanismLang;
 import mekanism.common.integration.computer.annotation.ComputerMethod;

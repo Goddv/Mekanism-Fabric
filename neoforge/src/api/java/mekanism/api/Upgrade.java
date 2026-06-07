@@ -9,7 +9,7 @@ import java.util.function.IntFunction;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.text.APILang;
 import mekanism.api.text.EnumColor;
-import mekanism.api.text.IHasTranslationKey.IHasEnumNameTranslationKey;
+import mekanism.api.text.IHasEnumNameTranslationKey;
 import mekanism.api.text.ILangEntry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;

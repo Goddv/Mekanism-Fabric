@@ -3,7 +3,7 @@ package mekanism.common.content.blocktype;
 import java.util.Locale;
 import java.util.function.Supplier;
 import mekanism.api.annotations.NothingNullByDefault;
-import mekanism.api.text.IHasTranslationKey.IHasEnumNameTranslationKey;
+import mekanism.api.text.IHasEnumNameTranslationKey;
 import mekanism.api.text.ILangEntry;
 import mekanism.common.MekanismLang;
 import mekanism.common.content.blocktype.Machine.FactoryMachine;

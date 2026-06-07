@@ -7,7 +7,7 @@ import java.util.function.IntFunction;
 import mekanism.api.IIncrementalEnum;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.text.EnumColor;
-import mekanism.api.text.IHasTranslationKey.IHasEnumNameTranslationKey;
+import mekanism.api.text.IHasEnumNameTranslationKey;
 import mekanism.api.text.ILangEntry;
 import mekanism.common.MekanismLang;
 import net.minecraft.network.codec.ByteBufCodecs;
