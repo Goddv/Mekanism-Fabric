@@ -11,8 +11,9 @@ import mekanism.api.energy.IStrictEnergyHandler;
 import mekanism.common.capabilities.energy.BasicEnergyContainer;
 import mekanism.fabric.content.energy.DemoEnergyBlockEntity;
 import mekanism.fabric.content.energy.FabricEnergyBlockDemo;
-import mekanism.fabric.content.machine.DemoMachineBlockEntity;
-import mekanism.fabric.content.machine.FabricMachineDemo;
+import mekanism.fabric.content.machine.FabricRealMachines;
+import mekanism.fabric.content.machine.MachineBlock;
+import mekanism.fabric.content.machine.MachineBlockEntity;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.minecraft.core.BlockPos;
@@ -144,23 +145,24 @@ public final class FabricEnergySelfTest {
         try {
             BlockPos pos = new BlockPos(0, 64, 8);
             level.getChunk(pos.getX() >> 4, pos.getZ() >> 4);
-            level.setBlock(pos, FabricMachineDemo.BLOCK.get().defaultBlockState(), 3);
-            if (level.getBlockEntity(pos) instanceof DemoMachineBlockEntity machine) {
-                machine.insertEnergy(1000L, Action.EXECUTE);
+            level.setBlock(pos, FabricRealMachines.enrichmentChamber().get().defaultBlockState(), 3);
+            if (level.getBlockEntity(pos) instanceof MachineBlockEntity machine) {
+                machine.insertEnergy(2000L, Action.EXECUTE);
                 machine.setItem(0, new ItemStack(Items.COBBLESTONE, 5));
                 long energyBefore = machine.getEnergy(0);
                 for (int i = 0; i < 3; i++) {
-                    machine.serverTick();
+                    machine.serverTick(level.getBlockState(pos));
                 }
                 long energyAfter = machine.getEnergy(0);
                 int outCount = machine.getItem(1).getCount();
                 int inLeft = machine.getItem(0).getCount();
+                boolean active = level.getBlockState(pos).getValue(MachineBlock.ACTIVE);
                 boolean itemCapOk = ItemStorage.SIDED.find(level, pos, null) != null;
-                ok = outCount == 3 && inLeft == 2 && energyAfter == energyBefore - 300L && itemCapOk;
-                log(ok, "machine tick+process: output=" + outCount + " inputLeft=" + inLeft + " energy " + energyBefore + "->"
-                        + energyAfter + " itemCapability=" + itemCapOk);
+                ok = outCount == 3 && inLeft == 2 && energyAfter == energyBefore - 600L && active && itemCapOk;
+                log(ok, "real machine (enrichment_chamber) tick+process: output=" + outCount + " inputLeft=" + inLeft
+                        + " energy " + energyBefore + "->" + energyAfter + " active=" + active + " itemCapability=" + itemCapOk);
             } else {
-                log(false, "demo machine block-entity not placed");
+                log(false, "real machine block-entity not placed");
             }
             level.removeBlock(pos, false);
         } catch (Throwable t) {
