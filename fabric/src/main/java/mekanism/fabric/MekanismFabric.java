@@ -6,6 +6,7 @@ import mekanism.common.registries.MekanismParticleTypes;
 import mekanism.common.registries.MekanismSounds;
 import mekanism.fabric.content.FabricBringUpContent;
 import mekanism.fabric.content.energy.FabricEnergyBlockDemo;
+import mekanism.fabric.content.machine.FabricMachineDemo;
 import mekanism.fabric.energy.FabricEnergySelfTest;
 import mekanism.fabric.registration.FabricRegistrationSelfTest;
 import net.fabricmc.api.ModInitializer;
@@ -37,6 +38,9 @@ public final class MekanismFabric implements ModInitializer {
         // Transitional: a functional energy block (block-entity that stores energy + exposes the strict-energy
         // capability via BlockApiLookup) — the foundation pattern for real Mekanism machines on Fabric.
         FabricEnergyBlockDemo.init();
+        // Transitional: a functional processing machine (ticking + energy + item I/O + dual capabilities) — the
+        // archetype every real Mekanism machine follows.
+        FabricMachineDemo.init();
         // Dev-only bring-up validation; skipped in production.
         if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
             FabricEnergySelfTest.run();

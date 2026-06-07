@@ -11,10 +11,15 @@ import mekanism.api.energy.IStrictEnergyHandler;
 import mekanism.common.capabilities.energy.BasicEnergyContainer;
 import mekanism.fabric.content.energy.DemoEnergyBlockEntity;
 import mekanism.fabric.content.energy.FabricEnergyBlockDemo;
+import mekanism.fabric.content.machine.DemoMachineBlockEntity;
+import mekanism.fabric.content.machine.FabricMachineDemo;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -52,8 +57,9 @@ public final class FabricEnergySelfTest {
             ServerLevel level = server.overworld();
             boolean lookupOk = runLookupTest(level);
             boolean blockEntityOk = runBlockEntityTest(level);
-            LOGGER.info("{} RESULT: api={} lookup={} blockEntity={} => {}", TAG, apiOk, lookupOk, blockEntityOk,
-                  (apiOk && lookupOk && blockEntityOk) ? "PASS" : "FAIL");
+            boolean machineOk = runMachineTest(level);
+            LOGGER.info("{} RESULT: api={} lookup={} blockEntity={} machine={} => {}", TAG, apiOk, lookupOk, blockEntityOk,
+                  machineOk, (apiOk && lookupOk && blockEntityOk && machineOk) ? "PASS" : "FAIL");
         });
     }
 
@@ -130,6 +136,37 @@ public final class FabricEnergySelfTest {
             LOGGER.error("{} FAIL block-entity test threw", TAG, t);
         }
         return beOk;
+    }
+
+    /** Tier 4 — a functional processing machine: ticking + energy consumption + item I/O + item capability. */
+    private static boolean runMachineTest(ServerLevel level) {
+        boolean ok = false;
+        try {
+            BlockPos pos = new BlockPos(0, 64, 8);
+            level.getChunk(pos.getX() >> 4, pos.getZ() >> 4);
+            level.setBlock(pos, FabricMachineDemo.BLOCK.get().defaultBlockState(), 3);
+            if (level.getBlockEntity(pos) instanceof DemoMachineBlockEntity machine) {
+                machine.insertEnergy(1000L, Action.EXECUTE);
+                machine.setItem(0, new ItemStack(Items.COBBLESTONE, 5));
+                long energyBefore = machine.getEnergy(0);
+                for (int i = 0; i < 3; i++) {
+                    machine.serverTick();
+                }
+                long energyAfter = machine.getEnergy(0);
+                int outCount = machine.getItem(1).getCount();
+                int inLeft = machine.getItem(0).getCount();
+                boolean itemCapOk = ItemStorage.SIDED.find(level, pos, null) != null;
+                ok = outCount == 3 && inLeft == 2 && energyAfter == energyBefore - 300L && itemCapOk;
+                log(ok, "machine tick+process: output=" + outCount + " inputLeft=" + inLeft + " energy " + energyBefore + "->"
+                        + energyAfter + " itemCapability=" + itemCapOk);
+            } else {
+                log(false, "demo machine block-entity not placed");
+            }
+            level.removeBlock(pos, false);
+        } catch (Throwable t) {
+            LOGGER.error("{} FAIL machine test threw", TAG, t);
+        }
+        return ok;
     }
 
     private static IStrictEnergyHandler handlerOf(IEnergyContainer container) {
