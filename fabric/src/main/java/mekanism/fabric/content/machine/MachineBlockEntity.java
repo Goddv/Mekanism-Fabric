@@ -23,6 +23,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
+import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -69,7 +70,10 @@ public class MachineBlockEntity extends BlockEntity implements Container, IMekan
         if (!(level instanceof ServerLevel serverLevel)) {
             return false;
         }
-        RecipeType<ItemStackToItemStackRecipe> recipeType = getBlockState().getBlock() instanceof MachineBlock machine ? machine.recipeType() : null;
+        if (!(getBlockState().getBlock() instanceof MachineBlock machine)) {
+            return false;
+        }
+        RecipeType<ItemStackToItemStackRecipe> recipeType = machine.recipeType();
         if (recipeType == null) {
             return false;
         }
@@ -78,15 +82,27 @@ public class MachineBlockEntity extends BlockEntity implements Container, IMekan
             return resetProgress();
         }
         SingleRecipeInput recipeInput = new SingleRecipeInput(input);
-        Optional<RecipeHolder<ItemStackToItemStackRecipe>> match =
-              serverLevel.recipeAccess().getRecipeFor(recipeType, recipeInput, serverLevel);
-        if (match.isEmpty()) {
+
+        // Resolve the output + required input count from this machine's Mekanism recipe type, falling back to vanilla
+        // furnace recipes for the energized smelter (mirrors Mekanism wrapping minecraft:smelting recipes).
+        ItemStack result;
+        int needed;
+        Optional<RecipeHolder<ItemStackToItemStackRecipe>> match = serverLevel.recipeAccess().getRecipeFor(recipeType, recipeInput, serverLevel);
+        if (match.isPresent()) {
+            ItemStackToItemStackRecipe recipe = match.get().value();
+            needed = recipe.getInput().count();
+            result = recipe.getOutput(input).create();
+        } else if (machine.acceptsVanillaSmelting()) {
+            Optional<RecipeHolder<SmeltingRecipe>> vanilla = serverLevel.recipeAccess().getRecipeFor(RecipeType.SMELTING, recipeInput, serverLevel);
+            if (vanilla.isEmpty()) {
+                return resetProgress();
+            }
+            needed = 1;
+            result = vanilla.get().value().assemble(recipeInput).copy();
+        } else {
             return resetProgress();
         }
-        ItemStackToItemStackRecipe recipe = match.get().value();
-        int needed = recipe.getInput().count();
-        ItemStack result = recipe.getOutput(input).create();
-        if (input.getCount() < needed || !canFit(result)) {
+        if (result.isEmpty() || input.getCount() < needed || !canFit(result)) {
             return resetProgress();
         }
         if (energy.extract(ENERGY_PER_TICK, Action.SIMULATE, AutomationType.INTERNAL) < ENERGY_PER_TICK) {

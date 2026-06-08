@@ -61,11 +61,14 @@ public final class FabricRecipeSelfTest {
             boolean enrichOk = runMachine(level, new BlockPos(0, 64, 30), "enrichment_chamber", Items.DIRT, Items.DIAMOND);
             boolean crushOk = runMachine(level, new BlockPos(2, 64, 30), "crusher", Items.COBBLESTONE, Items.GRAVEL);
             boolean smeltOk = runMachine(level, new BlockPos(4, 64, 30), "energized_smelter", Items.SAND, Items.GLASS);
-            boolean processOk = enrichOk && crushOk && smeltOk;
+            // Vanilla-furnace fallback: raw_iron has no mekanism:smelting recipe, so the smelter resolves it via
+            // minecraft:smelting (raw_iron -> iron_ingot).
+            boolean vanillaSmeltOk = runMachine(level, new BlockPos(6, 64, 30), "energized_smelter", Items.RAW_IRON, Items.IRON_INGOT);
+            boolean processOk = enrichOk && crushOk && smeltOk && vanillaSmeltOk;
 
             ok = codecOk && roundTripOk && registrationOk && processOk;
-            LOGGER.info("{} {} codec={} roundTrip={} registration={} enriching={} crushing={} smelting={}",
-                  TAG, ok ? "OK  " : "FAIL", codecOk, roundTripOk, registrationOk, enrichOk, crushOk, smeltOk);
+            LOGGER.info("{} {} codec={} roundTrip={} registration={} enriching={} crushing={} smelting={} vanillaSmelt={}",
+                  TAG, ok ? "OK  " : "FAIL", codecOk, roundTripOk, registrationOk, enrichOk, crushOk, smeltOk, vanillaSmeltOk);
         } catch (Throwable t) {
             LOGGER.error("{} FAIL recipe test threw", TAG, t);
         }

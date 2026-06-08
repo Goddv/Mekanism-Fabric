@@ -49,8 +49,9 @@ public final class FabricRealMachines {
     static {
         for (String name : MACHINE_NAMES) {
             Supplier<RecipeType<ItemStackToItemStackRecipe>> recipeType = recipeTypeFor(name);
+            boolean vanillaSmelting = name.equals("energized_smelter");
             MACHINES.add(BLOCKS.register(name, properties -> new MachineBlock(properties
-                  .strength(3.5F, 9.0F).requiresCorrectToolForDrops().sound(SoundType.METAL), recipeType)));
+                  .strength(3.5F, 9.0F).requiresCorrectToolForDrops().sound(SoundType.METAL), recipeType, vanillaSmelting)));
         }
     }
 

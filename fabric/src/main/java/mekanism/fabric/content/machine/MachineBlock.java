@@ -35,10 +35,12 @@ public class MachineBlock extends Block implements EntityBlock {
 
     @Nullable
     private final Supplier<RecipeType<ItemStackToItemStackRecipe>> recipeType;
+    private final boolean vanillaSmelting;
 
-    public MachineBlock(Properties properties, @Nullable Supplier<RecipeType<ItemStackToItemStackRecipe>> recipeType) {
+    public MachineBlock(Properties properties, @Nullable Supplier<RecipeType<ItemStackToItemStackRecipe>> recipeType, boolean vanillaSmelting) {
         super(properties);
         this.recipeType = recipeType;
+        this.vanillaSmelting = vanillaSmelting;
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(ACTIVE, false));
     }
 
@@ -50,6 +52,14 @@ public class MachineBlock extends Block implements EntityBlock {
     @Nullable
     public RecipeType<ItemStackToItemStackRecipe> recipeType() {
         return recipeType == null ? null : recipeType.get();
+    }
+
+    /**
+     * Whether this machine also processes vanilla furnace ({@code minecraft:smelting}) recipes — true for the energized
+     * smelter, mirroring Mekanism's wrapping of vanilla smelting recipes.
+     */
+    public boolean acceptsVanillaSmelting() {
+        return vanillaSmelting;
     }
 
     @Override
