@@ -16,6 +16,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -37,7 +38,9 @@ import org.jetbrains.annotations.Nullable;
  * {@code active} state (so the real active model/glow shows while working). Exposes energy + item capabilities. The
  * processing here is a demo loop; the real recipe system replaces it when the machine framework is migrated to :common.
  */
-public class MachineBlockEntity extends BlockEntity implements Container, IMekanismStrictEnergyHandler, MenuProvider {
+public class MachineBlockEntity extends BlockEntity implements WorldlyContainer, IMekanismStrictEnergyHandler, MenuProvider {
+
+    private static final int[] ALL_SLOTS = {0, 1};
 
     private static final long ENERGY_PER_TICK = 100L;
     /** Ticks to complete one operation (drives the progress arrow animation). */
@@ -207,6 +210,27 @@ public class MachineBlockEntity extends BlockEntity implements Container, IMekan
     @Override
     public void clearContent() {
         items.clear();
+    }
+
+    // ---- sided item I/O (hoppers / pipes): insert only into the input slot (0), extract only from the output (1) ----
+    @Override
+    public int[] getSlotsForFace(Direction side) {
+        return ALL_SLOTS;
+    }
+
+    @Override
+    public boolean canPlaceItem(int slot, ItemStack stack) {
+        return slot == 0;
+    }
+
+    @Override
+    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, @Nullable Direction direction) {
+        return slot == 0;
+    }
+
+    @Override
+    public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction direction) {
+        return slot == 1;
     }
 
     // ---- menu (GUI) ----

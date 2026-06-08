@@ -12,6 +12,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -28,7 +29,9 @@ import org.jetbrains.annotations.Nullable;
  * Mekanism machines be powered in-game — the real Mekanism generators (separate {@code mekanismgenerators} module) come
  * later.
  */
-public class GeneratorBlockEntity extends BlockEntity implements Container, IMekanismStrictEnergyHandler {
+public class GeneratorBlockEntity extends BlockEntity implements WorldlyContainer, IMekanismStrictEnergyHandler {
+
+    private static final int[] FUEL_SLOT = {0};
 
     private static final long CAPACITY = 400_000L;
     private static final long GENERATION_PER_TICK = 200L;
@@ -147,7 +150,23 @@ public class GeneratorBlockEntity extends BlockEntity implements Container, IMek
 
     @Override
     public boolean canPlaceItem(int slot, ItemStack stack) {
-        return level != null && level.fuelValues().isFuel(stack);
+        return slot == 0 && level != null && level.fuelValues().isFuel(stack);
+    }
+
+    // ---- sided item I/O (hoppers / pipes): accept fuel into slot 0; never let automation extract fuel ----
+    @Override
+    public int[] getSlotsForFace(Direction side) {
+        return FUEL_SLOT;
+    }
+
+    @Override
+    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction direction) {
+        return canPlaceItem(slot, stack);
+    }
+
+    @Override
+    public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction direction) {
+        return false;
     }
 
     @Override

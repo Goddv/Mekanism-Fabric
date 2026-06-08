@@ -11,6 +11,7 @@ import mekanism.fabric.content.FabricBringUpContent;
 import mekanism.fabric.content.FabricDataComponentDemo;
 import mekanism.fabric.content.FabricDataComponentSelfTest;
 import mekanism.fabric.content.energy.FabricEnergyBlockDemo;
+import mekanism.fabric.content.machine.FabricAutoIoSelfTest;
 import mekanism.fabric.content.machine.FabricMachineMenus;
 import mekanism.fabric.content.machine.FabricRealMachines;
 import mekanism.fabric.content.power.FabricPowerInfrastructure;
@@ -78,6 +79,7 @@ public final class MekanismFabric implements ModInitializer {
             FabricFluidSelfTest.run();
             FabricRecipeSelfTest.run();
             FabricPowerSelfTest.run();
+            FabricAutoIoSelfTest.run();
             FabricRegistrationSelfTest.run();
         }
     }
