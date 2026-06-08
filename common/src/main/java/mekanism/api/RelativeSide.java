@@ -6,7 +6,7 @@ import java.util.Locale;
 import java.util.function.IntFunction;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.text.APILang;
-import mekanism.api.text.IHasEnumNameTranslationKey;
+import mekanism.api.text.IHasTranslationKey;
 import mekanism.api.text.ILangEntry;
 import net.minecraft.core.Direction;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -15,7 +15,7 @@ import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 
 @NothingNullByDefault
-public enum RelativeSide implements IHasEnumNameTranslationKey, StringRepresentable {
+public enum RelativeSide implements IHasTranslationKey, StringRepresentable {
     FRONT(APILang.FRONT),
     LEFT(APILang.LEFT),
     RIGHT(APILang.RIGHT),
