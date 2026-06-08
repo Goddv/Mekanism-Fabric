@@ -12,21 +12,21 @@ import mekanism.common.block.attribute.AttributeUpgradeSupport;
 import mekanism.common.inventory.container.MekanismContainer;
 import mekanism.common.registration.impl.ContainerTypeRegistryObject;
 import mekanism.common.registration.impl.SoundEventRegistryObject;
-import mekanism.common.registration.impl.TileEntityTypeRegistryObject;
+import mekanism.common.registration.ITileHolder;
 import mekanism.common.tile.base.TileEntityUpdateable;
 import net.minecraft.sounds.SoundEvent;
 import org.jetbrains.annotations.Nullable;
 
 public class BlockTypeTile<TILE extends TileEntityUpdateable> extends BlockType {
 
-    private final Supplier<TileEntityTypeRegistryObject<TILE>> tileEntityRegistrar;
+    private final Supplier<ITileHolder<TILE>> tileEntityRegistrar;
 
-    public BlockTypeTile(Supplier<TileEntityTypeRegistryObject<TILE>> tileEntityRegistrar, ILangEntry description) {
+    public BlockTypeTile(Supplier<ITileHolder<TILE>> tileEntityRegistrar, ILangEntry description) {
         super(description);
         this.tileEntityRegistrar = tileEntityRegistrar;
     }
 
-    public TileEntityTypeRegistryObject<TILE> getTileType() {
+    public ITileHolder<TILE> getTileType() {
         return tileEntityRegistrar.get();
     }
 
@@ -38,7 +38,7 @@ public class BlockTypeTile<TILE extends TileEntityUpdateable> extends BlockType 
         }
 
         public static <TILE extends TileEntityUpdateable> BlockTileBuilder<BlockTypeTile<TILE>, TILE, ?> createBlock(
-              Supplier<TileEntityTypeRegistryObject<TILE>> tileEntityRegistrar, ILangEntry description) {
+              Supplier<ITileHolder<TILE>> tileEntityRegistrar, ILangEntry description) {
             return new BlockTileBuilder<>(new BlockTypeTile<>(tileEntityRegistrar, description));
         }
 

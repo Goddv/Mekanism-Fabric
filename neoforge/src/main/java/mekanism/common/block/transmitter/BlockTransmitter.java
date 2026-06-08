@@ -10,7 +10,7 @@ import mekanism.common.block.interfaces.IHasTileEntity;
 import mekanism.common.block.prefab.BlockBase.BlockBaseModel;
 import mekanism.common.content.blocktype.BlockTypeTile;
 import mekanism.common.lib.transmitter.ConnectionType;
-import mekanism.common.registration.impl.TileEntityTypeRegistryObject;
+import mekanism.common.registration.ITileHolder;
 import mekanism.common.registries.MekanismItems;
 import mekanism.common.tile.interfaces.ITileRadioactive;
 import mekanism.common.tile.transmitter.TileEntityTransmitter;
@@ -64,7 +64,7 @@ public abstract class BlockTransmitter<TILE extends TileEntityTransmitter> exten
     }
 
     @Override
-    public final TileEntityTypeRegistryObject<TILE> getTileType() {
+    public final ITileHolder<TILE> getTileType() {
         return type.getTileType();
     }
 

@@ -1,6 +1,6 @@
 package mekanism.common.block.interfaces;
 
-import mekanism.common.registration.impl.TileEntityTypeRegistryObject;
+import mekanism.common.registration.ITileHolder;
 import mekanism.common.util.WorldUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 public interface IHasTileEntity<TILE extends BlockEntity> extends EntityBlock {
 
-    TileEntityTypeRegistryObject<? extends TILE> getTileType();
+    ITileHolder<? extends TILE> getTileType();
 
     @Override
     default TILE newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
@@ -24,7 +24,7 @@ public interface IHasTileEntity<TILE extends BlockEntity> extends EntityBlock {
     @Nullable
     @Override
     default <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> blockEntityType) {
-        TileEntityTypeRegistryObject<? extends TILE> type = getTileType();
+        ITileHolder<? extends TILE> type = getTileType();
         return blockEntityType == type.get() ? (BlockEntityTicker<T>) type.getTicker(level.isClientSide()) : null;
     }
 

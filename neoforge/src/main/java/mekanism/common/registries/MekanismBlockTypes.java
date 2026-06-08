@@ -47,7 +47,7 @@ import mekanism.common.content.blocktype.Machine.MachineBuilder;
 import mekanism.common.lib.math.Pos3D;
 import mekanism.common.lib.transmitter.TransmissionType;
 import mekanism.common.registration.impl.BlockRegistryObject;
-import mekanism.common.registration.impl.TileEntityTypeRegistryObject;
+import mekanism.common.registration.ITileHolder;
 import mekanism.common.tier.BinTier;
 import mekanism.common.tier.CableTier;
 import mekanism.common.tier.ChemicalTankTier;
@@ -880,7 +880,7 @@ public class MekanismBlockTypes {
         return FACTORIES.get(tier, type);
     }
 
-    private static <TILE extends TileEntityInductionCell> BlockTypeTile<TILE> createInductionCell(InductionCellTier tier, Supplier<TileEntityTypeRegistryObject<TILE>> tile) {
+    private static <TILE extends TileEntityInductionCell> BlockTypeTile<TILE> createInductionCell(InductionCellTier tier, Supplier<ITileHolder<TILE>> tile) {
         return BlockTileBuilder.createBlock(tile, MekanismLang.DESCRIPTION_INDUCTION_CELL)
               .withEnergyConfig(tier::getMaxEnergy)
               .with(new AttributeTier<>(tier))
@@ -888,14 +888,14 @@ public class MekanismBlockTypes {
               .build();
     }
 
-    private static <TILE extends TileEntityInductionProvider> BlockTypeTile<TILE> createInductionProvider(InductionProviderTier tier, Supplier<TileEntityTypeRegistryObject<TILE>> tile) {
+    private static <TILE extends TileEntityInductionProvider> BlockTypeTile<TILE> createInductionProvider(InductionProviderTier tier, Supplier<ITileHolder<TILE>> tile) {
         return BlockTileBuilder.createBlock(tile, MekanismLang.DESCRIPTION_INDUCTION_PROVIDER)
               .with(new AttributeTier<>(tier))
               .internalMultiblock()
               .build();
     }
 
-    private static <TILE extends TileEntityBin> Machine<TILE> createBin(BinTier tier, Supplier<TileEntityTypeRegistryObject<TILE>> tile, Supplier<BlockRegistryObject<?, ?>> upgradeBlock) {
+    private static <TILE extends TileEntityBin> Machine<TILE> createBin(BinTier tier, Supplier<ITileHolder<TILE>> tile, Supplier<BlockRegistryObject<?, ?>> upgradeBlock) {
         return MachineBuilder.createMachine(tile, MekanismLang.DESCRIPTION_BIN)
               .with(new AttributeTier<>(tier), new AttributeUpgradeable(upgradeBlock))
               .without(AttributeParticleFX.class, AttributeSecurity.class, AttributeUpgradeSupport.class, AttributeRedstone.class)
@@ -903,7 +903,7 @@ public class MekanismBlockTypes {
               .build();
     }
 
-    private static <TILE extends TileEntityEnergyCube> Machine<TILE> createEnergyCube(EnergyCubeTier tier, Supplier<TileEntityTypeRegistryObject<TILE>> tile, Supplier<BlockRegistryObject<?, ?>> upgradeBlock) {
+    private static <TILE extends TileEntityEnergyCube> Machine<TILE> createEnergyCube(EnergyCubeTier tier, Supplier<ITileHolder<TILE>> tile, Supplier<BlockRegistryObject<?, ?>> upgradeBlock) {
         return MachineBuilder.createMachine(tile, MekanismLang.DESCRIPTION_ENERGY_CUBE)
               .withGui(() -> MekanismContainerTypes.ENERGY_CUBE)
               .withEnergyConfig(tier::getMaxEnergy)
@@ -914,7 +914,7 @@ public class MekanismBlockTypes {
               .build();
     }
 
-    private static <TILE extends TileEntityFluidTank> Machine<TILE> createFluidTank(FluidTankTier tier, Supplier<TileEntityTypeRegistryObject<TILE>> tile, Supplier<BlockRegistryObject<?, ?>> upgradeBlock) {
+    private static <TILE extends TileEntityFluidTank> Machine<TILE> createFluidTank(FluidTankTier tier, Supplier<ITileHolder<TILE>> tile, Supplier<BlockRegistryObject<?, ?>> upgradeBlock) {
         return MachineBuilder.createMachine(tile, MekanismLang.DESCRIPTION_FLUID_TANK)
               .withGui(() -> MekanismContainerTypes.FLUID_TANK)
               .withCustomShape(BlockShapes.FLUID_TANK)
@@ -924,7 +924,7 @@ public class MekanismBlockTypes {
               .build();
     }
 
-    private static <TILE extends TileEntityChemicalTank> Machine<TILE> createChemicalTank(ChemicalTankTier tier, Supplier<TileEntityTypeRegistryObject<TILE>> tile, Supplier<BlockRegistryObject<?, ?>> upgradeBlock) {
+    private static <TILE extends TileEntityChemicalTank> Machine<TILE> createChemicalTank(ChemicalTankTier tier, Supplier<ITileHolder<TILE>> tile, Supplier<BlockRegistryObject<?, ?>> upgradeBlock) {
         return MachineBuilder.createMachine(tile, MekanismLang.DESCRIPTION_CHEMICAL_TANK)
               .withGui(() -> MekanismContainerTypes.CHEMICAL_TANK)
               .withCustomShape(BlockShapes.CHEMICAL_TANK)
@@ -935,27 +935,27 @@ public class MekanismBlockTypes {
               .build();
     }
 
-    private static BlockTypeTile<TileEntityUniversalCable> createCable(CableTier tier, Supplier<TileEntityTypeRegistryObject<TileEntityUniversalCable>> tile) {
+    private static BlockTypeTile<TileEntityUniversalCable> createCable(CableTier tier, Supplier<ITileHolder<TileEntityUniversalCable>> tile) {
         return createTransmitter(tier, tile, MekanismLang.DESCRIPTION_CABLE);
     }
 
-    private static BlockTypeTile<TileEntityMechanicalPipe> createPipe(PipeTier tier, Supplier<TileEntityTypeRegistryObject<TileEntityMechanicalPipe>> tile) {
+    private static BlockTypeTile<TileEntityMechanicalPipe> createPipe(PipeTier tier, Supplier<ITileHolder<TileEntityMechanicalPipe>> tile) {
         return createTransmitter(tier, tile, MekanismLang.DESCRIPTION_PIPE);
     }
 
-    private static BlockTypeTile<TileEntityPressurizedTube> createTube(TubeTier tier, Supplier<TileEntityTypeRegistryObject<TileEntityPressurizedTube>> tile) {
+    private static BlockTypeTile<TileEntityPressurizedTube> createTube(TubeTier tier, Supplier<ITileHolder<TileEntityPressurizedTube>> tile) {
         return createTransmitter(tier, tile, MekanismLang.DESCRIPTION_TUBE);
     }
 
-    private static BlockTypeTile<TileEntityLogisticalTransporter> createTransporter(TransporterTier tier, Supplier<TileEntityTypeRegistryObject<TileEntityLogisticalTransporter>> tile) {
+    private static BlockTypeTile<TileEntityLogisticalTransporter> createTransporter(TransporterTier tier, Supplier<ITileHolder<TileEntityLogisticalTransporter>> tile) {
         return createTransmitter(tier, tile, MekanismLang.DESCRIPTION_TRANSPORTER);
     }
 
-    private static BlockTypeTile<TileEntityThermodynamicConductor> createConductor(ConductorTier tier, Supplier<TileEntityTypeRegistryObject<TileEntityThermodynamicConductor>> tile) {
+    private static BlockTypeTile<TileEntityThermodynamicConductor> createConductor(ConductorTier tier, Supplier<ITileHolder<TileEntityThermodynamicConductor>> tile) {
         return createTransmitter(tier, tile, MekanismLang.DESCRIPTION_CONDUCTOR);
     }
 
-    private static <TILE extends TileEntityTransmitter> BlockTypeTile<TILE> createTransmitter(ITier tier, Supplier<TileEntityTypeRegistryObject<TILE>> tile, ILangEntry description) {
+    private static <TILE extends TileEntityTransmitter> BlockTypeTile<TILE> createTransmitter(ITier tier, Supplier<ITileHolder<TILE>> tile, ILangEntry description) {
         return BlockTileBuilder.createBlock(tile, description)
               .with(new AttributeTier<>(tier))
               .build();

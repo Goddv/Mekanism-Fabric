@@ -10,7 +10,7 @@ import mekanism.common.block.interfaces.IHasTileEntity;
 import mekanism.common.block.states.IStateFluidLoggable;
 import mekanism.common.config.MekanismConfig;
 import mekanism.common.content.blocktype.BlockTypeTile;
-import mekanism.common.registration.impl.TileEntityTypeRegistryObject;
+import mekanism.common.registration.ITileHolder;
 import mekanism.common.tile.base.TileEntityMekanism;
 import mekanism.common.util.WorldUtils;
 import net.minecraft.core.BlockPos;
@@ -43,7 +43,7 @@ public class BlockTile<TILE extends TileEntityMekanism, TYPE extends BlockTypeTi
     }
 
     @Override
-    public TileEntityTypeRegistryObject<TILE> getTileType() {
+    public ITileHolder<TILE> getTileType() {
         return type.getTileType();
     }
 

@@ -2,6 +2,7 @@ package mekanism.common.registration.impl;
 
 import java.util.List;
 import java.util.function.BooleanSupplier;
+import mekanism.common.registration.ITileHolder;
 import mekanism.common.registration.MekanismDeferredHolder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -13,7 +14,8 @@ import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import org.jetbrains.annotations.ApiStatus.Internal;
 import org.jetbrains.annotations.Nullable;
 
-public class TileEntityTypeRegistryObject<BE extends BlockEntity> extends MekanismDeferredHolder<BlockEntityType<?>, BlockEntityType<BE>> {
+public class TileEntityTypeRegistryObject<BE extends BlockEntity> extends MekanismDeferredHolder<BlockEntityType<?>, BlockEntityType<BE>>
+      implements ITileHolder<BE> {
 
     @Nullable
     private List<CapabilityData<BE, ?, ?>> capabilityProviders;

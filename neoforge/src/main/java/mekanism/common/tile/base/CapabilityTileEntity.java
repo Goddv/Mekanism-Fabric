@@ -11,7 +11,7 @@ import mekanism.common.capabilities.Capabilities;
 import mekanism.common.capabilities.CapabilityCache;
 import mekanism.common.capabilities.resolver.ICapabilityResolver;
 import mekanism.common.capabilities.resolver.manager.ICapabilityHandlerManager;
-import mekanism.common.registration.impl.TileEntityTypeRegistryObject;
+import mekanism.common.registration.ITileHolder;
 import mekanism.common.tile.component.TileComponentConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -55,7 +55,7 @@ public abstract class CapabilityTileEntity extends TileEntityUpdateable {
 
     private final CapabilityCache capabilityCache = new CapabilityCache();
 
-    public CapabilityTileEntity(TileEntityTypeRegistryObject<?> type, BlockPos pos, BlockState state) {
+    public CapabilityTileEntity(ITileHolder<?> type, BlockPos pos, BlockState state) {
         super(type.get(), pos, state);
     }
 

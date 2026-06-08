@@ -16,7 +16,7 @@ import mekanism.common.content.blocktype.Machine.FactoryMachine;
 import mekanism.common.inventory.container.MekanismContainer;
 import mekanism.common.lib.math.Pos3D;
 import mekanism.common.registration.impl.ContainerTypeRegistryObject;
-import mekanism.common.registration.impl.TileEntityTypeRegistryObject;
+import mekanism.common.registration.ITileHolder;
 import mekanism.common.registries.MekanismBlocks;
 import mekanism.common.registries.MekanismContainerTypes;
 import mekanism.common.tier.FactoryTier;
@@ -28,7 +28,7 @@ public class Factory<TILE extends TileEntityFactory<?>> extends FactoryMachine<T
 
     private final FactoryMachine<?> origMachine;
 
-    public Factory(Supplier<TileEntityTypeRegistryObject<TILE>> tileEntityRegistrar, Supplier<ContainerTypeRegistryObject<? extends MekanismContainer>> containerRegistrar,
+    public Factory(Supplier<ITileHolder<TILE>> tileEntityRegistrar, Supplier<ContainerTypeRegistryObject<? extends MekanismContainer>> containerRegistrar,
           FactoryMachine<?> origMachine, FactoryTier tier) {
         super(tileEntityRegistrar, MekanismLang.DESCRIPTION_FACTORY, origMachine.getFactoryType());
         this.origMachine = origMachine;
@@ -57,7 +57,7 @@ public class Factory<TILE extends TileEntityFactory<?>> extends FactoryMachine<T
         public static <TILE extends TileEntityFactory<?>> FactoryBuilder<Factory<TILE>, TILE, ?> createFactory(Supplier<?> tileEntityRegistrar, FactoryType type,
               FactoryTier tier) {
             // this is dirty but unfortunately necessary for things to play right
-            FactoryBuilder<Factory<TILE>, TILE, ?> builder = new FactoryBuilder<>(new Factory<>((Supplier<TileEntityTypeRegistryObject<TILE>>) tileEntityRegistrar,
+            FactoryBuilder<Factory<TILE>, TILE, ?> builder = new FactoryBuilder<>(new Factory<>((Supplier<ITileHolder<TILE>>) tileEntityRegistrar,
                   () -> MekanismContainerTypes.FACTORY, type.getBaseMachine(), tier));
             //Note, we can't just return the builder here as then it gets all confused about object types, so we just
             // assign the value here, and then return the builder itself as it is the same object
