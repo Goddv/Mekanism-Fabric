@@ -38,7 +38,6 @@ import mekanism.common.attachments.FilterAware;
 import mekanism.common.attachments.containers.ContainerType;
 import mekanism.common.attachments.containers.chemical.AttachedChemicals;
 import mekanism.common.attachments.containers.energy.AttachedEnergy;
-import mekanism.common.attachments.containers.fluid.AttachedFluids;
 import mekanism.common.attachments.containers.heat.AttachedHeat;
 import mekanism.common.attachments.containers.heat.HeatCapacitorData;
 import mekanism.common.attachments.containers.item.AttachedItems;
@@ -142,7 +141,6 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.redstone.Redstone;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -1279,28 +1277,9 @@ public abstract class TileEntityMekanism extends CapabilityTileEntity implements
         return fluidHandlerManager != null ? fluidHandlerManager.getContainers(side) : Collections.emptyList();
     }
 
-    public void applyFluidTanks(DataComponentGetter input, List<IExtendedFluidTank> tanks, AttachedFluids attachedFluids) {
-        List<FluidStack> stacks = attachedFluids.containers();
-        int size = stacks.size();
-        if (size == tanks.size()) {
-            for (int i = 0; i < size; i++) {
-                tanks.get(i).setStackUnchecked(stacks.get(i).copy());
-            }
-        }
-    }
-
-    @Nullable
-    public AttachedFluids collectFluidTanks(DataComponentMap.Builder builder, List<IExtendedFluidTank> tanks) {
-        boolean hasNonEmpty = false;
-        List<FluidStack> stacks = new ArrayList<>(tanks.size());
-        for (IExtendedFluidTank tank : tanks) {
-            stacks.add(tank.getFluid().copy());
-            if (!tank.isEmpty()) {
-                hasNonEmpty = true;
-            }
-        }
-        return hasNonEmpty ? new AttachedFluids(stacks) : null;
-    }
+    //applyFluidTanks/collectFluidTanks (NeoForge FluidStack/AttachedFluids data-component helpers) live on the NeoForge
+    //CapabilityTileEntity superclass; ContainerType's TileEntityMekanism::applyFluidTanks/collectFluidTanks method-refs
+    //still resolve via inheritance. (Fluid stays loader-coupled until IExtendedFluidTank ports over IFluidStack.)
     //End methods IMekanismFluidHandler
 
     //Methods for implementing IMekanismStrictEnergyHandler

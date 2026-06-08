@@ -9,10 +9,12 @@ import java.util.function.BiFunction;
 import mekanism.api.chemical.IChemicalHandler;
 import mekanism.api.chemical.ISidedChemicalHandler;
 import mekanism.api.energy.ISidedStrictEnergyHandler;
+import mekanism.api.fluid.IExtendedFluidTank;
 import mekanism.api.fluid.ISidedFluidHandler;
 import mekanism.api.heat.IHeatHandler;
 import mekanism.api.heat.ISidedHeatHandler;
 import mekanism.api.inventory.ISidedItemHandler;
+import mekanism.common.attachments.containers.fluid.AttachedFluids;
 import mekanism.common.block.attribute.Attribute;
 import mekanism.common.block.attribute.AttributeHasBounding;
 import mekanism.common.capabilities.Capabilities;
@@ -33,11 +35,14 @@ import mekanism.common.registration.ITileHolder;
 import mekanism.common.tile.component.TileComponentConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
 import net.neoforged.neoforge.capabilities.ICapabilityProvider;
+import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
@@ -137,6 +142,32 @@ public abstract class CapabilityTileEntity extends TileEntityUpdateable {
             heatHandlerManager = null;
         }
         addCapabilityResolvers(managers);
+    }
+
+    //Fluid data-component (de)serialization helpers. Kept on the NeoForge layer because they touch NeoForge FluidStack /
+    //AttachedFluids; referenced as method-refs (TileEntityMekanism::applyFluidTanks/collectFluidTanks) which still resolve
+    //via the subclass. Item/chemical/energy/heat counterparts stay on the loader-neutral tile (they use :common types).
+    public void applyFluidTanks(DataComponentGetter input, List<IExtendedFluidTank> tanks, AttachedFluids attachedFluids) {
+        List<FluidStack> stacks = attachedFluids.containers();
+        int size = stacks.size();
+        if (size == tanks.size()) {
+            for (int i = 0; i < size; i++) {
+                tanks.get(i).setStackUnchecked(stacks.get(i).copy());
+            }
+        }
+    }
+
+    @Nullable
+    public AttachedFluids collectFluidTanks(DataComponentMap.Builder builder, List<IExtendedFluidTank> tanks) {
+        boolean hasNonEmpty = false;
+        List<FluidStack> stacks = new ArrayList<>(tanks.size());
+        for (IExtendedFluidTank tank : tanks) {
+            stacks.add(tank.getFluid().copy());
+            if (!tank.isEmpty()) {
+                hasNonEmpty = true;
+            }
+        }
+        return hasNonEmpty ? new AttachedFluids(stacks) : null;
     }
 
     /**
