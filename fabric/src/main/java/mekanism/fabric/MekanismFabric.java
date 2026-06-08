@@ -13,6 +13,7 @@ import mekanism.fabric.content.machine.FabricRealMachines;
 import mekanism.fabric.energy.FabricEnergySelfTest;
 import mekanism.fabric.heat.FabricHeatSelfTest;
 import mekanism.fabric.registration.FabricRegistrationSelfTest;
+import mekanism.fabric.text.FabricTextFoundationSelfTest;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import org.slf4j.Logger;
@@ -56,6 +57,7 @@ public final class MekanismFabric implements ModInitializer {
             FabricEnergySelfTest.run();
             FabricHeatSelfTest.run();
             FabricDataComponentSelfTest.run();
+            FabricTextFoundationSelfTest.run();
             FabricRegistrationSelfTest.run();
         }
     }
