@@ -5,6 +5,8 @@ import mekanism.common.registries.MekanismGameEvents;
 import mekanism.common.registries.MekanismParticleTypes;
 import mekanism.common.registries.MekanismSounds;
 import mekanism.fabric.content.FabricBringUpContent;
+import mekanism.fabric.content.FabricDataComponentDemo;
+import mekanism.fabric.content.FabricDataComponentSelfTest;
 import mekanism.fabric.content.energy.FabricEnergyBlockDemo;
 import mekanism.fabric.content.machine.FabricMachineMenus;
 import mekanism.fabric.content.machine.FabricRealMachines;
@@ -46,10 +48,14 @@ public final class MekanismFabric implements ModInitializer {
         // Transitional: the machine container-menu (GUI) type — opened from the machine block's use handler;
         // the client screen is registered in MekanismFabricClient.
         FabricMachineMenus.init();
+        // Transitional: leaf DataComponentTypes via the :common DataComponentDeferredRegister framework, proving the
+        // DataComponent registration shape on Fabric (the real MekanismDataComponents reuses this framework).
+        FabricDataComponentDemo.init();
         // Dev-only bring-up validation; skipped in production.
         if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
             FabricEnergySelfTest.run();
             FabricHeatSelfTest.run();
+            FabricDataComponentSelfTest.run();
             FabricRegistrationSelfTest.run();
         }
     }
