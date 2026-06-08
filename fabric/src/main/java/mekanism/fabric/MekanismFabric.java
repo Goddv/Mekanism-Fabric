@@ -13,6 +13,8 @@ import mekanism.fabric.content.FabricDataComponentSelfTest;
 import mekanism.fabric.content.energy.FabricEnergyBlockDemo;
 import mekanism.fabric.content.machine.FabricMachineMenus;
 import mekanism.fabric.content.machine.FabricRealMachines;
+import mekanism.fabric.content.power.FabricPowerInfrastructure;
+import mekanism.fabric.content.power.FabricPowerSelfTest;
 import mekanism.fabric.energy.FabricEnergySelfTest;
 import mekanism.fabric.heat.FabricHeatSelfTest;
 import mekanism.fabric.recipe.FabricRecipeSelfTest;
@@ -60,6 +62,9 @@ public final class MekanismFabric implements ModInitializer {
         // Transitional: the enriching RecipeType + RecipeSerializer (shared :common recipe classes), so machines run
         // REAL datapack recipes instead of the demo move-item loop.
         MekanismRecipeTypesRegistrar.init();
+        // Transitional: a fuel-burning generator + energy cables so machines can be powered in-game (generator ->
+        // cable -> machine) for manual testing, until the real generators + transmitter network are ported.
+        FabricPowerInfrastructure.init();
         // Transitional: leaf DataComponentTypes via the :common DataComponentDeferredRegister framework, proving the
         // DataComponent registration shape on Fabric (the real MekanismDataComponents reuses this framework).
         FabricDataComponentDemo.init();
@@ -72,6 +77,7 @@ public final class MekanismFabric implements ModInitializer {
             FabricChemicalSelfTest.run();
             FabricFluidSelfTest.run();
             FabricRecipeSelfTest.run();
+            FabricPowerSelfTest.run();
             FabricRegistrationSelfTest.run();
         }
     }
