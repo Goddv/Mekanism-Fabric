@@ -10,19 +10,17 @@ import mekanism.api.IContentsListener;
 import mekanism.api.SerializationConstants;
 import mekanism.api.SerializerHelper;
 import mekanism.api.annotations.NothingNullByDefault;
-import mekanism.api.functions.ConstantPredicates;
+import mekanism.api.functions.ConstantPredicatesBase;
 import mekanism.api.inventory.IInventorySlot;
 import mekanism.common.inventory.container.slot.ContainerSlotType;
-import mekanism.common.inventory.container.slot.InventoryContainerSlot;
+import mekanism.common.inventory.container.slot.IContainerSlotCreator;
 import mekanism.common.inventory.container.slot.SlotOverlay;
 import mekanism.common.inventory.warning.ISupportsWarning;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.transfer.access.ItemAccess;
-import net.neoforged.neoforge.transfer.item.ItemResource;
-import net.neoforged.neoforge.transfer.item.ItemStackResourceHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,10 +28,8 @@ import org.jetbrains.annotations.Nullable;
 @NothingNullByDefault
 public class BasicInventorySlot implements IInventorySlot {
 
-    private final ItemAccess itemAccess = ItemAccess.forHandlerIndex(new ResourceHandlerWrapper(), 0);
-
     public static BasicInventorySlot at(@Nullable IContentsListener listener, int x, int y) {
-        return at(ConstantPredicates.alwaysTrue(), listener, x, y);
+        return at(ConstantPredicatesBase.alwaysTrue(), listener, x, y);
     }
 
     public static BasicInventorySlot at(Predicate<@NotNull ItemStack> validator, @Nullable IContentsListener listener, int x, int y) {
@@ -45,18 +41,18 @@ public class BasicInventorySlot implements IInventorySlot {
         if (limit < 1) {
             throw new IllegalArgumentException("Slots with a custom limit must allow at least one item");
         }
-        return new BasicInventorySlot(limit, ConstantPredicates.alwaysTrueBi(), ConstantPredicates.alwaysTrueBi(), validator, listener, x, y);
+        return new BasicInventorySlot(limit, ConstantPredicatesBase.alwaysTrueBi(), ConstantPredicatesBase.alwaysTrueBi(), validator, listener, x, y);
     }
 
     public static BasicInventorySlot at(Predicate<@NotNull ItemStack> canExtract, Predicate<@NotNull ItemStack> canInsert, @Nullable IContentsListener listener, int x, int y) {
         Objects.requireNonNull(canExtract, "Extraction validity check cannot be null");
         Objects.requireNonNull(canInsert, "Insertion validity check cannot be null");
-        return new BasicInventorySlot(canExtract, canInsert, ConstantPredicates.alwaysTrue(), listener, x, y);
+        return new BasicInventorySlot(canExtract, canInsert, ConstantPredicatesBase.alwaysTrue(), listener, x, y);
     }
 
     public static BasicInventorySlot at(BiPredicate<@NotNull ItemStack, @NotNull AutomationType> canExtract,
           BiPredicate<@NotNull ItemStack, @NotNull AutomationType> canInsert, @Nullable IContentsListener listener, int x, int y) {
-        return at(canExtract, canInsert, ConstantPredicates.alwaysTrue(), listener, x, y);
+        return at(canExtract, canInsert, ConstantPredicatesBase.alwaysTrue(), listener, x, y);
     }
 
     public static BasicInventorySlot at(BiPredicate<@NotNull ItemStack, @NotNull AutomationType> canExtract,
@@ -228,8 +224,10 @@ public class BasicInventorySlot implements IInventorySlot {
 
     @Nullable
     @Override
-    public InventoryContainerSlot createContainerSlot() {
-        return new InventoryContainerSlot(this, x, y, slotType, slotOverlay, warningAdder, this::setStackUnchecked);
+    public Slot createContainerSlot() {
+        //The real InventoryContainerSlot pulls in the container-window + config subsystems, so route creation through a
+        //per-loader service (NeoForge builds the real one; Fabric defers until the GUI/container framework is ported).
+        return IContainerSlotCreator.INSTANCE.create(this, x, y, slotType, slotOverlay, warningAdder, this::setStackUnchecked);
     }
 
     public void setSlotType(ContainerSlotType slotType) {
@@ -334,32 +332,4 @@ public class BasicInventorySlot implements IInventorySlot {
         setStackUnchecked(input.read(SerializationConstants.ITEM, SerializerHelper.OVERSIZED_ITEM_CODEC).orElse(ItemStack.EMPTY));
     }
 
-    //TODO - 26.1: review this
-    public ItemAccess itemAccess() {
-        return itemAccess;
-    }
-
-    private class ResourceHandlerWrapper extends ItemStackResourceHandler {
-
-        @Override
-        protected ItemStack getStack() {
-            return BasicInventorySlot.this.getStack().copy();
-        }
-
-        @Override
-        public long getAmountAsLong(int index) {
-            Objects.checkIndex(index, 1);
-            return BasicInventorySlot.this.getStack().count();
-        }
-
-        @Override
-        protected void setStack(ItemStack stack) {
-            BasicInventorySlot.this.setStackUnchecked(stack);
-        }
-
-        @Override
-        protected boolean isValid(ItemResource resource) {
-            return isItemValid(resource.toStack());
-        }
-    }
 }

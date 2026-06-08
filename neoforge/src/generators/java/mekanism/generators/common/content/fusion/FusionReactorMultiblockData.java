@@ -17,6 +17,7 @@ import mekanism.api.heat.HeatAPI.HeatTransfer;
 import mekanism.api.heat.IHeatCapacitor;
 import mekanism.api.math.MathUtils;
 import mekanism.common.capabilities.Capabilities;
+import mekanism.common.inventory.slot.SlotResourceHandler;
 import mekanism.common.capabilities.chemical.VariableCapacityChemicalTank;
 import mekanism.common.capabilities.energy.VariableCapacityEnergyContainer;
 import mekanism.common.capabilities.fluid.VariableCapacityFluidTank;
@@ -205,7 +206,7 @@ public class FusionReactorMultiblockData extends MultiblockData {
         if (!reactorSlot.isEmpty()) {
             ItemStack hohlraum = reactorSlot.getStack();
             if (hohlraum.getItem() instanceof ItemHohlraum) {
-                IChemicalHandler gasHandlerItem = Capabilities.CHEMICAL.getCapability(reactorSlot.itemAccess());
+                IChemicalHandler gasHandlerItem = Capabilities.CHEMICAL.getCapability(SlotResourceHandler.itemAccess(reactorSlot));
                 if (gasHandlerItem != null && gasHandlerItem.getChemicalTanks() > 0) {
                     //Validate something didn't go terribly wrong, and we actually do have the tank we expect to have
                     return gasHandlerItem.getChemicalInTank(0).amount() == gasHandlerItem.getChemicalTankCapacity(0);
@@ -300,7 +301,7 @@ public class FusionReactorMultiblockData extends MultiblockData {
 
     private void vaporiseHohlraum() {
         ItemStack hohlraum = reactorSlot.getStack();
-        IChemicalHandler gasHandlerItem = Capabilities.CHEMICAL.getCapability(reactorSlot.itemAccess());
+        IChemicalHandler gasHandlerItem = Capabilities.CHEMICAL.getCapability(SlotResourceHandler.itemAccess(reactorSlot));
         if (gasHandlerItem != null && gasHandlerItem.getChemicalTanks() > 0) {
             fuelTank.insert(gasHandlerItem.getChemicalInTank(0), Action.EXECUTE, AutomationType.INTERNAL);
             lastPlasmaTemperature = getPlasmaTemp();
