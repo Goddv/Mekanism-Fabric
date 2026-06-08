@@ -7,7 +7,7 @@ import java.util.function.IntFunction;
 import mekanism.api.IIncrementalEnum;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.text.EnumColor;
-import mekanism.api.text.IHasEnumNameTranslationKey;
+import mekanism.api.text.IHasTranslationKey;
 import mekanism.api.text.ILangEntry;
 import mekanism.common.MekanismLang;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -18,7 +18,7 @@ import net.minecraft.util.StringRepresentable;
 //TODO: Re-evaluate how we do colors, given for say energy as the transmission type it makes more sense to have input be green?
 // Maybe we should make some way to specify a color override?
 @NothingNullByDefault
-public enum DataType implements IIncrementalEnum<DataType>, IHasEnumNameTranslationKey, StringRepresentable {
+public enum DataType implements IIncrementalEnum<DataType>, IHasTranslationKey, StringRepresentable {
     NONE(MekanismLang.SIDE_DATA_NONE, EnumColor.GRAY),
     INPUT(MekanismLang.SIDE_DATA_INPUT, EnumColor.DARK_RED),
     INPUT_1(MekanismLang.SIDE_DATA_INPUT_1, EnumColor.DARK_RED),
