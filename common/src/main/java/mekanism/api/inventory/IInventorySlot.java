@@ -10,9 +10,6 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueOutput;
 import mekanism.api.IValueIOSerializable;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 
 //TODO - 26.1: make this implement/supply ItemAccess/ResourceHandler? It currently has a pseudo ItemHandler impl, so might be better to move everything away from single-slot context?
@@ -54,7 +51,7 @@ public interface IInventorySlot extends IValueIOSerializable, IContentsListener 
      * <p>
      * Inserts an {@link ItemStack} into this {@link IInventorySlot} and return the remainder. The {@link ItemStack} <em>should not</em> be modified in this function!
      * </p>
-     * Note: This behaviour is subtly different from {@link IFluidHandler#fill(FluidStack, IFluidHandler.FluidAction)}
+     * Note: This behaviour is subtly different from a fluid handler's fill, which returns the amount accepted rather than the remainder.
      *
      * @param stack          {@link ItemStack} to insert. This must not be modified by the slot.
      * @param action         The action to perform, either {@link Action#EXECUTE} or {@link Action#SIMULATE}
@@ -142,7 +139,7 @@ public interface IInventorySlot extends IValueIOSerializable, IContentsListener 
     }
 
     /**
-     * Retrieves the maximum stack size allowed to exist in this {@link IInventorySlot}. Unlike {@link IItemHandler#getSlotLimit(int)} this takes a stack that it can use
+     * Retrieves the maximum stack size allowed to exist in this {@link IInventorySlot}. Unlike a vanilla item handler's per-slot limit, this takes a stack that it can use
      * for checking max stack size, if this {@link IInventorySlot} wants to respect the maximum stack size.
      *
      * @param stack The stack we want to know the limit for in case this {@link IInventorySlot} wants to obey the stack limit. If the empty stack is passed, then it
