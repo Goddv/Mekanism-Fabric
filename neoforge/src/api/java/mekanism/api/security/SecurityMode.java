@@ -8,7 +8,7 @@ import mekanism.api.IIncrementalEnum;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.text.APILang;
 import mekanism.api.text.EnumColor;
-import mekanism.api.text.IHasTextComponent.IHasEnumNameTextComponent;
+import mekanism.api.text.IHasEnumNameTextComponent;
 import mekanism.api.text.ILangEntry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;

@@ -25,7 +25,7 @@ import mekanism.api.event.MekanismTeleportEvent;
 import mekanism.api.math.MathUtils;
 import mekanism.api.security.SecurityMode;
 import mekanism.api.text.EnumColor;
-import mekanism.api.text.IHasTextComponent.IHasEnumNameTextComponent;
+import mekanism.api.text.IHasEnumNameTextComponent;
 import mekanism.api.text.ILangEntry;
 import mekanism.common.MekanismLang;
 import mekanism.common.advancements.MekanismCriteriaTriggers;

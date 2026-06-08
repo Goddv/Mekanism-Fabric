@@ -10,7 +10,7 @@ import java.util.BitSet;
 import java.util.Locale;
 import java.util.function.IntFunction;
 import mekanism.api.annotations.NothingNullByDefault;
-import mekanism.api.text.IHasTextComponent.IHasEnumNameTextComponent;
+import mekanism.api.text.IHasEnumNameTextComponent;
 import mekanism.api.text.ILangEntry;
 import mekanism.common.MekanismLang;
 import mekanism.common.tags.MekanismTags;

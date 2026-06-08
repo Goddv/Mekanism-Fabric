@@ -11,7 +11,7 @@ import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.chemical.ChemicalStack;
 import mekanism.api.chemical.IChemicalHandler;
 import mekanism.api.text.EnumColor;
-import mekanism.api.text.IHasTextComponent.IHasEnumNameTextComponent;
+import mekanism.api.text.IHasEnumNameTextComponent;
 import mekanism.api.text.ILangEntry;
 import mekanism.common.MekanismLang;
 import mekanism.common.capabilities.Capabilities;

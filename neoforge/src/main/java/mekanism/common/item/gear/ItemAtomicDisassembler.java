@@ -25,7 +25,7 @@ import mekanism.api.radial.IRadialDataHelper;
 import mekanism.api.radial.RadialData;
 import mekanism.api.radial.mode.IRadialMode;
 import mekanism.api.text.EnumColor;
-import mekanism.api.text.IHasTextComponent.IHasEnumNameTextComponent;
+import mekanism.api.text.IHasEnumNameTextComponent;
 import mekanism.api.text.ILangEntry;
 import mekanism.common.Mekanism;
 import mekanism.common.MekanismLang;

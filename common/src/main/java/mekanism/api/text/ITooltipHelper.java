@@ -1,6 +1,6 @@
 package mekanism.api.text;
 
-import mekanism.api.MekanismAPI;
+import mekanism.api.MekanismAPIBase;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.ApiStatus.Internal;
 
@@ -11,7 +11,7 @@ import org.jetbrains.annotations.ApiStatus.Internal;
 @Internal
 public interface ITooltipHelper {
 
-    ITooltipHelper INSTANCE = MekanismAPI.getService(ITooltipHelper.class);
+    ITooltipHelper INSTANCE = MekanismAPIBase.getService(ITooltipHelper.class);
 
     Component getEnergyPerMBDisplayShort(long energy);
 

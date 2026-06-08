@@ -1,6 +1,7 @@
 package mekanism.common.registration;
 
 import dev.architectury.registry.registries.RegistrySupplier;
+import mekanism.api.text.IHasTextComponent;
 import mekanism.api.text.IHasTranslationKey;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
@@ -15,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
  * {@link MekanismRegistryObject} base. The NeoForge-only attachment/capability wiring stays in the per-loader register;
  * once the registration base pair is unified, this and the NeoForge {@code ItemRegistryObject} collapse together.
  */
-public class MekanismItemHolder<ITEM extends Item> extends MekanismRegistryObject<ITEM> implements ItemLike, IHasTranslationKey {
+public class MekanismItemHolder<ITEM extends Item> extends MekanismRegistryObject<ITEM> implements ItemLike, IHasTranslationKey, IHasTextComponent {
 
     public MekanismItemHolder(RegistrySupplier<ITEM> holder) {
         super(holder);
@@ -41,6 +42,7 @@ public class MekanismItemHolder<ITEM extends Item> extends MekanismRegistryObjec
         return value().getDescriptionId();
     }
 
+    @Override
     public Component getTextComponent() {
         return value().getName(asStack());
     }

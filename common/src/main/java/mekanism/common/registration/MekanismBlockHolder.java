@@ -1,6 +1,7 @@
 package mekanism.common.registration;
 
 import dev.architectury.registry.registries.RegistrySupplier;
+import mekanism.api.text.IHasTextComponent;
 import mekanism.api.text.IHasTranslationKey;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
@@ -16,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
  * reachable via {@link #item()}/{@link #asItem()}.
  */
 public class MekanismBlockHolder<BLOCK extends Block, ITEM extends Item> extends MekanismRegistryObject<BLOCK>
-      implements ItemLike, IHasTranslationKey {
+      implements ItemLike, IHasTranslationKey, IHasTextComponent {
 
     private final MekanismItemHolder<ITEM> item;
 
@@ -50,6 +51,7 @@ public class MekanismBlockHolder<BLOCK extends Block, ITEM extends Item> extends
         return value().getDescriptionId();
     }
 
+    @Override
     public Component getTextComponent() {
         return value().getName();
     }
