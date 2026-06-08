@@ -58,9 +58,20 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
         }
         // Up-arrow (8x10) + progress bar (25x9) between input and output (GuiUpArrow 68,38 / GuiProgress BAR 86,38).
         graphics.blit(RenderPipelines.GUI_TEXTURED, UP_ARROW, x + 68, y + 38, 0.0F, 0.0F, 8, 10, 8, 10);
-        // bar.png is 25x27 (3 stacked frames: empty/filled/warning). Draw only the top (empty) 25x9 frame.
+        // bar.png is 25x27 (3 stacked frames: empty=v0 / filled=v9 / warning=v18). Draw the empty frame, then overlay
+        // the filled frame clipped to the current recipe progress (left-to-right fill).
         graphics.blit(RenderPipelines.GUI_TEXTURED, PROGRESS_BAR, x + 86, y + 38, 0.0F, 0.0F, 25, 9, 25, 27);
-        // Energy-bar frame on the right (GuiVerticalPowerBar 164,16; frame = bar/base sprite, texWidth+2 x texHeight+2).
+        int progressWidth = Math.round(25 * (this.menu.getProgressPermille() / 1000.0F));
+        if (progressWidth > 0) {
+            graphics.blit(RenderPipelines.GUI_TEXTURED, PROGRESS_BAR, x + 86, y + 38, 0.0F, 9.0F, progressWidth, 9, 25, 27);
+        }
+        // Energy-bar frame on the right (GuiVerticalPowerBar 164,16; frame = bar/base sprite, texWidth+2 x texHeight+2),
+        // with a bottom-up energy fill inside the 1px border (inner area 4x52 at +1,+1).
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BAR_FRAME, x + 164, y + 16, 6, 54);
+        int fillHeight = Math.round(52 * (this.menu.getEnergyPermille() / 1000.0F));
+        if (fillHeight > 0) {
+            int fillTop = y + 16 + 1 + (52 - fillHeight);
+            graphics.fillGradient(x + 164 + 1, fillTop, x + 164 + 5, y + 16 + 1 + 52, 0xFF5BE05B, 0xFF2FA82F);
+        }
     }
 }

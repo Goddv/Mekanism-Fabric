@@ -86,7 +86,8 @@ public final class FabricRecipeSelfTest {
         if (level.getBlockEntity(pos) instanceof MachineBlockEntity machine) {
             machine.setItem(0, new ItemStack(input, 8));
             machine.getEnergyContainers(null).getFirst().insert(1_000_000L, Action.EXECUTE, AutomationType.INTERNAL);
-            for (int i = 0; i < 5 && machine.getItem(1).isEmpty(); i++) {
+            // One operation takes MAX_PROGRESS ticks; run a little past that to complete one.
+            for (int i = 0; i < MachineBlockEntity.MAX_PROGRESS + 5 && machine.getItem(1).isEmpty(); i++) {
                 machine.serverTick(level.getBlockState(pos));
             }
             ItemStack out = machine.getItem(1);

@@ -64,8 +64,10 @@ public final class FabricPowerSelfTest {
                 LOGGER.info("{} diag: cableCapFound={} machineCapFound={} afterGenTick genEnergy={} cableEnergy={}",
                       TAG, cableCapFound, machineCapFound, generator.getEnergy(0), cable.getEnergy(0));
 
+                // Each operation takes MachineBlockEntity.MAX_PROGRESS ticks; run long enough to complete several so the
+                // full generator -> cable -> machine power chain is exercised end to end.
                 long cablePeakEnergy = 0L;
-                for (int i = 0; i < 60; i++) {
+                for (int i = 0; i < 200; i++) {
                     generator.serverTick(level);
                     // Measure the cable's buffer right after the generator pushes, before the cable forwards it onward.
                     cablePeakEnergy = Math.max(cablePeakEnergy, cable.getEnergy(0));

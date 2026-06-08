@@ -38,11 +38,14 @@ import org.jetbrains.annotations.Nullable;
  */
 public class MachineBlockEntity extends BlockEntity implements Container, IMekanismStrictEnergyHandler, MenuProvider {
 
-    private static final long ENERGY_PER_OP = 200L;
+    private static final long ENERGY_PER_TICK = 100L;
+    /** Ticks to complete one operation (drives the progress arrow animation). */
+    public static final int MAX_PROGRESS = 60;
 
     private final BasicEnergyContainer energy = BasicEnergyContainer.create(2_000_000L, this);
     private final List<IEnergyContainer> energyContainers = List.of(energy);
     private final NonNullList<ItemStack> items = NonNullList.withSize(2, ItemStack.EMPTY);
+    private int progress;
 
     public MachineBlockEntity(BlockPos pos, BlockState state) {
         super(FabricRealMachines.BE_TYPE.get(), pos, state);
@@ -56,9 +59,11 @@ public class MachineBlockEntity extends BlockEntity implements Container, IMekan
     }
 
     /**
-     * Looks up a real {@link ItemStackToItemStackRecipe} (enriching) for the input slot via the vanilla recipe manager
-     * and, if it matches and there is room + energy, consumes the recipe's input count + energy and produces its output.
-     * Returns whether processing happened this tick (drives the ACTIVE blockstate).
+     * Looks up the {@link ItemStackToItemStackRecipe} for this machine's recipe type + input slot via the vanilla recipe
+     * manager. If it matches and there is room + energy, advances progress (consuming energy each tick) and, on
+     * completion ({@link #MAX_PROGRESS} ticks), consumes the recipe's input count and produces its output. Returns
+     * whether processing happened this tick (drives the ACTIVE blockstate). Progress resets if the recipe/input/room is
+     * lost, but is held when merely out of energy.
      */
     private boolean process() {
         if (!(level instanceof ServerLevel serverLevel)) {
@@ -70,33 +75,56 @@ public class MachineBlockEntity extends BlockEntity implements Container, IMekan
         }
         ItemStack input = items.get(0);
         if (input.isEmpty()) {
-            return false;
+            return resetProgress();
         }
         SingleRecipeInput recipeInput = new SingleRecipeInput(input);
         Optional<RecipeHolder<ItemStackToItemStackRecipe>> match =
               serverLevel.recipeAccess().getRecipeFor(recipeType, recipeInput, serverLevel);
         if (match.isEmpty()) {
-            return false;
+            return resetProgress();
         }
         ItemStackToItemStackRecipe recipe = match.get().value();
         int needed = recipe.getInput().count();
         ItemStack result = recipe.getOutput(input).create();
         if (input.getCount() < needed || !canFit(result)) {
-            return false;
+            return resetProgress();
         }
-        if (energy.extract(ENERGY_PER_OP, Action.SIMULATE, AutomationType.INTERNAL) < ENERGY_PER_OP) {
-            return false;
+        if (energy.extract(ENERGY_PER_TICK, Action.SIMULATE, AutomationType.INTERNAL) < ENERGY_PER_TICK) {
+            return false; // out of energy: hold progress, but not active
         }
-        energy.extract(ENERGY_PER_OP, Action.EXECUTE, AutomationType.INTERNAL);
-        ItemStack output = items.get(1);
-        if (output.isEmpty()) {
-            items.set(1, result);
-        } else {
-            output.grow(result.getCount());
+        energy.extract(ENERGY_PER_TICK, Action.EXECUTE, AutomationType.INTERNAL);
+        progress++;
+        if (progress >= MAX_PROGRESS) {
+            progress = 0;
+            ItemStack output = items.get(1);
+            if (output.isEmpty()) {
+                items.set(1, result);
+            } else {
+                output.grow(result.getCount());
+            }
+            input.shrink(needed);
         }
-        input.shrink(needed);
         setChanged();
         return true;
+    }
+
+    private boolean resetProgress() {
+        if (progress != 0) {
+            progress = 0;
+            setChanged();
+        }
+        return false;
+    }
+
+    /** Energy fill as 0..1000 permille (for GUI sync; raw energy exceeds int range). */
+    public int getEnergyStoredPermille() {
+        long max = energy.getMaxEnergy();
+        return max <= 0L ? 0 : (int) (energy.getEnergy() * 1000L / max);
+    }
+
+    /** Recipe progress as 0..1000 permille (for the progress-arrow fill). */
+    public int getProgressPermille() {
+        return progress * 1000 / MAX_PROGRESS;
     }
 
     private boolean canFit(ItemStack result) {
@@ -182,6 +210,7 @@ public class MachineBlockEntity extends BlockEntity implements Container, IMekan
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
         energy.serialize(output);
+        output.putInt("progress", progress);
         ContainerHelper.saveAllItems(output, items);
     }
 
@@ -189,6 +218,7 @@ public class MachineBlockEntity extends BlockEntity implements Container, IMekan
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
         energy.deserialize(input);
+        progress = input.getInt("progress").orElse(0);
         ContainerHelper.loadAllItems(input, items);
     }
 }
