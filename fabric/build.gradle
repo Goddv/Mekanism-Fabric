@@ -6,6 +6,12 @@ architectury {
     fabric()
 }
 
+// Emit a clearly-named single jar (mekanism-fabric-<version>.jar) instead of the default subproject-name
+// 'fabric-<version>.jar', so the built mod is recognizable in a mods/ folder.
+base {
+    archivesName = 'mekanism-fabric'
+}
+
 loom {
     // The shared access widener (canonical home: this project's resources, so Fabric Loader finds it as the
     // mekanism mod's classTweaker in dev + jar, and named in fabric.mod.json). :common reads the same file for
