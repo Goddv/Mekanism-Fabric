@@ -57,31 +57,26 @@ public final class FabricPowerSelfTest {
                 generator.setItem(0, new ItemStack(Items.COAL, 4));
                 machine.setItem(0, new ItemStack(Items.DIRT, 16));
 
-                // Diagnostics: confirm the neighbour caps are findable + watch the first tick's energy movement.
-                boolean cableCapFound = mekanism.fabric.energy.MekanismFabricEnergy.getStrictEnergyHandler(level, cablePos, net.minecraft.core.Direction.WEST) != null;
-                boolean machineCapFound = mekanism.fabric.energy.MekanismFabricEnergy.getStrictEnergyHandler(level, machinePos, net.minecraft.core.Direction.WEST) != null;
-                generator.serverTick(level);
-                LOGGER.info("{} diag: cableCapFound={} machineCapFound={} afterGenTick genEnergy={} cableEnergy={}",
-                      TAG, cableCapFound, machineCapFound, generator.getEnergy(0), cable.getEnergy(0));
-
-                // Each operation takes MachineBlockEntity.MAX_PROGRESS ticks; run long enough to complete several so the
-                // full generator -> cable -> machine power chain is exercised end to end.
+                // Tick in REVERSE order (machine, then cable, then generator) each game tick to prove the pull-based
+                // model is tick-order-independent — the bug the old fixed-order push test masked. Energy must still flow
+                // generator -> cable -> machine over time. Run long enough to complete several operations.
                 long cablePeakEnergy = 0L;
+                long machinePeakEnergy = 0L;
                 for (int i = 0; i < 200; i++) {
-                    generator.serverTick(level);
-                    // Measure the cable's buffer right after the generator pushes, before the cable forwards it onward.
-                    cablePeakEnergy = Math.max(cablePeakEnergy, cable.getEnergy(0));
-                    cable.serverTick(level);
                     BlockState machineState = level.getBlockState(machinePos);
                     machine.serverTick(machineState);
+                    cable.serverTick(level);
+                    generator.serverTick(level);
+                    cablePeakEnergy = Math.max(cablePeakEnergy, cable.getEnergy(0));
+                    machinePeakEnergy = Math.max(machinePeakEnergy, machine.getEnergy(0));
                 }
 
                 ItemStack output = machine.getItem(1);
                 diamonds = output.is(Items.DIAMOND) ? output.getCount() : 0;
                 fuelBurned = generator.getItem(0).getCount() < 4 || generator.isBurning();
-                processOk = diamonds >= 1 && fuelBurned && cablePeakEnergy > 0L;
-                LOGGER.info("{} {} chain: diamonds={} fuelLeft={} generatorBurning={} cablePeakEnergy={}",
-                      TAG, processOk ? "OK  " : "FAIL", diamonds, generator.getItem(0).getCount(), generator.isBurning(), cablePeakEnergy);
+                processOk = diamonds >= 1 && fuelBurned && cablePeakEnergy > 0L && machinePeakEnergy > 0L;
+                LOGGER.info("{} {} chain (reverse-tick): diamonds={} fuelLeft={} generatorBurning={} cablePeak={} machinePeak={}",
+                      TAG, processOk ? "OK  " : "FAIL", diamonds, generator.getItem(0).getCount(), generator.isBurning(), cablePeakEnergy, machinePeakEnergy);
             } else {
                 LOGGER.info("{} FAIL blocks/block-entities not placed", TAG);
             }

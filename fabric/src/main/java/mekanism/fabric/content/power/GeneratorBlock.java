@@ -28,14 +28,16 @@ public class GeneratorBlock extends Block implements EntityBlock {
 
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof GeneratorBlockEntity generator
-              && level.fuelValues().isFuel(stack) && generator.addFuel(stack)) {
+        if (!level.fuelValues().isFuel(stack)) {
+            return InteractionResult.PASS;
+        }
+        // Return SUCCESS on both sides (consistent interaction); only the server mutates the fuel slot.
+        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof GeneratorBlockEntity generator && generator.addFuel(stack)) {
             if (!player.getAbilities().instabuild) {
                 stack.shrink(1);
             }
-            return InteractionResult.SUCCESS;
         }
-        return InteractionResult.PASS;
+        return InteractionResult.SUCCESS;
     }
 
     @Nullable

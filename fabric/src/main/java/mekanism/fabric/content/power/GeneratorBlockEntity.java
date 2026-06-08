@@ -35,7 +35,6 @@ public class GeneratorBlockEntity extends BlockEntity implements WorldlyContaine
 
     private static final long CAPACITY = 400_000L;
     private static final long GENERATION_PER_TICK = 200L;
-    private static final long PUSH_RATE = 5_000L;
 
     private final BasicEnergyContainer energy = BasicEnergyContainer.create(CAPACITY, this);
     private final List<IEnergyContainer> energyContainers = List.of(energy);
@@ -64,7 +63,8 @@ public class GeneratorBlockEntity extends BlockEntity implements WorldlyContaine
             energy.insert(GENERATION_PER_TICK, Action.EXECUTE, AutomationType.INTERNAL);
             setChanged();
         }
-        EnergyPushHelper.pushToNeighbors(level, worldPosition, energy, PUSH_RATE);
+        // The generator is a reservoir: it accumulates energy and adjacent cables/machines pull from it (pull-based
+        // model). It rejects external insertion (see insertEnergy below) so energy never flows back into it.
     }
 
     /** Right-click insertion: adds one of the held fuel item to the fuel slot. Returns true if accepted. */

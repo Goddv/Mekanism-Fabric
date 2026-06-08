@@ -8,6 +8,7 @@ import mekanism.api.energy.IEnergyContainer;
 import mekanism.api.energy.IMekanismStrictEnergyHandler;
 import mekanism.api.recipes.ItemStackToItemStackRecipe;
 import mekanism.common.capabilities.energy.BasicEnergyContainer;
+import mekanism.fabric.content.power.EnergyTransferHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -55,11 +56,29 @@ public class MachineBlockEntity extends BlockEntity implements WorldlyContainer,
         super(FabricRealMachines.BE_TYPE.get(), pos, state);
     }
 
+    private static final long ENERGY_PULL_RATE = 5_000L;
+
     public void serverTick(BlockState state) {
+        // Pull energy from adjacent cables/generators (pull-based model) before processing.
+        if (level instanceof ServerLevel serverLevel) {
+            EnergyTransferHelper.pull(serverLevel, worldPosition, energy, ENERGY_PULL_RATE, false);
+        }
         boolean canProcess = process();
         if (level != null && state.getValue(MachineBlock.ACTIVE) != canProcess) {
             level.setBlock(worldPosition, state.setValue(MachineBlock.ACTIVE, canProcess), Block.UPDATE_ALL);
         }
+    }
+
+    // A machine is a SINK: reject energy extraction via the capability so cables/pipes can't drain it (its own
+    // processing extracts internally on the container directly, bypassing these cap methods).
+    @Override
+    public long extractEnergy(int container, long amount, Action action) {
+        return 0L;
+    }
+
+    @Override
+    public long extractEnergy(long amount, Action action) {
+        return 0L;
     }
 
     /**

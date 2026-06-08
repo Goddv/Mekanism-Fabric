@@ -32,7 +32,9 @@ public class CableBlockEntity extends BlockEntity implements IMekanismStrictEner
     }
 
     public void serverTick(ServerLevel level) {
-        EnergyPushHelper.pushToNeighbors(level, worldPosition, energy, TRANSFER_RATE);
+        // Pull energy "downhill" from higher-energy neighbours (generators / fuller cables) into our buffer; machines
+        // then pull from us. Pulling only from higher neighbours keeps energy flowing one way without cable sloshing.
+        EnergyTransferHelper.pull(level, worldPosition, energy, TRANSFER_RATE, true);
     }
 
     @Override
