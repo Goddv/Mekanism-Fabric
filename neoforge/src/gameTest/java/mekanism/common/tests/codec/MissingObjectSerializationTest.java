@@ -3,6 +3,7 @@ package mekanism.common.tests.codec;
 
 import java.util.Optional;
 import mekanism.api.SerializerHelper;
+import mekanism.common.util.FluidCodecHelper;
 import mekanism.api.chemical.ChemicalStack;
 import mekanism.api.security.SecurityMode;
 import mekanism.common.attachments.FormulaAttachment;
@@ -43,7 +44,7 @@ public class MissingObjectSerializationTest {
     @EmptyTemplate
     @TestHolder(description = "Tests to make sure that the lenient optional fluid stack codec returns empty instead of throwing if used to deserialize an invalid stack.")
     public static void testLenientOptionalFluidStack(final MissingObjectTestHelper helper) {
-        helper.succeedIfInvalidFluidSerializationCycle(SerializerHelper.LENIENT_OPTIONAL_FLUID_CODEC, MissingObjectTestHelper::failureFluid, FluidStack::isEmpty);
+        helper.succeedIfInvalidFluidSerializationCycle(FluidCodecHelper.LENIENT_OPTIONAL_FLUID_CODEC, MissingObjectTestHelper::failureFluid, FluidStack::isEmpty);
     }
 
     @GameTest

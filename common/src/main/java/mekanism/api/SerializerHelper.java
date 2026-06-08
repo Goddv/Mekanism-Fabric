@@ -26,7 +26,6 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
 
 //TODO - 1.21: Update the wiki docs to fix the syntax
@@ -52,7 +51,7 @@ public class SerializerHelper {
         return Codec.LONG.flatXmap(checker, checker);
     });
 
-    private static final Consumer<String> ON_STACK_LOAD_ERROR = error -> MekanismAPI.logger.error("Tried to load invalid item: '{}'", error);
+    private static final Consumer<String> ON_STACK_LOAD_ERROR = error -> MekanismAPIBase.logger.error("Tried to load invalid item: '{}'", error);
     /**
      * Helper codec to deserialize an optional item stack and fall back to the empty stack if an error is encountered in deserialization.
      *
@@ -80,14 +79,6 @@ public class SerializerHelper {
     public static final Codec<ItemStack> LENIENT_OPTIONAL_SINGLE_ITEM_CODEC = OPTIONAL_SINGLE_ITEM_CODEC
           .promotePartial(ON_STACK_LOAD_ERROR)
           .orElse(ItemStack.EMPTY);
-    /**
-     * Helper codec to deserialize an optional fluid stack and fall back to the empty stack if an error is encountered in deserialization.
-     *
-     * @since 10.7.9
-     */
-    public static final Codec<FluidStack> LENIENT_OPTIONAL_FLUID_CODEC = FluidStack.OPTIONAL_CODEC
-          .promotePartial(error -> MekanismAPI.logger.error("Tried to load invalid fluid: '{}'", error))
-          .orElse(FluidStack.EMPTY);
 
     /**
      * Custom codec to allow serializing an item stack without the upper bounds.
