@@ -16,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
 public class TileEntityCardboardBox extends TileEntityUpdateable {
 
     public TileEntityCardboardBox(BlockPos pos, BlockState state) {
-        super(MekanismTileEntityTypes.CARDBOARD_BOX, pos, state);
+        super(MekanismTileEntityTypes.CARDBOARD_BOX.get(), pos, state);
     }
 
     @Override

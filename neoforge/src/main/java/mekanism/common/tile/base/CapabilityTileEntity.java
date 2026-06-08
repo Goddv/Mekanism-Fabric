@@ -56,7 +56,13 @@ public abstract class CapabilityTileEntity extends TileEntityUpdateable {
     private final CapabilityCache capabilityCache = new CapabilityCache();
 
     public CapabilityTileEntity(TileEntityTypeRegistryObject<?> type, BlockPos pos, BlockState state) {
-        super(type, pos, state);
+        super(type.get(), pos, state);
+    }
+
+    @Override
+    public void onDataPacket(@NotNull net.minecraft.network.Connection net, @NotNull net.minecraft.world.level.storage.ValueInput input) {
+        //Client-sync receive (NeoForge BlockEntity extension); moved here from TileEntityUpdateable so :common stays loader-neutral.
+        handleUpdateTag(input);
     }
 
     protected final void addCapabilityResolvers(List<ICapabilityHandlerManager<?>> capabilityHandlerManagers) {

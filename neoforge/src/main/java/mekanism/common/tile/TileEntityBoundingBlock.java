@@ -35,7 +35,7 @@ public class TileEntityBoundingBlock extends TileEntityUpdateable implements IUp
     private int currentRedstoneLevel;
 
     public TileEntityBoundingBlock(BlockPos pos, BlockState state) {
-        super(MekanismTileEntityTypes.BOUNDING_BLOCK, pos, state);
+        super(MekanismTileEntityTypes.BOUNDING_BLOCK.get(), pos, state);
     }
 
     public void setMainLocation(@Nullable BlockPos pos, boolean sync) {

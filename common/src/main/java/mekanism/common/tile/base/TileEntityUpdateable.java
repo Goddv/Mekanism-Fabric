@@ -3,13 +3,14 @@ package mekanism.common.tile.base;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import mekanism.common.Mekanism;
-import mekanism.common.network.PacketUtils;
-import mekanism.common.network.to_client.PacketUpdateTile;
-import mekanism.common.registration.impl.TileEntityTypeRegistryObject;
+import mekanism.api.MekanismAPIBase;
 import mekanism.common.tile.interfaces.ITileWrapper;
-import mekanism.common.util.WorldUtils;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentType;
@@ -42,8 +43,8 @@ public abstract class TileEntityUpdateable extends BlockEntity implements ITileW
     private final long worldPositionLong;
     private PathElement cachedProblemPath = null;
 
-    public TileEntityUpdateable(TileEntityTypeRegistryObject<?> type, BlockPos pos, BlockState state) {
-        super(type.get(), pos, state);
+    public TileEntityUpdateable(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
         this.worldPositionLong = pos.asLong();
     }
 
@@ -114,8 +115,12 @@ public abstract class TileEntityUpdateable extends BlockEntity implements ITileW
         if (level != null) {
             long time = level.getGameTime();
             if (lastSave != time) {
-                //Only mark the chunk as dirty at most once per tick
-                WorldUtils.markChunkDirty(level, worldPosition);
+                //Only mark the chunk as dirty at most once per tick (inlined from WorldUtils.markChunkDirty)
+                ChunkAccess chunk = level.getChunk(SectionPos.blockToSectionCoord(worldPosition.getX()),
+                      SectionPos.blockToSectionCoord(worldPosition.getZ()), ChunkStatus.FULL, false);
+                if (chunk != null) {
+                    chunk.markUnsaved();
+                }
                 lastSave = time;
             }
             if (updateComparator && !isRemote()) {
@@ -134,7 +139,7 @@ public abstract class TileEntityUpdateable extends BlockEntity implements ITileW
     @Override
     public final CompoundTag getUpdateTag(@NotNull HolderLookup.Provider provider) {
         //TODO - 26.1: Is this fine for how to create the problem reporter?
-        try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(problemPath(), Mekanism.logger)) {
+        try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(problemPath(), MekanismAPIBase.logger)) {
             TagValueOutput output = TagValueOutput.createWithContext(reporter, provider);
             writeUpdatedTag(output);
             return output.buildResult();
@@ -158,21 +163,15 @@ public abstract class TileEntityUpdateable extends BlockEntity implements ITileW
     @NotNull//TODO - 26.1: Re-evaluate this method and if we want to just inline this into the one caller
     public final CompoundTag getReducedUpdateTag(@NotNull HolderLookup.Provider provider) {
         //TODO - 26.1: Is this fine for how to create the problem reporter?
-        try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(problemPath(), Mekanism.logger)) {
+        try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(problemPath(), MekanismAPIBase.logger)) {
             TagValueOutput output = TagValueOutput.createWithContext(reporter, provider);
             writeReducedUpdatedTag(output);
             return output.buildResult();
         }
     }
 
-    @Override
-    public void onDataPacket(@NotNull Connection net, @NotNull ValueInput input) {
-        //Handle the update tag when we are on the client
-        //TODO - 26.1: Do we need to check if it is empty in any way?
-        /*CompoundTag tag = pkt.getTag();
-        if (!tag.isEmpty()) {*/
-        handleUpdateTag(input);
-    }
+    //Note: onDataPacket(Connection, ValueInput) + handleUpdateTag(ValueInput) are NeoForge BlockEntity extensions (the
+    //client-sync receive path) -> kept in the NeoForge CapabilityTileEntity subclass so :common stays loader-neutral.
 
     public void sendUpdatePacket() {
         sendUpdatePacket(this);
@@ -180,20 +179,22 @@ public abstract class TileEntityUpdateable extends BlockEntity implements ITileW
 
     public void sendUpdatePacket(BlockEntity tracking) {
         if (isRemote()) {
-            Mekanism.logger.warn("Update packet call requested from client side", new IllegalStateException());
+            MekanismAPIBase.logger.warn("Update packet call requested from client side", new IllegalStateException());
         } else if (isRemoved()) {
-            Mekanism.logger.warn("Update packet call requested for removed tile", new IllegalStateException());
-        } else if (PacketUtils.hasPlayersTracking((ServerLevel) tracking.getLevel(), tracking.getBlockPos())) {
-            //Note: We use our own update packet/channel to avoid chunk trashing and minecraft attempting to rerender
-            // the entire chunk when most often we are just updating a TileEntityRenderer, so the chunk itself
-            // does not need to and should not be redrawn
-            PacketUtils.sendToAllTracking(new PacketUpdateTile(this), tracking);
+            MekanismAPIBase.logger.warn("Update packet call requested for removed tile", new IllegalStateException());
+        } else {
+            //Loader-specific: NeoForge sends Mekanism's own PacketUpdateTile to tracking players; Fabric defers.
+            ITileSyncService.INSTANCE.sendUpdatePacket(this, tracking);
         }
     }
 
     protected void updateModelData() {
-        requestModelDataUpdate();
-        WorldUtils.updateBlock(getLevel(), getBlockPos(), getBlockState());
+        //requestModelDataUpdate() is a NeoForge BlockEntity extension (model data) -> routed per-loader (Fabric no-op).
+        ITileSyncService.INSTANCE.requestModelDataUpdate(this);
+        Level world = getLevel();
+        if (world != null && world.isLoaded(getBlockPos())) {
+            world.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_ALL);
+        }
     }
 
     @Override
