@@ -35,6 +35,28 @@ CONCLUSION: there is no small isolated leaf to hoist first. The first CODE stage
 **item-handler abstraction + attribute system + tile core** together (they form one connected graph), then
 the capability seam. Plan a fresh multi-session push for this; do not start it piecemeal.
 
+### Stage 1 progress + verified slot-impl cascade
+DONE (committed): `IInventorySlot` (javadoc-only NeoForge refs stripped), `IHolder` + the 4 container-holder
+contracts (`I{Energy,Inventory,Heat,Chemical}*Holder`) → all in `:common`, all 3 modules green.
+DEFERRED leaf: `IFluidTankHolder` (needs `IExtendedFluidTank` hoisted first).
+
+`BasicInventorySlot` is the slot-impl CASCADE POINT — verified couplings to resolve together next session:
+- **itemAccess machinery** (NeoForge `ItemAccess`/`ItemStackResourceHandler`/`ItemResource`): field (line 33)
+  + `itemAccess()` getter (338) + `ResourceHandlerWrapper` inner class (342-363). `setStackUnchecked(ItemStack)`
+  is PUBLIC, so extractable. ONLY external caller is `FusionReactorMultiblockData` (generators, deferred
+  multiblock) — 2 calls. PLAN: remove the machinery from the `:common` BasicInventorySlot; add a NeoForge-side
+  `SlotResourceHandler extends ItemStackResourceHandler` (wraps an `IInventorySlot` via getStack/setStackUnchecked/
+  isItemValid) + a helper `itemAccess(BasicInventorySlot)`; repoint the 2 fusion-reactor calls.
+- **container-slot types** (mutual dep): `BasicInventorySlot.createContainerSlot()` returns
+  `InventoryContainerSlot` (extends vanilla Slot, implements `IInsertableSlot`; deps: `ContainerSlotType`[11L],
+  `SlotOverlay`[40L], `ISupportsWarning`[14L], `BasicInventorySlot`). All NeoForge-clean but pull in
+  `IInsertableSlot` (container subsystem). Hoist these 5 together with BasicInventorySlot.
+- **slot subclasses**: `InputInventorySlot`/`OutputInventorySlot` clean (only `ContainerSlotType`).
+  `EnergyInventorySlot` is NOT clean — pulls `EnergyCompatUtils` (NeoForge energy-item compat), `MekanismRecipeType`,
+  `ItemStackToEnergyRecipe`, `Mekanism` → DEFER until the energy-item-cap compat + recipe-cache land.
+So next session = BasicInventorySlot (minus itemAccess) + InventoryContainerSlot + ContainerSlotType + SlotOverlay
++ ISupportsWarning + IInsertableSlot + InputInventorySlot + OutputInventorySlot, as one coordinated commit.
+
 CONCRETE next-session first tasks (in order):
 1. Item-handler abstraction: `:common` `IMekanismItemHandler`/slot interfaces decoupled from NeoForge
    `IItemHandler`/`ItemResource`; per-loader impls (NeoForge `IItemHandler`, Fabric fabric-transfer
