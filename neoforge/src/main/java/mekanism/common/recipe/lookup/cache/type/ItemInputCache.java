@@ -23,7 +23,7 @@ public class ItemInputCache<RECIPE extends MekanismRecipe<?>> extends ComponentS
 
     @Override
     public boolean mapInputs(RECIPE recipe, ItemStackIngredient inputIngredient) {
-        return mapIngredient(recipe, inputIngredient.ingredient().ingredient());
+        return mapIngredient(recipe, inputIngredient.ingredient());
     }
 
     private boolean mapIngredient(RECIPE recipe, Ingredient input) {

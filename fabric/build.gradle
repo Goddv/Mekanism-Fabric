@@ -55,6 +55,12 @@ processResources {
     filesMatching('fabric.mod.json') {
         expand version: project.version
     }
+    // Drop ONLY the NeoForge-datagen generated DATA (recipes/loot/tags) — it references blocks/items not yet
+    // registered on Fabric and would spam "unknown item" errors. Fabric's OWN data/ (src/main/resources/data,
+    // e.g. ported recipes) is kept. Matched by the datagen source's absolute path, not a blanket data/** exclude.
+    exclude { details ->
+        details.relativePath.pathString.startsWith('data/') && details.file.absolutePath.contains('datagen')
+    }
 }
 
 // Pull in Mekanism's datagen-generated ASSETS (sounds.json, lang/en_us, models, blockstates, item models,
@@ -66,7 +72,6 @@ processResources {
 // generated resources via :common.
 sourceSets.main.resources {
     srcDir project(':neoforge').file('src/datagen/generated/mekanism')
-    exclude 'data/**'
 }
 
 tasks.named('jar', Jar) {

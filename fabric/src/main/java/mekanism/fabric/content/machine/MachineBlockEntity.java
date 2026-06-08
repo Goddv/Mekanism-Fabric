@@ -1,15 +1,19 @@
 package mekanism.fabric.content.machine;
 
 import java.util.List;
+import java.util.Optional;
 import mekanism.api.Action;
 import mekanism.api.AutomationType;
 import mekanism.api.energy.IEnergyContainer;
 import mekanism.api.energy.IMekanismStrictEnergyHandler;
+import mekanism.api.recipes.ItemStackToItemStackRecipe;
 import mekanism.common.capabilities.energy.BasicEnergyContainer;
+import mekanism.fabric.recipe.MekanismRecipeTypesRegistrar;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.MenuProvider;
@@ -17,6 +21,8 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -43,30 +49,59 @@ public class MachineBlockEntity extends BlockEntity implements Container, IMekan
     }
 
     public void serverTick(BlockState state) {
-        boolean canProcess = !items.get(0).isEmpty()
-              && energy.extract(ENERGY_PER_OP, Action.SIMULATE, AutomationType.INTERNAL) >= ENERGY_PER_OP
-              && canOutput();
-        if (canProcess) {
-            energy.extract(ENERGY_PER_OP, Action.EXECUTE, AutomationType.INTERNAL);
-            ItemStack input = items.get(0);
-            ItemStack output = items.get(1);
-            if (output.isEmpty()) {
-                items.set(1, input.copyWithCount(1));
-            } else {
-                output.grow(1);
-            }
-            input.shrink(1);
-            setChanged();
-        }
+        boolean canProcess = process();
         if (level != null && state.getValue(MachineBlock.ACTIVE) != canProcess) {
             level.setBlock(worldPosition, state.setValue(MachineBlock.ACTIVE, canProcess), Block.UPDATE_ALL);
         }
     }
 
-    private boolean canOutput() {
+    /**
+     * Looks up a real {@link ItemStackToItemStackRecipe} (enriching) for the input slot via the vanilla recipe manager
+     * and, if it matches and there is room + energy, consumes the recipe's input count + energy and produces its output.
+     * Returns whether processing happened this tick (drives the ACTIVE blockstate).
+     */
+    private boolean process() {
+        if (!(level instanceof ServerLevel serverLevel)) {
+            return false;
+        }
         ItemStack input = items.get(0);
+        if (input.isEmpty()) {
+            return false;
+        }
+        SingleRecipeInput recipeInput = new SingleRecipeInput(input);
+        Optional<RecipeHolder<ItemStackToItemStackRecipe>> match =
+              serverLevel.recipeAccess().getRecipeFor(MekanismRecipeTypesRegistrar.ENRICHING_TYPE.get(), recipeInput, serverLevel);
+        if (match.isEmpty()) {
+            return false;
+        }
+        ItemStackToItemStackRecipe recipe = match.get().value();
+        int needed = recipe.getInput().count();
+        ItemStack result = recipe.getOutput(input).create();
+        if (input.getCount() < needed || !canFit(result)) {
+            return false;
+        }
+        if (energy.extract(ENERGY_PER_OP, Action.SIMULATE, AutomationType.INTERNAL) < ENERGY_PER_OP) {
+            return false;
+        }
+        energy.extract(ENERGY_PER_OP, Action.EXECUTE, AutomationType.INTERNAL);
         ItemStack output = items.get(1);
-        return output.isEmpty() || (ItemStack.isSameItemSameComponents(output, input) && output.getCount() < output.getMaxStackSize());
+        if (output.isEmpty()) {
+            items.set(1, result);
+        } else {
+            output.grow(result.getCount());
+        }
+        input.shrink(needed);
+        setChanged();
+        return true;
+    }
+
+    private boolean canFit(ItemStack result) {
+        ItemStack output = items.get(1);
+        if (output.isEmpty()) {
+            return true;
+        }
+        return ItemStack.isSameItemSameComponents(output, result)
+              && output.getCount() + result.getCount() <= output.getMaxStackSize();
     }
 
     // ---- energy capability ----

@@ -226,7 +226,7 @@ public interface IItemStackIngredientCreator extends IIngredientCreator<Item, It
      */
     default ItemStackIngredient from(Ingredient ingredient, int amount) {
         Objects.requireNonNull(ingredient, "ItemStackIngredients cannot be created from a null ingredient.");
-        return from(new SizedIngredient(ingredient, amount));
+        return ItemStackIngredient.of(ingredient, amount);
     }
 
     /**
@@ -239,7 +239,8 @@ public interface IItemStackIngredientCreator extends IIngredientCreator<Item, It
      * @since 10.6.0
      */
     default ItemStackIngredient from(SizedIngredient ingredient) {
-        return ItemStackIngredient.of(ingredient);
+        Objects.requireNonNull(ingredient, "ItemStackIngredients cannot be created from a null ingredient.");
+        return ItemStackIngredient.of(ingredient.ingredient(), ingredient.count());
     }
 
     /**

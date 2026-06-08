@@ -22,7 +22,8 @@ public class ItemStackTemplateHelper {
                       Item.CODEC.fieldOf("id").forGetter(ItemStackTemplate::item),
                       DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(ItemStackTemplate::components)
                 )
-                .apply(i, ItemStackTemplate::new));
+                //Note: vanilla ItemStackTemplate has no (Holder<Item>, DataComponentPatch) ctor (NeoForge adds one); use the 3-arg with count=1
+                .apply(i, (item, components) -> new ItemStackTemplate(item, 1, components)));
     public static final Codec<ItemStackTemplate> NO_COUNT_CODEC = NO_COUNT_MAPCODEC.codec();
 
     //TODO - 26.1 These should probably be moved to ItemStackTemplate + NO_COUNT_CODEC ?

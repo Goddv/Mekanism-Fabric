@@ -56,7 +56,7 @@ public class CrTUtils {
      * Converts one of our item ingredients to a CrT item ingredient.
      */
     public static IIngredientWithAmount toCrT(ItemStackIngredient ingredient) {
-        return ExpandSizedIngredient.asIIngredientWithAmount(ingredient.ingredient());
+        return ExpandSizedIngredient.asIIngredientWithAmount(new net.neoforged.neoforge.common.crafting.SizedIngredient(ingredient.ingredient(), ingredient.count()));
     }
 
     /**

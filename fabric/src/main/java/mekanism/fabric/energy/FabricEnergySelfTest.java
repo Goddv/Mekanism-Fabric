@@ -148,7 +148,9 @@ public final class FabricEnergySelfTest {
             level.setBlock(pos, FabricRealMachines.enrichmentChamber().get().defaultBlockState(), 3);
             if (level.getBlockEntity(pos) instanceof MachineBlockEntity machine) {
                 machine.insertEnergy(2000L, Action.EXECUTE);
-                machine.setItem(0, new ItemStack(Items.COBBLESTONE, 5));
+                //Feed an item that matches a real enriching recipe (dirt -> diamond) — the machine now runs real recipes
+                //instead of the old demo copy loop, so it only processes valid inputs.
+                machine.setItem(0, new ItemStack(Items.DIRT, 5));
                 long energyBefore = machine.getEnergy(0);
                 for (int i = 0; i < 3; i++) {
                     machine.serverTick(level.getBlockState(pos));

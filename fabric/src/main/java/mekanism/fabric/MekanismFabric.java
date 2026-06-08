@@ -15,6 +15,8 @@ import mekanism.fabric.content.machine.FabricMachineMenus;
 import mekanism.fabric.content.machine.FabricRealMachines;
 import mekanism.fabric.energy.FabricEnergySelfTest;
 import mekanism.fabric.heat.FabricHeatSelfTest;
+import mekanism.fabric.recipe.FabricRecipeSelfTest;
+import mekanism.fabric.recipe.MekanismRecipeTypesRegistrar;
 import mekanism.fabric.registration.FabricRegistrationSelfTest;
 import mekanism.fabric.text.FabricTextFoundationSelfTest;
 import net.fabricmc.api.ModInitializer;
@@ -55,6 +57,9 @@ public final class MekanismFabric implements ModInitializer {
         // Transitional: the machine container-menu (GUI) type — opened from the machine block's use handler;
         // the client screen is registered in MekanismFabricClient.
         FabricMachineMenus.init();
+        // Transitional: the enriching RecipeType + RecipeSerializer (shared :common recipe classes), so machines run
+        // REAL datapack recipes instead of the demo move-item loop.
+        MekanismRecipeTypesRegistrar.init();
         // Transitional: leaf DataComponentTypes via the :common DataComponentDeferredRegister framework, proving the
         // DataComponent registration shape on Fabric (the real MekanismDataComponents reuses this framework).
         FabricDataComponentDemo.init();
@@ -66,6 +71,7 @@ public final class MekanismFabric implements ModInitializer {
             FabricTextFoundationSelfTest.run();
             FabricChemicalSelfTest.run();
             FabricFluidSelfTest.run();
+            FabricRecipeSelfTest.run();
             FabricRegistrationSelfTest.run();
         }
     }
