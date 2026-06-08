@@ -4,6 +4,7 @@ import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import mekanism.fabric.chemical.MekanismFabricChemical;
 import mekanism.fabric.energy.MekanismFabricEnergy;
+import mekanism.fabric.fluid.MekanismFabricFluid;
 import mekanism.fabric.heat.MekanismFabricHeat;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.core.registries.Registries;
@@ -49,5 +50,6 @@ public final class FabricEnergyBlockDemo {
         MekanismFabricEnergy.SIDED.registerForBlockEntity((be, context) -> be, BE_TYPE.get());
         MekanismFabricHeat.SIDED.registerForBlockEntity((be, context) -> be, BE_TYPE.get());
         MekanismFabricChemical.SIDED.registerForBlockEntity((be, context) -> be, BE_TYPE.get());
+        MekanismFabricFluid.SIDED.registerForBlockEntity((be, context) -> be, BE_TYPE.get());
     }
 }

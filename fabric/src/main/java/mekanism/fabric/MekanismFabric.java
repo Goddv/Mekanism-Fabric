@@ -6,6 +6,7 @@ import mekanism.common.registries.MekanismParticleTypes;
 import mekanism.common.registries.MekanismSounds;
 import mekanism.fabric.chemical.FabricChemicalRegistry;
 import mekanism.fabric.chemical.FabricChemicalSelfTest;
+import mekanism.fabric.fluid.FabricFluidSelfTest;
 import mekanism.fabric.content.FabricBringUpContent;
 import mekanism.fabric.content.FabricDataComponentDemo;
 import mekanism.fabric.content.FabricDataComponentSelfTest;
@@ -64,6 +65,7 @@ public final class MekanismFabric implements ModInitializer {
             FabricDataComponentSelfTest.run();
             FabricTextFoundationSelfTest.run();
             FabricChemicalSelfTest.run();
+            FabricFluidSelfTest.run();
             FabricRegistrationSelfTest.run();
         }
     }
