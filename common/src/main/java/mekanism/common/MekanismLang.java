@@ -2,6 +2,7 @@ package mekanism.common;
 
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.text.ILangEntry;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
 
 @NothingNullByDefault
@@ -863,7 +864,7 @@ public enum MekanismLang implements ILangEntry {
     private final String key;
 
     MekanismLang(String type, String path) {
-        this(Util.makeDescriptionId(type, Mekanism.rl(path)));
+        this(Util.makeDescriptionId(type, Identifier.fromNamespaceAndPath("mekanism", path)));
     }
 
     MekanismLang(String key) {
