@@ -3,7 +3,11 @@ package mekanism.fabric.text;
 import com.mojang.logging.LogUtils;
 import mekanism.api.IIncrementalEnum;
 import mekanism.api.SupportsColorMap;
+import mekanism.api.text.EnumColor;
+import mekanism.api.text.ISpecialTextFormatter;
+import mekanism.api.text.TextComponentUtil;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.ARGB;
 import org.slf4j.Logger;
 
@@ -71,8 +75,24 @@ public final class FabricTextFoundationSelfTest {
                   && Math.abs(color.getColor(1) - 128 / 255F) < 1.0E-4
                   && color.getPackedColor(200) == ARGB.color(200, color.getPackedColor());
 
-            ok = incOk && colorOk;
-            LOGGER.info("{} {} text foundation: IIncrementalEnum={} SupportsColorMap={}", TAG, ok ? "OK  " : "FAIL", incOk, colorOk);
+            // EnumColor (hoisted): codec/color accessors + incremental behavior under Fabric's classloader.
+            boolean enumColorOk = EnumColor.RED.getRgbCode().length == 3
+                  && EnumColor.RED.getColor(0) >= 0.0F
+                  && EnumColor.RED.getNext() instanceof EnumColor
+                  && EnumColor.CODEC != null && EnumColor.STREAM_CODEC != null;
+
+            // TextComponentUtil (hoisted) + ISpecialTextFormatter service: build/smartTranslate over vanilla + an
+            // unknown type (Double) — the unknown routes through the default -> ISpecialTextFormatter.INSTANCE (Fabric
+            // no-op -> null -> toString fallback), which proves the service resolved (getService would throw if not).
+            boolean serviceResolved = ISpecialTextFormatter.INSTANCE != null;
+            MutableComponent built = TextComponentUtil.build(EnumColor.DARK_GREEN, "status: ", true, 3.5D);
+            MutableComponent translated = TextComponentUtil.smartTranslate("mekanism.test.key", EnumColor.RED, "arg");
+            boolean textUtilOk = serviceResolved && built != null && !built.getString().isEmpty()
+                  && translated != null && ISpecialTextFormatter.INSTANCE.format(3.5D) == null;
+
+            ok = incOk && colorOk && enumColorOk && textUtilOk;
+            LOGGER.info("{} {} text foundation: IIncrementalEnum={} SupportsColorMap={} EnumColor={} TextComponentUtil+service={}",
+                  TAG, ok ? "OK  " : "FAIL", incOk, colorOk, enumColorOk, textUtilOk);
         } catch (Throwable t) {
             LOGGER.error("{} FAIL text-foundation test threw", TAG, t);
         }

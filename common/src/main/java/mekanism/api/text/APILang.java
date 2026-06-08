@@ -1,6 +1,6 @@
 package mekanism.api.text;
 
-import mekanism.api.MekanismAPI;
+import mekanism.api.MekanismAPIBase;
 import mekanism.api.annotations.NothingNullByDefault;
 import net.minecraft.util.Util;
 import net.minecraft.resources.Identifier;
@@ -84,7 +84,7 @@ public enum APILang implements ILangEntry {
 
     APILang(String type, String path) {
         //TODO - 26.1: Evaluate replacing usages of makeDescriptionId with Identifier#toLanguageKey?
-        this(Util.makeDescriptionId(type, Identifier.fromNamespaceAndPath(MekanismAPI.MEKANISM_MODID, path)));
+        this(Util.makeDescriptionId(type, Identifier.fromNamespaceAndPath(MekanismAPIBase.MEKANISM_MODID, path)));
     }
 
     APILang(String key) {

@@ -3,7 +3,6 @@ package mekanism.api.text;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import mekanism.api.MekanismAPI;
 import mekanism.api.inventory.IHashedItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
@@ -19,14 +18,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.material.Fluid;
-import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.FluidStackTemplate;
-import net.neoforged.neoforge.transfer.fluid.FluidResource;
-import net.neoforged.neoforge.transfer.item.ItemResource;
 
 public class TextComponentUtil {
 
@@ -85,19 +77,16 @@ public class TextComponentUtil {
                 case Item item -> current = logLiteralItemUsage(item);
                 case ItemStack stack -> current = stack.getHoverName().copy();
                 case ItemStackTemplate template -> current = template.create().getHoverName().copy();
-                case ItemResource resource -> current = resource.getHoverName().copy();
                 case IHashedItem item -> current = item.getInternalStack().getHoverName().copy();
-                case FluidStack stack -> current = stack.getHoverName().copy();
-                case FluidStackTemplate template -> current = template.create().getHoverName().copy();
-                case FluidResource resource -> current = resource.getHoverName().copy();
-                case Fluid fluid -> current = fluid.getFluidType().getDescription().copy();
                 case EntityType<?> entityType -> current = entityType.getDescription().copy();
-                case Level level -> current = level.getDescription().copy();
                 case Direction direction -> current = getTranslatedDirection(direction);
                 case Boolean bool -> current = getTranslatedBoolean(bool);
-                //Fallback to a generic replacement
-                // this handles strings, numbers, and any type we don't necessarily know about
-                default -> current = getString(component.toString());
+                //Loader-specific types (NeoForge FluidStack/FluidStackTemplate/FluidResource/ItemResource/Fluid) go
+                // through the per-loader formatter; otherwise fall back to a generic replacement (strings, numbers, ...).
+                default -> {
+                    MutableComponent special = ISpecialTextFormatter.INSTANCE.format(component);
+                    current = special != null ? special : getString(component.toString());
+                }
             }
             if (current == null) {
                 //If we don't have a component to add, don't
@@ -224,26 +213,17 @@ public class TextComponentUtil {
                 current = stack.getHoverName().copy();
             } else if (component instanceof ItemStackTemplate template) {
                 current = template.create().getHoverName().copy();
-            } else if (component instanceof ItemResource resource) {
-                current = resource.getHoverName().copy();
             } else if (component instanceof IHashedItem item) {
                 current = item.getInternalStack().getHoverName().copy();
-            } else if (component instanceof FluidStack stack) {
-                current = stack.getHoverName().copy();
-            } else if (component instanceof FluidStackTemplate template) {
-                current = template.create().getHoverName().copy();
-            } else if (component instanceof FluidResource resource) {
-                current = resource.getHoverName().copy();
-            } else if (component instanceof Fluid fluid) {
-                current = fluid.getFluidType().getDescription().copy();
             } else if (component instanceof EntityType<?> entityType) {
                 current = entityType.getDescription().copy();
-            } else if (component instanceof Level level) {
-                current = level.getDescription().copy();
             } else if (component instanceof Direction direction) {
                 current = getTranslatedDirection(direction);
             } else if (component instanceof Boolean bool) {
                 current = getTranslatedBoolean(bool);
+            } else if ((current = ISpecialTextFormatter.INSTANCE.format(component)) != null) {
+                //Loader-specific types (NeoForge FluidStack/FluidStackTemplate/FluidResource/ItemResource/Fluid) handled;
+                // current is now set. If the formatter returns null, current stays null and we fall through to formatting.
             }
             //Formatting
             else if (component instanceof EnumColor color && cachedStyle.getColor() == null) {
@@ -336,9 +316,8 @@ public class TextComponentUtil {
 
     //TODO - 26.1: find and remove these?
     private static MutableComponent logLiteralItemUsage(Item item) {
-        if (!FMLEnvironment.isProduction()) {
-            MekanismAPI.logger.error("Item instance ({}) passed directly to translate method", item, new Exception());
-        }
+        //Dev-only diagnostic; loader-specific (historically used the loader's environment check + logger).
+        ISpecialTextFormatter.INSTANCE.logLiteralItemUsage(item);
         return item.getName(new ItemStack(item)).copy();
     }
 }
