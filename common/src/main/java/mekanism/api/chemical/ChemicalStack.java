@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
-import mekanism.api.MekanismAPI;
+import mekanism.api.MekanismAPIBase;
 import mekanism.api.MekanismAPITags;
 import mekanism.api.SerializerHelper;
 import mekanism.api.annotations.NothingNullByDefault;
@@ -36,7 +36,7 @@ import org.jetbrains.annotations.Nullable;
 @NothingNullByDefault
 public final class ChemicalStack implements ChemicalInstance, IHasTextComponent, IHasTranslationKey {
 
-    private static final Consumer<String> ON_STACK_LOAD_ERROR = error -> MekanismAPI.logger.error("Tried to load invalid chemical: '{}'", error);
+    private static final Consumer<String> ON_STACK_LOAD_ERROR = error -> MekanismAPIBase.logger.error("Tried to load invalid chemical: '{}'", error);
 
     /**
      * Empty ChemicalStack instance.
@@ -154,7 +154,7 @@ public final class ChemicalStack implements ChemicalInstance, IHasTextComponent,
                 throw new IllegalArgumentException("Cannot create a ChemicalStack from an unbound direct holder");
             }
             //Try to look up the reference holder from the registry
-            chemical = MekanismAPI.CHEMICAL_REGISTRY.wrapAsHolder(chemical.value());
+            chemical = IChemicalRegistryProvider.INSTANCE.chemicalRegistry().wrapAsHolder(chemical.value());
             if (chemical.kind() == Holder.Kind.DIRECT) {
                 throw new IllegalArgumentException("Cannot create a ChemicalStack from a direct holder for a chemical that is not yet registered");
             }
@@ -236,7 +236,7 @@ public final class ChemicalStack implements ChemicalInstance, IHasTextComponent,
     @Override
     public Holder<Chemical> typeHolder() {
         //Note: We know chemical is not null here as that gets checked as part of isEmpty
-        return isEmpty() ? MekanismAPI.EMPTY_CHEMICAL_HOLDER : chemical;
+        return isEmpty() ? IChemicalRegistryProvider.INSTANCE.emptyChemicalHolder() : chemical;
     }
 
     /**
@@ -304,7 +304,7 @@ public final class ChemicalStack implements ChemicalInstance, IHasTextComponent,
      */
     public boolean isEmpty() {
         //Empty instance has the chemical being null
-        return chemical == null || chemical.is(MekanismAPI.EMPTY_CHEMICAL_KEY) || this.amount <= 0;
+        return chemical == null || chemical.is(MekanismAPIBase.EMPTY_CHEMICAL_KEY) || this.amount <= 0;
     }
 
     /**
@@ -395,7 +395,7 @@ public final class ChemicalStack implements ChemicalInstance, IHasTextComponent,
      */
     public void appendHoverText(TooltipContext context, List<Component> tooltips, TooltipFlag tooltipFlag) {
         Holder<Chemical> chemicalHolder = typeHolder();
-        if (chemicalHolder.is(MekanismAPI.EMPTY_CHEMICAL_KEY)) {
+        if (chemicalHolder.is(MekanismAPIBase.EMPTY_CHEMICAL_KEY)) {
             return;
         }
         chemicalHolder.value().appendHoverText(this, context, tooltips, tooltipFlag);

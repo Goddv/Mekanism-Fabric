@@ -2,7 +2,7 @@ package mekanism.api.chemical;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import mekanism.api.MekanismAPI;
+import mekanism.api.MekanismAPIBase;
 import net.minecraft.core.Holder;
 import net.minecraft.core.TypedInstance;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -18,7 +18,7 @@ public interface ChemicalInstance extends TypedInstance<Chemical> {
     /// A standard codec for non-empty Chemical holders.
     ///
     /// @since 10.8.0
-    Codec<Holder<Chemical>> CHEMICAL_HOLDER_CODEC = Chemical.CODEC.validate(chemical -> chemical.is(MekanismAPI.EMPTY_CHEMICAL_KEY)
+    Codec<Holder<Chemical>> CHEMICAL_HOLDER_CODEC = Chemical.CODEC.validate(chemical -> chemical.is(MekanismAPIBase.EMPTY_CHEMICAL_KEY)
                                                                                         ? DataResult.error(() -> "Chemical must not be mekanism:empty")
                                                                                         : DataResult.success(chemical));
 

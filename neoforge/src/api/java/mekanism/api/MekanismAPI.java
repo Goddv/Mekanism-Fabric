@@ -27,20 +27,9 @@ public class MekanismAPI extends MekanismAPIBase {
     private MekanismAPI() {
     }
 
-    /**
-     * Gets the {@link ResourceKey} representing the name of the Registry for {@link Chemical chemicals}.
-     *
-     * @apiNote When registering {@link Chemical chemicals} using {@link DeferredRegister}, use this field to get access to the {@link ResourceKey}.
-     * @since 10.7.0
-     */
-    public static final ResourceKey<Registry<Chemical>> CHEMICAL_REGISTRY_NAME = registryKey(Chemical.class, "chemical");
-
-    /**
-     * Constant location representing the name all empty chemicals will be registered under.
-     *
-     * @since 10.6.0
-     */
-    public static final ResourceKey<Chemical> EMPTY_CHEMICAL_KEY = ResourceKey.create(CHEMICAL_REGISTRY_NAME, rl("empty"));
+    // CHEMICAL_REGISTRY_NAME + EMPTY_CHEMICAL_KEY moved to MekanismAPIBase (:common) so loader-neutral chemical code
+    // can reference them; inherited here, so existing MekanismAPI.CHEMICAL_REGISTRY_NAME / EMPTY_CHEMICAL_KEY call
+    // sites keep working unchanged.
 
     /**
      * Gets the {@link ResourceKey} representing the name of the Registry for {@link ChemicalIngredient} ingredient type serializers.

@@ -4,6 +4,8 @@ import com.mojang.logging.LogUtils;
 import mekanism.common.registries.MekanismGameEvents;
 import mekanism.common.registries.MekanismParticleTypes;
 import mekanism.common.registries.MekanismSounds;
+import mekanism.fabric.chemical.FabricChemicalRegistry;
+import mekanism.fabric.chemical.FabricChemicalSelfTest;
 import mekanism.fabric.content.FabricBringUpContent;
 import mekanism.fabric.content.FabricDataComponentDemo;
 import mekanism.fabric.content.FabricDataComponentSelfTest;
@@ -33,6 +35,9 @@ public final class MekanismFabric implements ModInitializer {
     @Override
     public void onInitialize() {
         LOGGER.info("[Mekanism/Fabric] Fabric build initialized — Architectury no-remap toolchain OK.");
+        // Create Mekanism's custom `chemical` registry FIRST (custom registries must be built during mod init, before
+        // registries freeze). The hoisted :common Chemical/ChemicalStack reach it via IChemicalRegistryProvider.
+        FabricChemicalRegistry.init();
         // Real content registration (shared loader-neutral path; finalized per-loader).
         MekanismSounds.SOUND_EVENTS.register();
         MekanismGameEvents.GAME_EVENTS.register();
@@ -58,6 +63,7 @@ public final class MekanismFabric implements ModInitializer {
             FabricHeatSelfTest.run();
             FabricDataComponentSelfTest.run();
             FabricTextFoundationSelfTest.run();
+            FabricChemicalSelfTest.run();
             FabricRegistrationSelfTest.run();
         }
     }

@@ -5,12 +5,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import mekanism.api.MekanismAPI;
+import mekanism.api.MekanismAPIBase;
 import mekanism.api.annotations.NothingNullByDefault;
-import mekanism.api.datamaps.IMekanismDataMapTypes;
-import mekanism.api.datamaps.chemical.attribute.ChemicalRadioactivity;
 import mekanism.api.datamaps.chemical.attribute.IChemicalAttribute;
-import mekanism.api.radiation.IRadiationManager;
 import mekanism.api.text.IHasTextComponent;
 import mekanism.api.text.IHasTranslationKey;
 import mekanism.api.text.TextComponentUtil;
@@ -29,7 +26,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item.TooltipContext;
 import net.minecraft.world.item.TooltipFlag;
-import net.neoforged.neoforge.registries.datamaps.DataMapType;
 import org.jetbrains.annotations.ApiStatus.Internal;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.Nullable;
@@ -42,13 +38,13 @@ public class Chemical implements IHasTranslationKey, IHasTextComponent {
      *
      * @since 10.7.11
      */
-    public static final Codec<Holder<Chemical>> CODEC = MekanismAPI.CHEMICAL_REGISTRY.holderByNameCodec();
+    public static final Codec<Holder<Chemical>> CODEC = Codec.lazyInitialized(() -> IChemicalRegistryProvider.INSTANCE.chemicalRegistry().holderByNameCodec());
     /**
      * A stream codec which can be used to encode and decode chemical holders over the network.
      *
      * @since 10.7.9
      */
-    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<Chemical>> STREAM_CODEC = ByteBufCodecs.holderRegistry(MekanismAPI.CHEMICAL_REGISTRY_NAME);
+    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<Chemical>> STREAM_CODEC = ByteBufCodecs.holderRegistry(MekanismAPIBase.CHEMICAL_REGISTRY_NAME);
 
     /**
      * Tries to parse a chemical holder.
@@ -57,7 +53,7 @@ public class Chemical implements IHasTranslationKey, IHasTextComponent {
      */
     public static Optional<Holder<Chemical>> parseHolder(HolderLookup.Provider lookupProvider, Tag tag) {
         return CODEC.parse(lookupProvider.createSerializationContext(NbtOps.INSTANCE), tag)
-              .resultOrPartial(error -> MekanismAPI.logger.error("Tried to load invalid chemical: '{}'", error));
+              .resultOrPartial(error -> MekanismAPIBase.logger.error("Tried to load invalid chemical: '{}'", error));
     }
 
     /**
@@ -67,19 +63,19 @@ public class Chemical implements IHasTranslationKey, IHasTextComponent {
      */
     public static Holder<Chemical> parseOptionalHolder(HolderLookup.Provider lookupProvider, String tag) {
         if (tag.isEmpty()) {
-            return MekanismAPI.EMPTY_CHEMICAL_HOLDER;
+            return IChemicalRegistryProvider.INSTANCE.emptyChemicalHolder();
         }
-        Optional<? extends RegistryLookup<Chemical>> chemicalLookup = lookupProvider.lookup(MekanismAPI.CHEMICAL_REGISTRY_NAME);
+        Optional<? extends RegistryLookup<Chemical>> chemicalLookup = lookupProvider.lookup(MekanismAPIBase.CHEMICAL_REGISTRY_NAME);
         if (chemicalLookup.isPresent()) {
             Identifier rl = Identifier.tryParse(tag);
             if (rl != null) {
-                Optional<Reference<Chemical>> chemicalReference = chemicalLookup.get().get(ResourceKey.create(MekanismAPI.CHEMICAL_REGISTRY_NAME, rl));
+                Optional<Reference<Chemical>> chemicalReference = chemicalLookup.get().get(ResourceKey.create(MekanismAPIBase.CHEMICAL_REGISTRY_NAME, rl));
                 if (chemicalReference.isPresent()) {
                     return chemicalReference.get();
                 }
             }
         }
-        return MekanismAPI.EMPTY_CHEMICAL_HOLDER;
+        return IChemicalRegistryProvider.INSTANCE.emptyChemicalHolder();
     }
 
     //TODO - 26.1: Figure out if we should we keep this cache or remove it?
@@ -100,14 +96,14 @@ public class Chemical implements IHasTranslationKey, IHasTextComponent {
 
     @Override
     public final String toString() {
-        //Note: Similar to vanilla we look up the holder and registered name from teh registry
-        return MekanismAPI.CHEMICAL_REGISTRY.wrapAsHolder(this).getRegisteredName();
+        //Note: Similar to vanilla we look up the holder and registered name from the registry
+        return IChemicalRegistryProvider.INSTANCE.chemicalRegistry().wrapAsHolder(this).getRegisteredName();
     }
 
     @Override
     public String getTranslationKey() {
         if (translationKey == null) {
-            translationKey = Util.makeDescriptionId("chemical", MekanismAPI.CHEMICAL_REGISTRY.getKeyOrNull(this));
+            translationKey = Util.makeDescriptionId("chemical", IChemicalRegistryProvider.INSTANCE.chemicalRegistry().getKey(this));
         }
         return translationKey;
     }
@@ -141,7 +137,7 @@ public class Chemical implements IHasTranslationKey, IHasTextComponent {
      */
     public boolean hasAttributesWithValidation() {
         //Note: We only treat radiation as needing validation if the radiation manager is enabled
-        return hasAttributesWithValidation || isRadioactive() && IRadiationManager.INSTANCE.isRadiationEnabled();
+        return hasAttributesWithValidation || isRadioactive() && IChemicalDataMapHelper.INSTANCE.isRadiationEnabled();
     }
 
     /**
@@ -191,26 +187,14 @@ public class Chemical implements IHasTranslationKey, IHasTextComponent {
     @MustBeInvokedByOverriders
     public void updateFromDataMap(Holder<Chemical> holder) {
         attributes.clear();
-        trackAttribute(holder, IMekanismDataMapTypes.INSTANCE.chemicalFuel());
-        trackAttribute(holder, IMekanismDataMapTypes.INSTANCE.chemicalRadioactivity());
-        trackAttribute(holder, IMekanismDataMapTypes.INSTANCE.cooledChemicalCoolant());
-        trackAttribute(holder, IMekanismDataMapTypes.INSTANCE.heatedChemicalCoolant());
-    }
-
-    /**
-     * Tracks an attribute if it is present, and update any related cached states.
-     *
-     * @param holder      The reference holder for this chemical.
-     * @param dataMapType The type of the attribute to check for and track.
-     *
-     * @since 10.7.11
-     */
-    protected void trackAttribute(Holder<Chemical> holder, DataMapType<Chemical, ? extends IChemicalAttribute> dataMapType) {
-        IChemicalAttribute attribute = holder.getData(dataMapType);
-        if (attribute != null) {
+        radioactivity = 0;
+        hasAttributesWithValidation = false;
+        //The data-map system is loader-specific (NeoForge DataMapType); delegate the lookup to the per-loader helper.
+        for (IChemicalAttribute attribute : IChemicalDataMapHelper.INSTANCE.collectAttributes(holder)) {
             attributes.add(attribute);
-            if (attribute instanceof ChemicalRadioactivity(double rads)) {
-                radioactivity = rads;
+            double radioactivityValue = IChemicalDataMapHelper.INSTANCE.radioactivityOf(attribute);
+            if (radioactivityValue > 0) {
+                radioactivity = radioactivityValue;
             } else {
                 hasAttributesWithValidation |= attribute.needsValidation();
             }

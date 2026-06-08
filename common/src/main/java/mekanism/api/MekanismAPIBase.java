@@ -5,6 +5,7 @@ import com.mojang.serialization.MapCodec;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 import mekanism.api.annotations.NothingNullByDefault;
+import mekanism.api.chemical.Chemical;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
@@ -55,6 +56,17 @@ public class MekanismAPIBase {
     protected static <T> ResourceKey<Registry<MapCodec<? extends T>>> codecRegistryKey(@SuppressWarnings("unused") Class<T> compileTimeTypeValidator, String path) {
         return ResourceKey.createRegistryKey(rl(path));
     }
+
+    /**
+     * {@link ResourceKey} for the name of the {@link Chemical} registry. Loader-neutral so {@code :common} chemical code
+     * (codecs, tags) can reference it; the registry instance itself is created per-loader (see
+     * {@link mekanism.api.chemical.IChemicalRegistryProvider}).
+     */
+    public static final ResourceKey<Registry<Chemical>> CHEMICAL_REGISTRY_NAME = registryKey(Chemical.class, "chemical");
+    /**
+     * Constant location representing the name all empty chemicals will be registered under.
+     */
+    public static final ResourceKey<Chemical> EMPTY_CHEMICAL_KEY = ResourceKey.create(CHEMICAL_REGISTRY_NAME, rl("empty"));
 
     @Internal
     private static final ClassLoader SERVICE_CL = MekanismAPIBase.class.getClassLoader();

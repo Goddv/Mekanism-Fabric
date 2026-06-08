@@ -28,7 +28,7 @@ public class MekanismAPITags {
     }
 
     private static Identifier rl(String path) {
-        return Identifier.fromNamespaceAndPath(MekanismAPI.MEKANISM_MODID, path);
+        return Identifier.fromNamespaceAndPath(MekanismAPIBase.MEKANISM_MODID, path);
     }
 
     /**
@@ -98,7 +98,7 @@ public class MekanismAPITags {
         /**
          * Tag that holds all chemicals that recipe viewers should not show to users.
          */
-        public static final TagKey<Chemical> HIDDEN_FROM_RECIPE_VIEWERS = TagKey.create(MekanismAPI.CHEMICAL_REGISTRY_NAME, HIDDEN_RL);
+        public static final TagKey<Chemical> HIDDEN_FROM_RECIPE_VIEWERS = TagKey.create(MekanismAPIBase.CHEMICAL_REGISTRY_NAME, HIDDEN_RL);
 
         /**
          * Chemicals in this tag that are radioactive will not decay inside a Radioactive Waste Barrel.
@@ -159,7 +159,7 @@ public class MekanismAPITags {
         public static final TagKey<Chemical> FRAMEDBLOCKS_BLACKLISTED = tag("framedblocks_blacklisted");
 
         private static TagKey<Chemical> tag(String name) {
-            return TagKey.create(MekanismAPI.CHEMICAL_REGISTRY_NAME, rl(name));
+            return TagKey.create(MekanismAPIBase.CHEMICAL_REGISTRY_NAME, rl(name));
         }
     }
 
