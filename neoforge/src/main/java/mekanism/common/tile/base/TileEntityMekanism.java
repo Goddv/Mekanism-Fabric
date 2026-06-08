@@ -66,12 +66,6 @@ import mekanism.common.capabilities.holder.energy.IEnergyContainerHolder;
 import mekanism.common.capabilities.holder.fluid.IFluidTankHolder;
 import mekanism.common.capabilities.holder.heat.IHeatCapacitorHolder;
 import mekanism.common.capabilities.holder.slot.IInventorySlotHolder;
-import mekanism.common.capabilities.resolver.manager.ChemicalHandlerManager;
-import mekanism.common.capabilities.resolver.manager.EnergyHandlerManager;
-import mekanism.common.capabilities.resolver.manager.FluidHandlerManager;
-import mekanism.common.capabilities.resolver.manager.HeatHandlerManager;
-import mekanism.common.capabilities.resolver.manager.ICapabilityHandlerManager;
-import mekanism.common.capabilities.resolver.manager.ItemHandlerManager;
 import mekanism.common.config.MekanismConfig;
 import mekanism.common.content.filter.FilterManager;
 import mekanism.common.integration.computer.BoundMethodHolder;
@@ -224,32 +218,20 @@ public abstract class TileEntityMekanism extends CapabilityTileEntity implements
     protected final TileComponentFrequency frequencyComponent;
     //End variables IFrequencyHandler
 
-    //Variables for handling ITileContainer
-    @Nullable
-    protected final ItemHandlerManager itemHandlerManager;
-    //End variables ITileContainer
+    //Note: the 5 capability handler managers (itemHandlerManager/chemicalHandlerManager/fluidHandlerManager/
+    //energyHandlerManager/heatHandlerManager) live on the NeoForge CapabilityTileEntity superclass (protected), built via
+    //buildAndRegisterManagers from the holders this tile computes; this tile's getters/canHandle* read them inherited.
 
     //Variables for handling IMekanismChemicalHandler
-    @Nullable
-    protected final ChemicalHandlerManager chemicalHandlerManager;
     private float radiationScale;
     //End variables IMekanismChemicalHandler
 
-    //Variables for handling IMekanismFluidHandler
-    @Nullable
-    protected final FluidHandlerManager fluidHandlerManager;
-    //End variables IMekanismFluidHandler
-
     //Variables for handling IMekanismStrictEnergyHandler
-    @Nullable
-    protected final EnergyHandlerManager energyHandlerManager;
     private final LastEnergyTracker lastEnergyTracker = new LastEnergyTracker();
     //End variables IMekanismStrictEnergyHandler
 
     //Variables for handling IMekanismHeatHandler
     protected final CachedAmbientTemperature ambientTemperature;
-    @Nullable
-    protected final HeatHandlerManager heatHandlerManager;
     //End variables for IMekanismHeatHandler
 
     //Variables for handling ITileSecurity
@@ -282,50 +264,20 @@ public abstract class TileEntityMekanism extends CapabilityTileEntity implements
         presetVariables();
         IContentsListener saveOnlyListener = this::markForSave;
 
-        List<ICapabilityHandlerManager<?>> capabilityHandlerManagers = new ArrayList<>();
-
         IChemicalTankHolder initialChemicalTanks = getInitialChemicalTanks(getListener(ContainerType.CHEMICAL, saveOnlyListener));
-        if (initialChemicalTanks != null) {
-            capabilityHandlerManagers.add(chemicalHandlerManager = new ChemicalHandlerManager(initialChemicalTanks, this));
-        } else {
-            chemicalHandlerManager = null;
-        }
-
         IFluidTankHolder initialFluidTanks = getInitialFluidTanks(getListener(ContainerType.FLUID, saveOnlyListener));
-        if (initialFluidTanks != null) {
-            capabilityHandlerManagers.add(fluidHandlerManager = new FluidHandlerManager(initialFluidTanks, this));
-        } else {
-            fluidHandlerManager = null;
-        }
-
         IEnergyContainerHolder initialEnergyContainers = getInitialEnergyContainers(getListener(ContainerType.ENERGY, saveOnlyListener));
-        if (initialEnergyContainers != null) {
-            capabilityHandlerManagers.add(energyHandlerManager = new EnergyHandlerManager(initialEnergyContainers, this));
-        } else {
-            energyHandlerManager = null;
-        }
-
         IInventorySlotHolder initialInventory = getInitialInventory(getListener(ContainerType.ITEM, saveOnlyListener));
-        if (initialInventory != null) {
-            capabilityHandlerManagers.add(itemHandlerManager = new ItemHandlerManager(initialInventory, this));
-        } else {
-            itemHandlerManager = null;
-        }
-
         CachedAmbientTemperature ambientTemperature = new CachedAmbientTemperature(this::getLevel, this::getBlockPos);
         IHeatCapacitorHolder initialHeatCapacitors = getInitialHeatCapacitors(getListener(ContainerType.HEAT, saveOnlyListener), ambientTemperature);
-        if (initialHeatCapacitors != null) {
-            capabilityHandlerManagers.add(heatHandlerManager = new HeatHandlerManager(initialHeatCapacitors, this));
-        } else {
-            heatHandlerManager = null;
-        }
+        //Build + register the capability handler managers (on the NeoForge CapabilityTileEntity superclass).
+        buildAndRegisterManagers(initialChemicalTanks, initialFluidTanks, initialEnergyContainers, initialInventory, initialHeatCapacitors);
         if (canHandleHeat()) {
             this.ambientTemperature = ambientTemperature;
         } else {
             this.ambientTemperature = null;
         }
 
-        addCapabilityResolvers(capabilityHandlerManagers);
         frequencyComponent = new TileComponentFrequency(this);
         if (supportsUpgrades()) {
             upgradeComponent = new TileComponentUpgrade(this);

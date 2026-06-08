@@ -1,18 +1,34 @@
 package mekanism.common.tile.base;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import mekanism.api.chemical.IChemicalHandler;
+import mekanism.api.chemical.ISidedChemicalHandler;
+import mekanism.api.energy.ISidedStrictEnergyHandler;
+import mekanism.api.fluid.ISidedFluidHandler;
 import mekanism.api.heat.IHeatHandler;
+import mekanism.api.heat.ISidedHeatHandler;
+import mekanism.api.inventory.ISidedItemHandler;
 import mekanism.common.block.attribute.Attribute;
 import mekanism.common.block.attribute.AttributeHasBounding;
 import mekanism.common.capabilities.Capabilities;
 import mekanism.common.capabilities.CapabilityCache;
+import mekanism.common.capabilities.holder.chemical.IChemicalTankHolder;
+import mekanism.common.capabilities.holder.energy.IEnergyContainerHolder;
+import mekanism.common.capabilities.holder.fluid.IFluidTankHolder;
+import mekanism.common.capabilities.holder.heat.IHeatCapacitorHolder;
+import mekanism.common.capabilities.holder.slot.IInventorySlotHolder;
 import mekanism.common.capabilities.resolver.ICapabilityResolver;
+import mekanism.common.capabilities.resolver.manager.ChemicalHandlerManager;
+import mekanism.common.capabilities.resolver.manager.EnergyHandlerManager;
+import mekanism.common.capabilities.resolver.manager.FluidHandlerManager;
+import mekanism.common.capabilities.resolver.manager.HeatHandlerManager;
 import mekanism.common.capabilities.resolver.manager.ICapabilityHandlerManager;
+import mekanism.common.capabilities.resolver.manager.ItemHandlerManager;
 import mekanism.common.registration.ITileHolder;
 import mekanism.common.tile.component.TileComponentConfig;
 import net.minecraft.core.BlockPos;
@@ -66,8 +82,61 @@ public abstract class CapabilityTileEntity extends TileEntityUpdateable {
     @Nullable
     private Map<Direction, BlockCapabilityCache<IHeatHandler, @Nullable Direction>> adjacentHeatCaps;
 
+    //The NeoForge capability handler managers (BlockCapability-typed) for this tile. Relocated here from
+    //TileEntityMekanism (built via buildAndRegisterManagers) so the loader-neutral tile doesn't reference the
+    //*HandlerManager classes; kept protected so subclasses (incl. TileEntityMekanism's getters/canHandle* and
+    //TileEntityDigitalMiner) can read them. Non-final (assigned in buildAndRegisterManagers, not the ctor).
+    @Nullable
+    protected ItemHandlerManager itemHandlerManager;
+    @Nullable
+    protected ChemicalHandlerManager chemicalHandlerManager;
+    @Nullable
+    protected FluidHandlerManager fluidHandlerManager;
+    @Nullable
+    protected EnergyHandlerManager energyHandlerManager;
+    @Nullable
+    protected HeatHandlerManager heatHandlerManager;
+
     public CapabilityTileEntity(ITileHolder<?> type, BlockPos pos, BlockState state) {
         super(type.get(), pos, state);
+    }
+
+    /**
+     * Builds the 5 capability handler managers from the tile's initial holders and registers the non-null ones as
+     * capability resolvers. Called once from the (loader-neutral) {@code TileEntityMekanism} ctor with the holders it
+     * computed via its {@code getInitial*} hooks. The {@code this} casts are safe — every instance is a
+     * {@code TileEntityMekanism}, which implements all five {@code ISided*Handler} interfaces. Behavior is identical to the
+     * former in-ctor construction (same managers, same registration via {@link #addCapabilityResolvers}).
+     */
+    protected void buildAndRegisterManagers(@Nullable IChemicalTankHolder chemicalTanks, @Nullable IFluidTankHolder fluidTanks,
+          @Nullable IEnergyContainerHolder energyContainers, @Nullable IInventorySlotHolder inventory, @Nullable IHeatCapacitorHolder heatCapacitors) {
+        List<ICapabilityHandlerManager<?>> managers = new ArrayList<>();
+        if (chemicalTanks != null) {
+            managers.add(chemicalHandlerManager = new ChemicalHandlerManager(chemicalTanks, (ISidedChemicalHandler) this));
+        } else {
+            chemicalHandlerManager = null;
+        }
+        if (fluidTanks != null) {
+            managers.add(fluidHandlerManager = new FluidHandlerManager(fluidTanks, (ISidedFluidHandler) this));
+        } else {
+            fluidHandlerManager = null;
+        }
+        if (energyContainers != null) {
+            managers.add(energyHandlerManager = new EnergyHandlerManager(energyContainers, (ISidedStrictEnergyHandler) this));
+        } else {
+            energyHandlerManager = null;
+        }
+        if (inventory != null) {
+            managers.add(itemHandlerManager = new ItemHandlerManager(inventory, (ISidedItemHandler) this));
+        } else {
+            itemHandlerManager = null;
+        }
+        if (heatCapacitors != null) {
+            managers.add(heatHandlerManager = new HeatHandlerManager(heatCapacitors, (ISidedHeatHandler) this));
+        } else {
+            heatHandlerManager = null;
+        }
+        addCapabilityResolvers(managers);
     }
 
     /**
