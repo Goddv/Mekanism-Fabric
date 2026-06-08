@@ -8,7 +8,6 @@ import mekanism.api.energy.IEnergyContainer;
 import mekanism.api.energy.IMekanismStrictEnergyHandler;
 import mekanism.api.recipes.ItemStackToItemStackRecipe;
 import mekanism.common.capabilities.energy.BasicEnergyContainer;
-import mekanism.fabric.recipe.MekanismRecipeTypesRegistrar;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -22,6 +21,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -64,13 +64,17 @@ public class MachineBlockEntity extends BlockEntity implements Container, IMekan
         if (!(level instanceof ServerLevel serverLevel)) {
             return false;
         }
+        RecipeType<ItemStackToItemStackRecipe> recipeType = getBlockState().getBlock() instanceof MachineBlock machine ? machine.recipeType() : null;
+        if (recipeType == null) {
+            return false;
+        }
         ItemStack input = items.get(0);
         if (input.isEmpty()) {
             return false;
         }
         SingleRecipeInput recipeInput = new SingleRecipeInput(input);
         Optional<RecipeHolder<ItemStackToItemStackRecipe>> match =
-              serverLevel.recipeAccess().getRecipeFor(MekanismRecipeTypesRegistrar.ENRICHING_TYPE.get(), recipeInput, serverLevel);
+              serverLevel.recipeAccess().getRecipeFor(recipeType, recipeInput, serverLevel);
         if (match.isEmpty()) {
             return false;
         }

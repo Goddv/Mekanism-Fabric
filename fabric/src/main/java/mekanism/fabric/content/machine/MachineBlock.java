@@ -1,8 +1,11 @@
 package mekanism.fabric.content.machine;
 
+import java.util.function.Supplier;
+import mekanism.api.recipes.ItemStackToItemStackRecipe;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
@@ -30,9 +33,23 @@ public class MachineBlock extends Block implements EntityBlock {
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
 
-    public MachineBlock(Properties properties) {
+    @Nullable
+    private final Supplier<RecipeType<ItemStackToItemStackRecipe>> recipeType;
+
+    public MachineBlock(Properties properties, @Nullable Supplier<RecipeType<ItemStackToItemStackRecipe>> recipeType) {
         super(properties);
+        this.recipeType = recipeType;
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(ACTIVE, false));
+    }
+
+    /**
+     * The item&rarr;item recipe type this machine processes, or {@code null} if it has no wired recipe type yet (e.g. the
+     * compressor/combiner, which need chemical/dual-item recipe types not yet ported). Resolved lazily so it can be wired
+     * before the recipe registries are populated.
+     */
+    @Nullable
+    public RecipeType<ItemStackToItemStackRecipe> recipeType() {
+        return recipeType == null ? null : recipeType.get();
     }
 
     @Override

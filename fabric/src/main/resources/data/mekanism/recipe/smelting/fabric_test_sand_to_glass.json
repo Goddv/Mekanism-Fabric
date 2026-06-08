@@ -1,0 +1,11 @@
+{
+  "type": "mekanism:smelting",
+  "input": {
+    "count": 1,
+    "ingredient": "minecraft:sand"
+  },
+  "output": {
+    "count": 1,
+    "id": "minecraft:glass"
+  }
+}

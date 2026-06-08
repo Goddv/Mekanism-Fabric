@@ -5,9 +5,14 @@ import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
+import mekanism.api.recipes.ItemStackToItemStackRecipe;
 import mekanism.common.registration.MekanismBlockHolder;
 import mekanism.common.registration.MekanismBlockRegister;
 import mekanism.fabric.energy.MekanismFabricEnergy;
+import mekanism.fabric.recipe.MekanismRecipeTypesRegistrar;
+import net.minecraft.world.item.crafting.RecipeType;
+import org.jetbrains.annotations.Nullable;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.transfer.v1.item.ContainerStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
@@ -43,9 +48,24 @@ public final class FabricRealMachines {
 
     static {
         for (String name : MACHINE_NAMES) {
+            Supplier<RecipeType<ItemStackToItemStackRecipe>> recipeType = recipeTypeFor(name);
             MACHINES.add(BLOCKS.register(name, properties -> new MachineBlock(properties
-                  .strength(3.5F, 9.0F).requiresCorrectToolForDrops().sound(SoundType.METAL))));
+                  .strength(3.5F, 9.0F).requiresCorrectToolForDrops().sound(SoundType.METAL), recipeType)));
         }
+    }
+
+    /**
+     * Maps each machine to the item&rarr;item recipe type it processes. The compressor/combiner have no item&rarr;item
+     * type (they need chemical/dual-item recipe types not yet ported) so they get {@code null} (no processing for now).
+     */
+    @Nullable
+    private static Supplier<RecipeType<ItemStackToItemStackRecipe>> recipeTypeFor(String name) {
+        return switch (name) {
+            case "enrichment_chamber" -> MekanismRecipeTypesRegistrar.ENRICHING_TYPE::get;
+            case "crusher" -> MekanismRecipeTypesRegistrar.CRUSHING_TYPE::get;
+            case "energized_smelter" -> MekanismRecipeTypesRegistrar.SMELTING_TYPE::get;
+            default -> null;
+        };
     }
 
     /** Single block-entity type shared by all machine blocks. */
