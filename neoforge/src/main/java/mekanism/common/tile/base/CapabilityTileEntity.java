@@ -1,7 +1,9 @@
 package mekanism.common.tile.base;
 
 import java.util.Collection;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 import mekanism.api.chemical.IChemicalHandler;
 import mekanism.api.heat.IHeatHandler;
@@ -15,8 +17,10 @@ import mekanism.common.registration.ITileHolder;
 import mekanism.common.tile.component.TileComponentConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.BlockCapability;
+import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
 import net.neoforged.neoforge.capabilities.ICapabilityProvider;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -54,9 +58,33 @@ public abstract class CapabilityTileEntity extends TileEntityUpdateable {
     }
 
     private final CapabilityCache capabilityCache = new CapabilityCache();
+    /**
+     * Per-side cache of adjacent {@link IHeatHandler}s. Lazily allocated on first adjacent-heat query (was a final field on
+     * TileEntityMekanism, gated on canHandleHeat — relocated here so the hoisted loader-neutral tile holds no NeoForge
+     * {@code BlockCapabilityCache}; reached via {@link #getAdjacentHeatHandler} through {@code ICapabilityExposureService}).
+     */
+    @Nullable
+    private Map<Direction, BlockCapabilityCache<IHeatHandler, @Nullable Direction>> adjacentHeatCaps;
 
     public CapabilityTileEntity(ITileHolder<?> type, BlockPos pos, BlockState state) {
         super(type.get(), pos, state);
+    }
+
+    /**
+     * Adjacent-heat lookup backing {@code ICapabilityExposureService.getAdjacentHeat} on NeoForge. Mirrors the former
+     * {@code TileEntityMekanism.getAdjacentUnchecked} body (per-side {@link BlockCapabilityCache}). Server-side only.
+     */
+    @Nullable
+    public IHeatHandler getAdjacentHeatHandler(@NotNull Direction side) {
+        if (adjacentHeatCaps == null) {
+            adjacentHeatCaps = new EnumMap<>(Direction.class);
+        }
+        BlockCapabilityCache<IHeatHandler, @Nullable Direction> cache = adjacentHeatCaps.get(side);
+        if (cache == null) {
+            cache = BlockCapabilityCache.create(Capabilities.HEAT, (ServerLevel) level, worldPosition.relative(side), side.getOpposite());
+            adjacentHeatCaps.put(side, cache);
+        }
+        return cache.getCapability();
     }
 
     @Override

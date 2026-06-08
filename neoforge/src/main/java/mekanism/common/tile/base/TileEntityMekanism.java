@@ -2,7 +2,6 @@ package mekanism.common.tile.base;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +56,7 @@ import mekanism.common.block.attribute.Attributes.AttributeRedstone;
 import mekanism.common.block.attribute.Attributes.AttributeSecurity;
 import mekanism.common.block.interfaces.IHasTileEntity;
 import mekanism.common.capabilities.Capabilities;
+import mekanism.common.capabilities.ICapabilityExposureService;
 import mekanism.common.capabilities.energy.MachineEnergyContainer;
 import mekanism.common.capabilities.heat.BasicHeatCapacitor;
 import mekanism.common.capabilities.heat.CachedAmbientTemperature;
@@ -135,7 +135,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.Nameable;
@@ -149,7 +148,6 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.redstone.Redstone;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -249,7 +247,6 @@ public abstract class TileEntityMekanism extends CapabilityTileEntity implements
     //End variables IMekanismStrictEnergyHandler
 
     //Variables for handling IMekanismHeatHandler
-    protected final Map<Direction, BlockCapabilityCache<IHeatHandler, @Nullable Direction>> adjacentHeatCaps;
     protected final CachedAmbientTemperature ambientTemperature;
     @Nullable
     protected final HeatHandlerManager heatHandlerManager;
@@ -323,10 +320,8 @@ public abstract class TileEntityMekanism extends CapabilityTileEntity implements
             heatHandlerManager = null;
         }
         if (canHandleHeat()) {
-            adjacentHeatCaps = new EnumMap<>(Direction.class);
             this.ambientTemperature = ambientTemperature;
         } else {
-            adjacentHeatCaps = Collections.emptyMap();
             this.ambientTemperature = null;
         }
 
@@ -1440,12 +1435,8 @@ public abstract class TileEntityMekanism extends CapabilityTileEntity implements
 
     @Nullable
     protected IHeatHandler getAdjacentUnchecked(@NotNull Direction side) {
-        BlockCapabilityCache<IHeatHandler, @Nullable Direction> cache = adjacentHeatCaps.get(side);
-        if (cache == null) {
-            cache = BlockCapabilityCache.create(Capabilities.HEAT, (ServerLevel) level, worldPosition.relative(side), side.getOpposite());
-            adjacentHeatCaps.put(side, cache);
-        }
-        return cache.getCapability();
+        //Loader-specific adjacent-heat lookup (NeoForge BlockCapabilityCache / Fabric BlockApiLookup) via the service seam.
+        return ICapabilityExposureService.INSTANCE.getAdjacentHeat(this, side);
     }
 
     @NotNull
