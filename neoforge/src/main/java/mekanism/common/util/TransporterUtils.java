@@ -43,7 +43,7 @@ public final class TransporterUtils {
     }
 
     public static boolean isValidAcceptorOnSide(Level level, BlockPos pos, @Nullable BlockEntity tile, Direction side) {
-        if (tile instanceof TileEntityTransmitter transmitter && TransmissionType.ITEM.checkTransmissionType(transmitter)) {
+        if (tile instanceof TileEntityTransmitter transmitter && transmitter.getTransmitter().getSupportedTransmissionTypes().contains(TransmissionType.ITEM)) {
             return false;
         }
         return Capabilities.ITEM.getCapabilityIfLoaded(level, pos, null, tile, side) != null;

@@ -4,18 +4,16 @@ import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import java.util.function.IntFunction;
 import mekanism.api.annotations.NothingNullByDefault;
-import mekanism.api.text.IHasEnumNameTranslationKey;
+import mekanism.api.text.IHasTranslationKey;
 import mekanism.api.text.ILangEntry;
 import mekanism.common.MekanismLang;
-import mekanism.common.content.network.transmitter.Transmitter;
-import mekanism.common.tile.transmitter.TileEntityTransmitter;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 
 @NothingNullByDefault
-public enum TransmissionType implements IHasEnumNameTranslationKey, StringRepresentable {
+public enum TransmissionType implements IHasTranslationKey, StringRepresentable {
     ENERGY("EnergyNetwork", "energy", MekanismLang.TRANSMISSION_TYPE_ENERGY),
     FLUID("FluidNetwork", "fluids", MekanismLang.TRANSMISSION_TYPE_FLUID),
     CHEMICAL("ChemicalNetwork", "chemicals", MekanismLang.TRANSMISSION_TYPE_CHEMICALS),
@@ -51,14 +49,6 @@ public enum TransmissionType implements IHasEnumNameTranslationKey, StringRepres
     @Override
     public String getTranslationKey() {
         return langEntry.getTranslationKey();
-    }
-
-    public boolean checkTransmissionType(Transmitter<?, ?, ?> transmitter) {
-        return transmitter.getSupportedTransmissionTypes().contains(this);
-    }
-
-    public boolean checkTransmissionType(TileEntityTransmitter transmitter) {
-        return checkTransmissionType(transmitter.getTransmitter());
     }
 
     @Override
