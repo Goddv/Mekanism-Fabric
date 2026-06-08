@@ -9,7 +9,7 @@ import mekanism.api.IContentsListener;
 import mekanism.api.SerializationConstants;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.chemical.attribute.ChemicalAttributeValidator;
-import mekanism.api.functions.ConstantPredicates;
+import mekanism.api.functions.ConstantPredicatesBase;
 import net.minecraft.core.Holder;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.NotNull;
@@ -43,7 +43,7 @@ public class BasicChemicalTank implements IChemicalTank, IChemicalHandler {
         if (capacity < 0) {
             throw new IllegalArgumentException("Capacity must be at least zero");
         }
-        return new BasicChemicalTank(capacity, ConstantPredicates.alwaysTrueBi(), ConstantPredicates.alwaysTrueBi(), ConstantPredicates.alwaysTrue(), attributeValidator,
+        return new BasicChemicalTank(capacity, ConstantPredicatesBase.alwaysTrueBi(), ConstantPredicatesBase.alwaysTrueBi(), ConstantPredicatesBase.alwaysTrue(), attributeValidator,
               listener, null);
     }
 
@@ -72,7 +72,7 @@ public class BasicChemicalTank implements IChemicalTank, IChemicalHandler {
      * @since 10.7.11
      */
     public static IChemicalTank create(long capacity, Predicate<ChemicalStack> canExtract, Predicate<ChemicalStack> canInsert, @Nullable IContentsListener listener) {
-        return create(capacity, canExtract, canInsert, ConstantPredicates.alwaysTrue(), listener);
+        return create(capacity, canExtract, canInsert, ConstantPredicatesBase.alwaysTrue(), listener);
     }
 
     /**
@@ -90,7 +90,7 @@ public class BasicChemicalTank implements IChemicalTank, IChemicalHandler {
             throw new IllegalArgumentException("Capacity must be at least zero");
         }
         Objects.requireNonNull(validator, "Chemical validity check cannot be null");
-        return new BasicChemicalTank(capacity, ConstantPredicates.alwaysTrueBi(), ConstantPredicates.alwaysTrueBi(), validator, null, listener, null);
+        return new BasicChemicalTank(capacity, ConstantPredicatesBase.alwaysTrueBi(), ConstantPredicatesBase.alwaysTrueBi(), validator, null, listener, null);
     }
 
     /**
@@ -108,7 +108,7 @@ public class BasicChemicalTank implements IChemicalTank, IChemicalHandler {
             throw new IllegalArgumentException("Capacity must be at least zero");
         }
         Objects.requireNonNull(validator, "Chemical validity check cannot be null");
-        return new BasicChemicalTank(capacity, ConstantPredicates.notExternal(), ConstantPredicates.alwaysTrueBi(), validator, null, listener, null);
+        return new BasicChemicalTank(capacity, ConstantPredicatesBase.notExternal(), ConstantPredicatesBase.alwaysTrueBi(), validator, null, listener, null);
     }
 
     /**
@@ -128,7 +128,7 @@ public class BasicChemicalTank implements IChemicalTank, IChemicalHandler {
         }
         Objects.requireNonNull(canInsert, "Insertion validity check cannot be null");
         Objects.requireNonNull(validator, "Chemical validity check cannot be null");
-        return new BasicChemicalTank(capacity, ConstantPredicates.notExternal(), (stack, automationType) -> canInsert.test(stack), validator,
+        return new BasicChemicalTank(capacity, ConstantPredicatesBase.notExternal(), (stack, automationType) -> canInsert.test(stack), validator,
               null, listener, null);
     }
 
@@ -145,7 +145,7 @@ public class BasicChemicalTank implements IChemicalTank, IChemicalHandler {
         if (capacity < 0) {
             throw new IllegalArgumentException("Capacity must be at least zero");
         }
-        return new BasicChemicalTank(capacity, ConstantPredicates.alwaysTrueBi(), ConstantPredicates.internalOnly(), ConstantPredicates.alwaysTrue(),
+        return new BasicChemicalTank(capacity, ConstantPredicatesBase.alwaysTrueBi(), ConstantPredicatesBase.internalOnly(), ConstantPredicatesBase.alwaysTrue(),
               ChemicalAttributeValidator.ALWAYS_ALLOW, listener, null);
     }
 

@@ -1,6 +1,9 @@
 package mekanism.fabric.content.energy;
 
 import java.util.List;
+import mekanism.api.chemical.BasicChemicalTank;
+import mekanism.api.chemical.IChemicalTank;
+import mekanism.api.chemical.IMekanismChemicalHandler;
 import mekanism.api.energy.IEnergyContainer;
 import mekanism.api.energy.IMekanismStrictEnergyHandler;
 import mekanism.api.heat.IHeatCapacitor;
@@ -22,14 +25,17 @@ import org.jetbrains.annotations.Nullable;
  * {@code MekanismFabricEnergy.SIDED} and {@code MekanismFabricHeat.SIDED} so neighbours can query both — the foundation
  * pattern for real Mekanism machines on Fabric, and proof the BlockApiLookup capability shape generalizes beyond energy.
  */
-public class DemoEnergyBlockEntity extends BlockEntity implements IMekanismStrictEnergyHandler, IMekanismHeatHandler {
+public class DemoEnergyBlockEntity extends BlockEntity implements IMekanismStrictEnergyHandler, IMekanismHeatHandler, IMekanismChemicalHandler {
 
     private static final double HEAT_CAPACITY = 1_000.0D;
+    private static final long CHEMICAL_CAPACITY = 64_000L;
 
     private final BasicEnergyContainer energy = BasicEnergyContainer.create(1_000_000L, this);
     private final List<IEnergyContainer> containers = List.of(energy);
     private final BasicHeatCapacitor heat = BasicHeatCapacitor.create(HEAT_CAPACITY, null, this);
     private final List<IHeatCapacitor> capacitors = List.of(heat);
+    private final IChemicalTank chemicalTank = BasicChemicalTank.create(CHEMICAL_CAPACITY, this);
+    private final List<IChemicalTank> chemicalTanks = List.of(chemicalTank);
 
     public DemoEnergyBlockEntity(BlockPos pos, BlockState state) {
         super(FabricEnergyBlockDemo.BE_TYPE.get(), pos, state);
@@ -45,6 +51,12 @@ public class DemoEnergyBlockEntity extends BlockEntity implements IMekanismStric
     @Override
     public List<IHeatCapacitor> getHeatCapacitors(@Nullable Direction side) {
         return capacitors;
+    }
+
+    // ---- chemical capability ----
+    @Override
+    public List<IChemicalTank> getChemicalTanks(@Nullable Direction side) {
+        return chemicalTanks;
     }
 
     /**
@@ -66,6 +78,7 @@ public class DemoEnergyBlockEntity extends BlockEntity implements IMekanismStric
         // Flat serialization is safe here: energy writes "stored", BasicHeatCapacitor writes only "heatCapacity".
         energy.serialize(output);
         heat.serialize(output);
+        chemicalTank.serialize(output.child("chemical"));
     }
 
     @Override
@@ -73,5 +86,6 @@ public class DemoEnergyBlockEntity extends BlockEntity implements IMekanismStric
         super.loadAdditional(input);
         energy.deserialize(input);
         heat.deserialize(input);
+        input.child("chemical").ifPresent(chemicalTank::deserialize);
     }
 }

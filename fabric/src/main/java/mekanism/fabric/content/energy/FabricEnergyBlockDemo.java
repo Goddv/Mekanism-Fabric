@@ -2,6 +2,7 @@ package mekanism.fabric.content.energy;
 
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
+import mekanism.fabric.chemical.MekanismFabricChemical;
 import mekanism.fabric.energy.MekanismFabricEnergy;
 import mekanism.fabric.heat.MekanismFabricHeat;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
@@ -47,5 +48,6 @@ public final class FabricEnergyBlockDemo {
         ITEMS.register();
         MekanismFabricEnergy.SIDED.registerForBlockEntity((be, context) -> be, BE_TYPE.get());
         MekanismFabricHeat.SIDED.registerForBlockEntity((be, context) -> be, BE_TYPE.get());
+        MekanismFabricChemical.SIDED.registerForBlockEntity((be, context) -> be, BE_TYPE.get());
     }
 }
