@@ -2,7 +2,7 @@ package mekanism.api.radiation;
 
 import java.util.Collections;
 import java.util.List;
-import mekanism.api.MekanismAPI;
+import mekanism.api.MekanismAPIBase;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.chemical.ChemicalStack;
 import mekanism.api.chemical.IChemicalHandler;
@@ -50,7 +50,7 @@ public interface IRadiationManager {
      *
      * @since 10.4.0
      */
-    IRadiationManager INSTANCE = MekanismAPI.getService(IRadiationManager.class);
+    IRadiationManager INSTANCE = MekanismAPIBase.getService(IRadiationManager.class);
 
     /**
      * Helper to expose the ability to check if Mekanism's radiation system is enabled in the config.

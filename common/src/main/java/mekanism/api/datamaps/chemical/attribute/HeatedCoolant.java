@@ -3,7 +3,7 @@ package mekanism.api.datamaps.chemical.attribute;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
-import mekanism.api.MekanismAPI;
+import mekanism.api.MekanismAPIBase;
 import mekanism.api.SerializationConstants;
 import mekanism.api.chemical.Chemical;
 import mekanism.api.chemical.ChemicalStack;
@@ -41,7 +41,7 @@ public record HeatedCoolant(Holder<Chemical> otherVariant, double thermalEnthalp
      *
      * @see mekanism.api.datamaps.IMekanismDataMapTypes#heatedChemicalCoolant()
      */
-    public static final Identifier ID = Identifier.fromNamespaceAndPath(MekanismAPI.MEKANISM_MODID, "chemical_attribute_heated_coolant");
+    public static final Identifier ID = Identifier.fromNamespaceAndPath(MekanismAPIBase.MEKANISM_MODID, "chemical_attribute_heated_coolant");
 
     /**
      * Codec for serializing and deserializing heated coolants.

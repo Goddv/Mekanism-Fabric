@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
-import mekanism.api.MekanismAPI;
+import mekanism.api.MekanismAPIBase;
 import mekanism.api.SerializationConstants;
 import mekanism.api.radiation.IRadiationManager;
 import mekanism.api.text.APILang;
@@ -30,7 +30,7 @@ public record ChemicalRadioactivity(double radioactivity) implements IChemicalAt
      *
      * @see mekanism.api.datamaps.IMekanismDataMapTypes#chemicalRadioactivity()
      */
-    public static final Identifier ID = Identifier.fromNamespaceAndPath(MekanismAPI.MEKANISM_MODID, "chemical_attribute_radioactivity");
+    public static final Identifier ID = Identifier.fromNamespaceAndPath(MekanismAPIBase.MEKANISM_MODID, "chemical_attribute_radioactivity");
 
     private static final Codec<Double> RADIATION_CODEC = Codec.doubleRange(IRadiationManager.INSTANCE.baselineRadiation(), Double.MAX_VALUE).validate(val -> {
         if (val == IRadiationManager.INSTANCE.baselineRadiation()) {

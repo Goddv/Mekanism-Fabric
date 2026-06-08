@@ -3,7 +3,7 @@ package mekanism.api.datamaps.chemical.attribute;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
-import mekanism.api.MekanismAPI;
+import mekanism.api.MekanismAPIBase;
 import mekanism.api.SerializationConstants;
 import mekanism.api.SerializerHelper;
 import mekanism.api.text.APILang;
@@ -30,7 +30,7 @@ public record ChemicalFuel(int maxBurnPerTick, long energyPerTick) implements IC
      *
      * @see mekanism.api.datamaps.IMekanismDataMapTypes#chemicalFuel()
      */
-    public static final Identifier ID = Identifier.fromNamespaceAndPath(MekanismAPI.MEKANISM_MODID, "chemical_attribute_fuel");
+    public static final Identifier ID = Identifier.fromNamespaceAndPath(MekanismAPIBase.MEKANISM_MODID, "chemical_attribute_fuel");
 
     /**
      * Codec for serializing and deserializing chemical fuel.
