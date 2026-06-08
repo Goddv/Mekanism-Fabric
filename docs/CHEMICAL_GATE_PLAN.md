@@ -1,5 +1,20 @@
 # Chemical/Fluid Master-Gate Hoist Plan (from chemical-gate-plan workflow)
 
+## PROGRESS / HANDOFF (status as of commit 7c65f19)
+- **Slice 1 DONE** (commit 5eee57d): hoisted `IIncrementalEnum` + `SupportsColorMap` to :common. Validated.
+- **Slice 2 DONE** (commit 7c65f19): extracted `IHasTextComponent`'s nested `IHasEnumNameTextComponent`→top-level :neoforge interface, hoisted pure `IHasTextComponent` to :common (15 importers retargeted), hoisted `ITooltipHelper` to :common. Validated.
+- **PAUSED before slice 3** (per user). Resume points below.
+
+### ⚠️ CRITICAL CORRECTION to slice 3 (the plan below is WRONG on this)
+`TextComponentUtil`'s methods are **`public static`** (`build`, `smartTranslate`, `translate`, `getString`, `color`...). The inheritance-static-access trick used for every prior hoist (MekanismAPI/Base, ConstantPredicates/Base, IHasTextComponent) **DOES NOT WORK for static methods** — they are not overridden, so a `:neoforge` `TextComponentUtil extends TextComponentUtilBase` would NOT add back the `FluidStack`/`FluidStackTemplate`/`FluidResource`/`ItemResource` cases; every `TextComponentUtil.build(...)` call site would bind to the inherited base and **silently lose fluid/resource formatting on NeoForge** (untestable here → dangerous).
+**REQUIRED REDESIGN for slice 3:** keep the `TextComponentUtil` static API in :common with the vanilla-type cases (the `build` switch ~line 88 and the `smartTranslate` if-else chain ~line 227), and route UNKNOWN component types through a pluggable per-loader hook — e.g. a service-locator `ISpecialTextFormatter` resolved via `MekanismAPIBase.getService(...)`: the NeoForge impl handles `FluidStack`/`FluidStackTemplate`/`FluidResource`/`ItemResource` (and `logLiteralItemUsage`/`FMLEnvironment.isProduction`), the Fabric impl is a no-op for now. Also re-check `TextComponentUtil`'s `mekanism.api.MekanismAPI` import (line 6) and `mekanism.api.inventory.IHashedItem` dep before moving.
+Slices 5–7 (`Chemical`→`ChemicalBase`, `ChemicalStack`) are NON-static types, so the normal inheritance-split applies there.
+
+### Validation tooling note
+`:fabric:runClient` auto-enter (loom quickPlay of "New World") is FLAKY (stuck at main menu → SERVER_STARTED never fires). **Use `:fabric:runServer`** for self-test validation (dedicated server fires SERVER_STARTED reliably). All self-tests are SERVER_STARTED-gated except the GUI screenshot harness (needs the client + `MEKANISM_GUI_SHOT=1`).
+
+---
+
 ## Closure summary
 VERIFIED the layer maps against source and found one material correction plus a clear smallest first slice.
 
