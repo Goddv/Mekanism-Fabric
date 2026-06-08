@@ -129,3 +129,36 @@ GUIs; capability invalidation for interactive side rotation; computer integratio
 - BlockCapability type leakage during the tile-constructor split (manager fields/`addCapabilityResolvers` must move to the NeoForge subclass).
 - Container sync packet format must match so the client GUI bar/arrow actually sync.
 - NeoForge regression (cannot runtime-test) — rely on `:neoforge:build` + behavioral reasoning; the Stage 3–4 manager split is the danger zone.
+
+---
+
+## CORE-MOVE CLOSURE ANALYSIS (computed, deterministic graph walk)
+
+Computed the transitive must-move-together closure of the blocktype+attribute cluster (BFS following each neoforge file's loader-CLEAN, not-yet-in-`:common` mekanism imports; stop at loader-coupled files = seam boundaries, and at `:common` files = resolved):
+
+- **381 files** must move together (loader-clean, not yet in `:common`) — essentially the entire Mekanism CONTENT layer: BlockType/attributes, all `TileEntity*` concretes, all containers + the Syncable* framework, multiblock, transmitters/network, QIO, frequencies, filters, items, criteria triggers.
+- **169 loader-coupled SEAM boundaries** the closure hits — the per-loader walls.
+- **~60 unresolved** (recipe types not yet hoisted, api interfaces, vanilla-ish).
+
+**Why so large:** `MekanismBlockTypes` (963 lines) imports every tile type → pulls in the whole content layer; `BlockType`/`Attribute` are referenced everywhere; `FactoryType`→`MekanismBlockTypes` is a key explosion edge. The naive "hoist the cluster" = "hoist all content" — NOT a single commit.
+
+**KEY INSIGHT — per-file loader coupling is TINY:** `TileEntityMekanism` (1695 lines) has only **2** `net.neoforged` imports (`BlockCapabilityCache` for adjacent-heat lookup; `FluidStack` for 2 fluid-collection methods). Most closure files are loader-clean and blocked only by a handful of central seam classes. So the megaproject is **mostly mechanical** once the big seams exist.
+
+### The ~6 big seams that gate the content layer (build each green, in-place, NeoForge-identical):
+1. **Registration-object seam** — `TileEntityTypeRegistryObject`→`ITileHolder` ✅ DONE; `ContainerTypeRegistryObject`→`IContainerTypeHolder`+`IGuiOpener` service (TODO, design in regobj-seam workflow output); `SoundEventRegistryObject` already `:common`; `BlockRegistryObject`: AttributeUpgradeable ✅, FactoryType deferred (datagen `FactoryRecipeProvider` uses `getBaseBlock()` as RO for recipe key).
+2. **Capability seam** — `EnergyHandlerManager`/`HeatHandlerManager`/`ChemicalHandlerManager` + `Capabilities` + `BlockCapabilityCache` (all typed on NeoForge `BlockCapability`) → hoisted tile implements loader-neutral handler getters directly; `ICapabilityExposureService` (NeoForge keeps managers+`RegisterCapabilitiesEvent`, Fabric registers `BlockApiLookup`); adjacent-heat lookup → service. THE keystone for machine functionality.
+3. **MekanismConfig seam** — NeoForge config API → a `:common` config abstraction (HARD).
+4. **MekanismUtils split** — extract the loader-clean subset to `:common`; keep NeoForge bits (Capabilities/EnergyCompat) behind the existing services. Also `WorldUtils` (922 lines, 6 net.neoforged) same treatment.
+5. **Container networking seam** — `MekanismContainer.broadcastChanges()` `PacketDistributor` → `IContainerSyncSender` (NeoForge PacketDistributor / Fabric ServerPlayNetworking).
+6. **Fluid completion** — `FluidStack`→`IFluidStack` across tiles/tanks (the ~163-file fluid gate, partially done).
+
+### Staged execution order (each stage = green commits; cluster hoist is the LAST stage):
+- **S0 (done):** registration-object seams (ITileHolder, AttributeUpgradeable, AttributeEnergy→ConstantPredicatesBase).
+- **S1:** MekanismUtils/WorldUtils clean-subset split + remaining leaf/utility hoists inside the closure (shrinks 381).
+- **S2:** Capability seam (managers + Capabilities + adjacent-heat) — the keystone; unblocks the storage layer (MachineEnergyContainer, *HandlerManager) + TileEntityMekanism's cap deps.
+- **S3:** MekanismConfig abstraction + container-networking seam + container seam (IContainerTypeHolder/IGuiOpener).
+- **S4:** Fluid completion (FluidStack→IFluidStack in the closure tiles/tanks).
+- **S5:** Hoist TileEntityMekanism + the tile components + MekanismContainer + the now-unblocked closure chunks.
+- **S6:** Hoist the blocktype/attribute cluster + a first real machine (EnrichmentChamber) + its container/GUI; wire Fabric capability exposure via `ICapabilityExposureService`.
+
+The registry hubs (`MekanismBlockTypes`/`MekanismBlocks`/`MekanismContainerTypes`/`MekanismTileEntityTypes`) likely STAY per-loader (declaration/wiring), with the content CLASSES they wire moving to `:common` — treat them as boundaries, not move-set, to avoid the FactoryType→MekanismBlockTypes explosion.
