@@ -19,7 +19,6 @@ import mekanism.common.tier.EnergyCubeTier;
 import mekanism.common.tier.FluidTankTier;
 import net.minecraft.SharedConstants;
 import net.minecraft.resources.Identifier;
-import net.neoforged.neoforge.fluids.FluidType;
 
 public class GeneralConfig extends BaseMekanismConfig {
 
@@ -159,9 +158,9 @@ public class GeneralConfig extends BaseMekanismConfig {
         MekanismConfigTranslations.GENERAL_DYNAMIC_TANK.applyToBuilder(builder).push("dynamic_tank");
         int maxVolume = 18 * 18 * 18;
         dynamicTankFluidPerTank = CachedIntValue.wrap(this, MekanismConfigTranslations.GENERAL_DYNAMIC_TANK_FLUID_CAPACITY.applyToBuilder(builder)
-              .defineInRange("fluidPerTank", 350 * FluidType.BUCKET_VOLUME, 1, Integer.MAX_VALUE / maxVolume));
+              .defineInRange("fluidPerTank", 350 * 1_000 /* FluidType.BUCKET_VOLUME */, 1, Integer.MAX_VALUE / maxVolume));
         dynamicTankChemicalPerTank = CachedLongValue.wrap(this, MekanismConfigTranslations.GENERAL_DYNAMIC_TANK_CHEMICAL_CAPACITY.applyToBuilder(builder)
-              .defineInRange("chemicalPerTank", 16_000L * FluidType.BUCKET_VOLUME, 1, Long.MAX_VALUE / maxVolume));
+              .defineInRange("chemicalPerTank", 16_000L * 1_000 /* FluidType.BUCKET_VOLUME */, 1, Long.MAX_VALUE / maxVolume));
         builder.pop();
 
         MekanismConfigTranslations.GENERAL_AUTO_EJECT.applyToBuilder(builder).push("auto_eject");
@@ -201,7 +200,7 @@ public class GeneralConfig extends BaseMekanismConfig {
         radiationNegativeEffectsMinSeverity = CachedDoubleValue.wrap(this, MekanismConfigTranslations.GENERAL_RADIATION_MIN_SEVERITY.applyToBuilder(builder)
               .defineInRange("negativeEffectsMinSeverity", 0.1D, 0, 1));
         radioactiveWasteBarrelMaxChemical = CachedLongValue.wrap(this, MekanismConfigTranslations.GENERAL_RADIATION_BARREL_CAPACITY.applyToBuilder(builder)
-              .defineInRange("wasteBarrelCapacity", 512L * FluidType.BUCKET_VOLUME, 1, Long.MAX_VALUE));
+              .defineInRange("wasteBarrelCapacity", 512L * 1_000 /* FluidType.BUCKET_VOLUME */, 1, Long.MAX_VALUE));
         radioactiveWasteBarrelProcessTicks = CachedIntValue.wrap(this, MekanismConfigTranslations.GENERAL_RADIATION_BARREL_DECAY_FREQUENCY.applyToBuilder(builder)
               .defineInRange("wasteBarrelProcessTicks", SharedConstants.TICKS_PER_SECOND, 1, Integer.MAX_VALUE));
         radioactiveWasteBarrelDecayAmount = CachedLongValue.wrap(this, MekanismConfigTranslations.GENERAL_RADIATION_BARREL_DECAY_AMOUNT.applyToBuilder(builder)
@@ -238,7 +237,7 @@ public class GeneralConfig extends BaseMekanismConfig {
         pumpInfiniteFluidSources = CachedBooleanValue.wrap(this, MekanismConfigTranslations.GENERAL_PUMP_INFINITE_FLUIDS.applyToBuilder(builder)
               .define("pumpInfiniteFluidSources", false));
         pumpHeavyWaterAmount = CachedIntValue.wrap(this, MekanismConfigTranslations.GENERAL_PUMP_HEAVY_WATER.applyToBuilder(builder)
-              .defineInRange("heavyWaterAmount", FluidType.BUCKET_VOLUME / 100, 1, FluidType.BUCKET_VOLUME));
+              .defineInRange("heavyWaterAmount", 1_000 /* FluidType.BUCKET_VOLUME */ / 100, 1, 1_000 /* FluidType.BUCKET_VOLUME */));
         maxPlenisherNodes = CachedIntValue.wrap(this, MekanismConfigTranslations.GENERAL_PUMP_PLENISHER_MAX_NODES.applyToBuilder(builder)
               .defineInRange("maxPlenisherNodes", 4_000, 1, 1_000_000));
         builder.pop();
@@ -272,13 +271,13 @@ public class GeneralConfig extends BaseMekanismConfig {
         MekanismConfigTranslations.GENERAL_BOILER.applyToBuilder(builder).push("boiler");
         //Note: We use maxVolume as it still is a large number, and we have no reason to go higher even if some things we technically could
         boilerWaterPerTank = CachedIntValue.wrap(this, MekanismConfigTranslations.GENERAL_BOILER_CAPACITY_WATER.applyToBuilder(builder)
-              .defineInRange("waterPerTank", 16 * FluidType.BUCKET_VOLUME, 1, Integer.MAX_VALUE / maxVolume));
+              .defineInRange("waterPerTank", 16 * 1_000 /* FluidType.BUCKET_VOLUME */, 1, Integer.MAX_VALUE / maxVolume));
         boilerSteamPerTank = CachedLongValue.wrap(this, MekanismConfigTranslations.GENERAL_BOILER_CAPACITY_STEAM.applyToBuilder(builder)
-              .defineInRange("steamPerTank", 160L * FluidType.BUCKET_VOLUME, 10, Long.MAX_VALUE / maxVolume));
+              .defineInRange("steamPerTank", 160L * 1_000 /* FluidType.BUCKET_VOLUME */, 10, Long.MAX_VALUE / maxVolume));
         boilerHeatedCoolantPerTank = CachedLongValue.wrap(this, MekanismConfigTranslations.GENERAL_BOILER_CAPACITY_HEATED_COOLANT.applyToBuilder(builder)
-              .defineInRange("heatedCoolantPerTank", 256L * FluidType.BUCKET_VOLUME, 1, Long.MAX_VALUE / maxVolume));
+              .defineInRange("heatedCoolantPerTank", 256L * 1_000 /* FluidType.BUCKET_VOLUME */, 1, Long.MAX_VALUE / maxVolume));
         boilerCooledCoolantPerTank = CachedLongValue.wrap(this, MekanismConfigTranslations.GENERAL_BOILER_CAPACITY_COOLED_COOLANT.applyToBuilder(builder)
-              .defineInRange("cooledCoolantPerTank", 256L * FluidType.BUCKET_VOLUME, 1, Long.MAX_VALUE / maxVolume));
+              .defineInRange("cooledCoolantPerTank", 256L * 1_000 /* FluidType.BUCKET_VOLUME */, 1, Long.MAX_VALUE / maxVolume));
         boilerWaterConductivity = CachedDoubleValue.wrap(this, MekanismConfigTranslations.GENERAL_BOILER_WATER_CONDUCTIVITY.applyToBuilder(builder)
               .defineInRange("waterConductivity", 0.7, 0.01, 1));
         superheatingHeatTransfer = CachedDoubleValue.wrap(this, MekanismConfigTranslations.GENERAL_BOILER_HEAT_TRANSFER.applyToBuilder(builder)
@@ -295,16 +294,16 @@ public class GeneralConfig extends BaseMekanismConfig {
         evaporationHeatCapacity = CachedDoubleValue.wrap(this, MekanismConfigTranslations.GENERAL_TEP_CAPACITY_HEAT.applyToBuilder(builder)
               .defineInRange("heatCapacity", 100D, 1, 1_000_000));
         evaporationFluidPerTank = CachedIntValue.wrap(this, MekanismConfigTranslations.GENERAL_TEP_CAPACITY_INPUT.applyToBuilder(builder)
-              .defineInRange("fluidPerTank", 64 * FluidType.BUCKET_VOLUME, 1, Integer.MAX_VALUE / (EvaporationMultiblockData.MAX_HEIGHT * 4)));
+              .defineInRange("fluidPerTank", 64 * 1_000 /* FluidType.BUCKET_VOLUME */, 1, Integer.MAX_VALUE / (EvaporationMultiblockData.MAX_HEIGHT * 4)));
         evaporationOutputTankCapacity = CachedIntValue.wrap(this, MekanismConfigTranslations.GENERAL_TEP_CAPACITY_OUTPUT.applyToBuilder(builder)
-              .defineInRange("outputTankCapacity", 10 * FluidType.BUCKET_VOLUME, 1, Integer.MAX_VALUE));
+              .defineInRange("outputTankCapacity", 10 * 1_000 /* FluidType.BUCKET_VOLUME */, 1, Integer.MAX_VALUE));
         builder.pop();
 
         MekanismConfigTranslations.GENERAL_SPS.applyToBuilder(builder).push("sps");
         spsInputPerAntimatter = CachedIntValue.wrap(this, MekanismConfigTranslations.GENERAL_SPS_ANTIMATTER_COST.applyToBuilder(builder)
-              .defineInRange("inputPerAntimatter", FluidType.BUCKET_VOLUME, 1, Integer.MAX_VALUE));
+              .defineInRange("inputPerAntimatter", 1_000 /* FluidType.BUCKET_VOLUME */, 1, Integer.MAX_VALUE));
         spsOutputTankCapacity = CachedLongValue.wrap(this, MekanismConfigTranslations.GENERAL_SPS_CAPACITY_OUTPUT.applyToBuilder(builder)
-              .defineInRange("outputTankCapacity", FluidType.BUCKET_VOLUME, 1, Long.MAX_VALUE));
+              .defineInRange("outputTankCapacity", 1_000 /* FluidType.BUCKET_VOLUME */, 1, Long.MAX_VALUE));
         spsEnergyPerInput = CachedLongValue.definePositive(this, builder, MekanismConfigTranslations.GENERAL_SPS_ENERGY_PER, "energyPerInput", 1_000_000);
         builder.pop();
 
