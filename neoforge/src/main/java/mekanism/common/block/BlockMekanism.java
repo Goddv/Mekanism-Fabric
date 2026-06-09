@@ -15,7 +15,6 @@ import mekanism.common.lib.multiblock.MultiblockData;
 import mekanism.common.lib.radiation.Meltdown.MeltdownExplosion;
 import mekanism.common.lib.radiation.RadiationManager;
 import mekanism.common.lib.security.ISecurityTile;
-import mekanism.common.network.to_client.security.PacketSyncSecurity;
 import mekanism.common.registries.MekanismParticleTypes;
 import mekanism.common.tile.base.TileEntityUpdateable;
 import mekanism.common.tile.interfaces.IComparatorSupport;
@@ -49,7 +48,6 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.redstone.Redstone;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -159,7 +157,7 @@ public abstract class BlockMekanism extends Block {
                 securityTile.setOwnerUUID(placer.getUUID());
                 if (!world.isClientSide()) {
                     //If the machine doesn't already have an owner, make sure we portray this
-                    PacketDistributor.sendToAllPlayers(new PacketSyncSecurity(placer.getUUID()));
+                    mekanism.common.lib.security.ISecurityPacketSender.INSTANCE.sendSecurityUpdate(placer.getUUID());
                 }
             }
         }
