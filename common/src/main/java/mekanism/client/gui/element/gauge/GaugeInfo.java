@@ -1,7 +1,7 @@
 package mekanism.client.gui.element.gauge;
 
 import mekanism.api.text.EnumColor;
-import mekanism.common.Mekanism;
+import mekanism.api.MekanismAPIBase;
 import mekanism.common.tile.component.config.DataType;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
@@ -19,7 +19,7 @@ public enum GaugeInfo {
     private final Identifier resourceLocation;
 
     GaugeInfo(String texture, @Nullable EnumColor color) {
-        this.resourceLocation = Mekanism.rl(texture).withPrefix("gauge/");
+        this.resourceLocation = MekanismAPIBase.rl(texture).withPrefix("gauge/");
         this.color = color;
     }
 

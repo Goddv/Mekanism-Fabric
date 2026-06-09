@@ -1,6 +1,6 @@
 package mekanism.common.advancements;
 
-import mekanism.common.Mekanism;
+import mekanism.api.MekanismAPIBase;
 import org.jetbrains.annotations.Nullable;
 
 public class MekanismAdvancements {
@@ -9,7 +9,7 @@ public class MekanismAdvancements {
     }
 
     private static MekanismAdvancement advancement(@Nullable MekanismAdvancement parent, String name) {
-        return new MekanismAdvancement(parent, Mekanism.rl(name));
+        return new MekanismAdvancement(parent, MekanismAPIBase.rl(name));
     }
 
     public static final MekanismAdvancement ROOT = advancement(null, "root");

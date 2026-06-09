@@ -45,7 +45,7 @@ public class MekanismAPIBase {
      */
     public static final Logger logger = LogUtils.getLogger();
 
-    protected static Identifier rl(String path) {
+    public static Identifier rl(String path) {
         return Identifier.fromNamespaceAndPath(MEKANISM_MODID, path);
     }
 

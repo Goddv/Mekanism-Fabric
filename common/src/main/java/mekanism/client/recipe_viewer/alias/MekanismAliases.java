@@ -1,7 +1,7 @@
 package mekanism.client.recipe_viewer.alias;
 
 import mekanism.api.annotations.NothingNullByDefault;
-import mekanism.common.Mekanism;
+import mekanism.api.MekanismAPIBase;
 import net.minecraft.util.Util;
 
 @NothingNullByDefault
@@ -139,7 +139,7 @@ public enum MekanismAliases implements IAliasedTranslation {
     private final String alias;
 
     MekanismAliases(String path, String alias) {
-        this.key = Util.makeDescriptionId("alias", Mekanism.rl(path));
+        this.key = Util.makeDescriptionId("alias", MekanismAPIBase.rl(path));
         this.alias = alias;
     }
 

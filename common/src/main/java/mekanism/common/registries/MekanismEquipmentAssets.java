@@ -1,6 +1,6 @@
 package mekanism.common.registries;
 
-import mekanism.common.Mekanism;
+import mekanism.api.MekanismAPIBase;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.item.equipment.EquipmentAssets;
@@ -17,7 +17,7 @@ public class MekanismEquipmentAssets {
     public static final ResourceKey<EquipmentAsset> MEKASUIT = createId("mekasuit");
 
     static ResourceKey<EquipmentAsset> createId(String name) {
-        return ResourceKey.create(EquipmentAssets.ROOT_ID, Mekanism.rl(name));
+        return ResourceKey.create(EquipmentAssets.ROOT_ID, MekanismAPIBase.rl(name));
     }
 
 
