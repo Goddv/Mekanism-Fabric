@@ -12,10 +12,6 @@ public class CachedConfigValue<T> extends CachedResolvableConfigValue<T, T> {
         return new CachedConfigValue<>(config, internal);
     }
 
-    public static <T> CachedConfigValue<T> wrap(IMekanismConfig config, net.neoforged.neoforge.common.ModConfigSpec.ConfigValue<T> internal) {
-        return wrap(config, new NeoConfigValue<>(internal));
-    }
-
     @Override
     protected T resolve(T encoded) {
         return encoded;

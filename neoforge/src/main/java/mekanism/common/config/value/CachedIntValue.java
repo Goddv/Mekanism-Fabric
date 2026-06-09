@@ -17,10 +17,6 @@ public class CachedIntValue extends CachedValue<Integer> implements IntSupplier,
         return new CachedIntValue(config, internal);
     }
 
-    public static CachedIntValue wrap(IMekanismConfig config, net.neoforged.neoforge.common.ModConfigSpec.ConfigValue<Integer> internal) {
-        return wrap(config, new NeoConfigValue<>(internal));
-    }
-
     public int getOrDefault() {
         if (resolved || isLoaded()) {
             return get();

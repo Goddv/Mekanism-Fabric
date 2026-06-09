@@ -1,5 +1,7 @@
 package mekanism.generators.common.config;
 
+import mekanism.common.config.NeoConfigBuilder;
+import mekanism.common.config.IConfigBuilder;
 import mekanism.common.config.BaseMekanismConfig;
 import mekanism.common.config.GearConfig;
 import mekanism.common.config.MekanismConfigTranslations;
@@ -17,7 +19,7 @@ public class GeneratorsGearConfig extends BaseMekanismConfig {
     public final CachedFloatValue mekaSuitHeatDamageReductionRatio;
 
     GeneratorsGearConfig() {
-        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        IConfigBuilder builder = new NeoConfigBuilder();
 
         MekanismConfigTranslations.GEAR_MEKA_SUIT.applyToBuilder(builder).push(GearConfig.MEKASUIT_CATEGORY);
         mekaSuitGeothermalChargingRate = CachedLongValue.wrap(this, GeneratorsConfigTranslations.GEAR_MEKA_SUIT_GEOTHERMAL.applyToBuilder(builder)
@@ -28,7 +30,7 @@ public class GeneratorsGearConfig extends BaseMekanismConfig {
               .defineInRange("heatDamageReductionRatio", 0.8, 0, 1));
         builder.pop(2);
 
-        configSpec = builder.build();
+        configSpec = ((NeoConfigBuilder) builder).buildSpec();
     }
 
     @Override

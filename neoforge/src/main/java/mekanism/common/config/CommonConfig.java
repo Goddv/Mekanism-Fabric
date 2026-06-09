@@ -18,7 +18,7 @@ public class CommonConfig extends BaseMekanismConfig {
     public final CachedBooleanValue holidays;
 
     CommonConfig() {
-        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        IConfigBuilder builder = new NeoConfigBuilder();
 
         energyUnit = CachedEnumValue.wrap(this, MekanismConfigTranslations.COMMON_UNIT_ENERGY.applyToBuilder(builder)
               .defineEnum("energyType", EnergyUnit.FORGE_ENERGY));
@@ -31,7 +31,7 @@ public class CommonConfig extends BaseMekanismConfig {
         holidays = CachedBooleanValue.wrap(this, MekanismConfigTranslations.COMMON_HOLIDAYS.applyToBuilder(builder)
               .define("holidays", true));
 
-        configSpec = builder.build();
+        configSpec = ((NeoConfigBuilder) builder).buildSpec();
     }
 
     @Override

@@ -16,10 +16,6 @@ public class CachedDoubleValue extends CachedValue<Double> implements DoubleSupp
         return new CachedDoubleValue(config, internal);
     }
 
-    public static CachedDoubleValue wrap(IMekanismConfig config, net.neoforged.neoforge.common.ModConfigSpec.ConfigValue<Double> internal) {
-        return wrap(config, new NeoConfigValue<>(internal));
-    }
-
     public double getOrDefault() {
         if (resolved || isLoaded()) {
             return get();

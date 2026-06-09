@@ -1,5 +1,7 @@
 package mekanism.tools.common.config;
 
+import mekanism.common.config.NeoConfigBuilder;
+import mekanism.common.config.IConfigBuilder;
 import mekanism.common.config.BaseMekanismConfig;
 import mekanism.common.config.value.CachedBooleanValue;
 import net.neoforged.fml.config.ModConfig.Type;
@@ -12,12 +14,12 @@ public class ToolsClientConfig extends BaseMekanismConfig {
     public final CachedBooleanValue displayDurabilityTooltips;
 
     public ToolsClientConfig() {
-        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        IConfigBuilder builder = new NeoConfigBuilder();
 
         this.displayDurabilityTooltips = CachedBooleanValue.wrap(this, ToolsConfigTranslations.CLIENT_DURABILITY_TOOLTIPS.applyToBuilder(builder)
               .define("displayDurabilityTooltips", true));
 
-        configSpec = builder.build();
+        configSpec = ((NeoConfigBuilder) builder).buildSpec();
     }
 
     @Override

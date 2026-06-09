@@ -112,7 +112,7 @@ public class GeneralConfig extends BaseMekanismConfig {
     public final CachedLongValue spsEnergyPerInput;
 
     GeneralConfig() {
-        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        IConfigBuilder builder = new NeoConfigBuilder();
 
         //Note: We only enable this config option in dev mode
         if (SharedConstants.IS_RUNNING_IN_IDE) {
@@ -312,7 +312,7 @@ public class GeneralConfig extends BaseMekanismConfig {
         spsEnergyPerInput = CachedLongValue.definePositive(this, builder, MekanismConfigTranslations.GENERAL_SPS_ENERGY_PER, "energyPerInput", 1_000_000);
         builder.pop();
 
-        configSpec = builder.build();
+        configSpec = ((NeoConfigBuilder) builder).buildSpec();
     }
 
     @Override

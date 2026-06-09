@@ -7,6 +7,8 @@ import java.util.Map;
 import mekanism.additions.common.config.AdditionsConfigTranslations.BabySpawnTranslations;
 import mekanism.additions.common.entity.baby.BabyType;
 import mekanism.additions.common.registries.AdditionsEntityTypes;
+import mekanism.common.config.NeoConfigBuilder;
+import mekanism.common.config.IConfigBuilder;
 import mekanism.common.config.BaseMekanismConfig;
 import mekanism.common.config.IMekanismConfig;
 import mekanism.common.config.value.CachedBooleanValue;
@@ -35,7 +37,7 @@ public class AdditionsConfig extends BaseMekanismConfig {
     private final Map<BabyType, SpawnConfig> spawnConfigs = new EnumMap<>(BabyType.class);
 
     AdditionsConfig() {
-        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        IConfigBuilder builder = new NeoConfigBuilder();
 
         AdditionsConfigTranslations.SERVER_OBSIDIAN_TNT.applyToBuilder(builder).push("obsidian_tnt");
         obsidianTNTDelay = CachedIntValue.wrap(this, AdditionsConfigTranslations.SERVER_OBSIDIAN_DELAY.applyToBuilder(builder)
@@ -64,10 +66,10 @@ public class AdditionsConfig extends BaseMekanismConfig {
         addBabyTypeConfig(BabyType.WITHER_SKELETON, builder, AdditionsEntityTypes.BABY_WITHER_SKELETON, EntityType.WITHER_SKELETON);
         builder.pop();
 
-        configSpec = builder.build();
+        configSpec = ((NeoConfigBuilder) builder).buildSpec();
     }
 
-    private void addBabyTypeConfig(BabyType type, ModConfigSpec.Builder builder, Holder<EntityType<?>> entityTypeProvider, EntityType<?> parentType) {
+    private void addBabyTypeConfig(BabyType type, IConfigBuilder builder, Holder<EntityType<?>> entityTypeProvider, EntityType<?> parentType) {
         spawnConfigs.put(type, new SpawnConfig(this, builder, "baby_" + type.getSerializedName(), entityTypeProvider, parentType));
     }
 
@@ -106,7 +108,7 @@ public class AdditionsConfig extends BaseMekanismConfig {
         public final Holder<EntityType<?>> entityType;
         public final EntityType<?> parentType;
 
-        private SpawnConfig(IMekanismConfig config, ModConfigSpec.Builder builder, String name, Holder<EntityType<?>> entityType, EntityType<?> parentType) {
+        private SpawnConfig(IMekanismConfig config, IConfigBuilder builder, String name, Holder<EntityType<?>> entityType, EntityType<?> parentType) {
             this.entityType = entityType;
             this.parentType = parentType;
             BabySpawnTranslations translations = BabySpawnTranslations.create(name);

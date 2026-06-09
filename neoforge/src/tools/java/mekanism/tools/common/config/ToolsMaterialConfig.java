@@ -1,5 +1,7 @@
 package mekanism.tools.common.config;
 
+import mekanism.common.config.NeoConfigBuilder;
+import mekanism.common.config.IConfigBuilder;
 import mekanism.common.config.BaseMekanismConfig;
 import mekanism.tools.common.material.MaterialCreator;
 import mekanism.tools.common.material.VanillaPaxelMaterialCreator;
@@ -36,7 +38,7 @@ public class ToolsMaterialConfig extends BaseMekanismConfig {
     public final MaterialCreator steel;
 
     ToolsMaterialConfig() {
-        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        IConfigBuilder builder = new NeoConfigBuilder();
 
         ToolsConfigTranslations.STARTUP_MATERIALS.applyToBuilder(builder).push("materials");
         wood = new VanillaPaxelMaterialCreator(this, builder, new WoodPaxelMaterialDefaults());
@@ -54,7 +56,7 @@ public class ToolsMaterialConfig extends BaseMekanismConfig {
         refinedObsidian = new MaterialCreator(this, builder, new RefinedObsidianMaterialDefaults());
         builder.pop();
 
-        configSpec = builder.build();
+        configSpec = ((NeoConfigBuilder) builder).buildSpec();
     }
 
     @Override

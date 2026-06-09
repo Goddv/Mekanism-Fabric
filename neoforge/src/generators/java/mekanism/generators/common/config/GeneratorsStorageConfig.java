@@ -1,5 +1,7 @@
 package mekanism.generators.common.config;
 
+import mekanism.common.config.NeoConfigBuilder;
+import mekanism.common.config.IConfigBuilder;
 import mekanism.common.config.BaseMekanismConfig;
 import mekanism.common.config.value.CachedLongValue;
 import net.neoforged.fml.config.ModConfig.Type;
@@ -16,7 +18,7 @@ public class GeneratorsStorageConfig extends BaseMekanismConfig {
     public final CachedLongValue windGenerator;
 
     GeneratorsStorageConfig() {
-        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        IConfigBuilder builder = new NeoConfigBuilder();
 
         heatGenerator = CachedLongValue.definedMin(this, builder, GeneratorsConfigTranslations.ENERGY_STORAGE_GENERATOR_HEAT, "heatGenerator",
               12 * 20, 1);
@@ -29,7 +31,7 @@ public class GeneratorsStorageConfig extends BaseMekanismConfig {
         windGenerator = CachedLongValue.definedMin(this, builder, GeneratorsConfigTranslations.ENERGY_STORAGE_GENERATOR_WIND, "windGenerator",
               5 * 20, 1);
 
-        configSpec = builder.build();
+        configSpec = ((NeoConfigBuilder) builder).buildSpec();
     }
 
     @Override

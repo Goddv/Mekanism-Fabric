@@ -46,7 +46,7 @@ public class StorageConfig extends BaseMekanismConfig {
     public final CachedLongValue dimensionalStabilizer;
 
     StorageConfig() {
-        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        IConfigBuilder builder = new NeoConfigBuilder();
 
         enrichmentChamber = CachedLongValue.definedMin(this, builder, MekanismConfigTranslations.ENERGY_STORAGE_ENRICHMENT_CHAMBER, "enrichmentChamber",
               1_000, 1);
@@ -120,7 +120,7 @@ public class StorageConfig extends BaseMekanismConfig {
         dimensionalStabilizer = CachedLongValue.definedMin(this, builder, MekanismConfigTranslations.ENERGY_STORAGE_DIMENSIONAL_STABILIZER, "dimensionalStabilizer",
               600L, 1);
 
-        configSpec = builder.build();
+        configSpec = ((NeoConfigBuilder) builder).buildSpec();
     }
 
     @Override

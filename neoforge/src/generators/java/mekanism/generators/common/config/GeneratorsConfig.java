@@ -1,5 +1,7 @@
 package mekanism.generators.common.config;
 
+import mekanism.common.config.NeoConfigBuilder;
+import mekanism.common.config.IConfigBuilder;
 import mekanism.common.config.BaseMekanismConfig;
 import mekanism.common.config.value.CachedBooleanValue;
 import mekanism.common.config.value.CachedDoubleValue;
@@ -75,7 +77,7 @@ public class GeneratorsConfig extends BaseMekanismConfig {
     public final CachedLongValue fusionSteamPerInjection;
 
     GeneratorsConfig() {
-        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        IConfigBuilder builder = new NeoConfigBuilder();
 
         GeneratorsConfigTranslations.SERVER_HOHLRAUM.applyToBuilder(builder).push("hohlraum");
         hohlraumMaxGas = CachedLongValue.wrap(this, GeneratorsConfigTranslations.SERVER_HOHLRAUM_CAPACITY.applyToBuilder(builder)
@@ -201,7 +203,7 @@ public class GeneratorsConfig extends BaseMekanismConfig {
               .defineInRange("steamPerInjection", 100L * baseMaxWater, 1, Long.MAX_VALUE / FusionReactorMultiblockData.MAX_INJECTION));
         builder.pop();
 
-        configSpec = builder.build();
+        configSpec = ((NeoConfigBuilder) builder).buildSpec();
     }
 
     @Override

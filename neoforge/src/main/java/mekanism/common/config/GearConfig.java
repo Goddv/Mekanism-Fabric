@@ -120,7 +120,7 @@ public class GearConfig extends BaseMekanismConfig {
     public final CachedFloatValue mekaSuitUnspecifiedDamageRatio;
 
     GearConfig() {
-        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        IConfigBuilder builder = new NeoConfigBuilder();
 
         MekanismConfigTranslations.GEAR_DISASSEMBLER.applyToBuilder(builder).push("atomic_disassembler");
         disassemblerMaxEnergy = CachedLongValue.definePositive(this, builder, MekanismConfigTranslations.GEAR_DISASSEMBLER_MAX_ENERGY, "maxEnergy", 1_000_000);
@@ -286,7 +286,7 @@ public class GearConfig extends BaseMekanismConfig {
               .defineInRange("unspecifiedDamageReductionRatio", 1D, 0, 1));
         builder.pop(2);
 
-        configSpec = builder.build();
+        configSpec = ((NeoConfigBuilder) builder).buildSpec();
     }
 
     @Override

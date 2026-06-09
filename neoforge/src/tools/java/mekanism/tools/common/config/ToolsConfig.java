@@ -1,5 +1,7 @@
 package mekanism.tools.common.config;
 
+import mekanism.common.config.NeoConfigBuilder;
+import mekanism.common.config.IConfigBuilder;
 import mekanism.common.config.BaseMekanismConfig;
 import mekanism.common.config.IMekanismConfig;
 import mekanism.common.config.value.CachedBooleanValue;
@@ -24,7 +26,7 @@ public class ToolsConfig extends BaseMekanismConfig {
     public final ArmorSpawnChanceConfig steelSpawnRate;
 
     ToolsConfig() {
-        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        IConfigBuilder builder = new NeoConfigBuilder();
 
         ToolsConfigTranslations.SERVER_GEAR_SPAWN_CHANCE.applyToBuilder(builder).push("mobGearSpawnRate");
         armorSpawnChance = CachedFloatValue.wrap(this, ToolsConfigTranslations.SERVER_GEAR_SPAWN_CHANCE_ARMOR.applyToBuilder(builder)
@@ -42,7 +44,7 @@ public class ToolsConfig extends BaseMekanismConfig {
         steelSpawnRate = new ArmorSpawnChanceConfig(this, builder, MekanismToolsConfig.materials.steel);
         builder.pop();
 
-        configSpec = builder.build();
+        configSpec = ((NeoConfigBuilder) builder).buildSpec();
     }
 
     @Override
@@ -80,11 +82,11 @@ public class ToolsConfig extends BaseMekanismConfig {
         public final CachedFloatValue weaponEnchantmentChance;
         public final CachedFloatValue armorEnchantmentChance;
 
-        private ArmorSpawnChanceConfig(IMekanismConfig config, ModConfigSpec.Builder builder, MaterialCreator material) {
+        private ArmorSpawnChanceConfig(IMekanismConfig config, IConfigBuilder builder, MaterialCreator material) {
             this(config, builder, material.getRegistryPrefix(), 0.33, 1, 1, 1, 1, 0.25, 0.5);
         }
 
-        private ArmorSpawnChanceConfig(IMekanismConfig config, ModConfigSpec.Builder builder, String key, double swordChance, double helmetChance,
+        private ArmorSpawnChanceConfig(IMekanismConfig config, IConfigBuilder builder, String key, double swordChance, double helmetChance,
               double chestplateChance, double leggingsChance, double bootsChance, double weaponEnchantmentChance, double armorEnchantmentChance) {
             ArmorSpawnChanceTranslations translations = ArmorSpawnChanceTranslations.create(key);
             translations.topLevel().applyToBuilder(builder).push(key);

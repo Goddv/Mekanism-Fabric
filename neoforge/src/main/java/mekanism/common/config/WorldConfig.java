@@ -31,7 +31,7 @@ public class WorldConfig extends BaseMekanismConfig {
     public final SaltConfig salt;
 
     WorldConfig() {
-        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        IConfigBuilder builder = new NeoConfigBuilder();
 
         enableRegeneration = CachedBooleanValue.wrap(this, MekanismConfigTranslations.WORLD_RETROGEN.applyToBuilder(builder)
               .define("enableRegeneration", false));
@@ -42,7 +42,7 @@ public class WorldConfig extends BaseMekanismConfig {
         }
         salt = new SaltConfig(this, builder, 2, 2, 3, 1);
 
-        configSpec = builder.build();
+        configSpec = ((NeoConfigBuilder) builder).buildSpec();
     }
 
     @Override
@@ -78,7 +78,7 @@ public class WorldConfig extends BaseMekanismConfig {
         private final CachedBooleanValue shouldGenerate;
         private final List<OreVeinConfig> veinConfigs;
 
-        private OreConfig(IMekanismConfig config, ModConfigSpec.Builder builder, OreType oreType) {
+        private OreConfig(IMekanismConfig config, IConfigBuilder builder, OreType oreType) {
             String ore = oreType.getResource().getRegistrySuffix();
             OreConfigTranslations translations = OreConfigTranslations.create(ore);
             translations.topLevel().applyToBuilder(builder).push(ore);
@@ -116,7 +116,7 @@ public class WorldConfig extends BaseMekanismConfig {
         public final CachedIntValue maxRadius;
         public final CachedIntValue halfHeight;
 
-        private SaltConfig(IMekanismConfig config, ModConfigSpec.Builder builder, int perChunk, int baseRadius, int spread, int ySize) {
+        private SaltConfig(IMekanismConfig config, IConfigBuilder builder, int perChunk, int baseRadius, int spread, int ySize) {
             MekanismConfigTranslations.WORLD_SALT.applyToBuilder(builder).push("salt");
             this.shouldGenerate = CachedBooleanValue.wrap(config, MekanismConfigTranslations.WORLD_SALT_SHOULD_GENERATE.applyToBuilder(builder)
                   .define("shouldGenerate", true));

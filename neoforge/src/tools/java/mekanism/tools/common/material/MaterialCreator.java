@@ -3,6 +3,7 @@ package mekanism.tools.common.material;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import mekanism.api.annotations.NothingNullByDefault;
+import mekanism.common.config.IConfigBuilder;
 import mekanism.common.config.IMekanismConfig;
 import mekanism.common.config.value.CachedFloatValue;
 import mekanism.common.config.value.CachedIntValue;
@@ -23,7 +24,6 @@ import net.minecraft.world.item.equipment.ArmorType;
 import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.item.equipment.EquipmentAssets;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.neoforge.common.ModConfigSpec;
 
 @NothingNullByDefault
 public class MaterialCreator implements BaseMekanismMaterial {
@@ -62,7 +62,7 @@ public class MaterialCreator implements BaseMekanismMaterial {
     private final CachedIntValue chestplateArmor;
     private final CachedIntValue helmetArmor;
 
-    public MaterialCreator(IMekanismConfig config, ModConfigSpec.Builder builder, BaseMekanismMaterial materialDefaults) {
+    public MaterialCreator(IMekanismConfig config, IConfigBuilder builder, BaseMekanismMaterial materialDefaults) {
         fallBack = materialDefaults;
         String toolKey = getRegistryPrefix();
         equipmentAsset = ResourceKey.create(EquipmentAssets.ROOT_ID, MekanismTools.rl(toolKey));

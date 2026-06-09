@@ -59,7 +59,7 @@ public class ClientConfig extends BaseMekanismConfig {
     public final Map<String, CachedWindowPosition> lastWindowPositions = new HashMap<>();
 
     ClientConfig() {
-        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        IConfigBuilder builder = new NeoConfigBuilder();
 
         MekanismConfigTranslations.CLIENT_ACCESSIBILITY.applyToBuilder(builder).push("accessibility");
         whiteRadialText = CachedBooleanValue.wrap(this, MekanismConfigTranslations.CLIENT_WHITE_RADIAL_TEXT.applyToBuilder(builder)
@@ -157,7 +157,7 @@ public class ClientConfig extends BaseMekanismConfig {
         }
         builder.pop();
 
-        configSpec = builder.build();
+        configSpec = ((NeoConfigBuilder) builder).buildSpec();
     }
 
     @Override

@@ -6,9 +6,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import mekanism.common.config.IConfigBuilder;
 import mekanism.common.config.IMekanismConfig;
 import net.minecraft.resources.Identifier;
-import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class CachedOredictionificatorConfigValue extends CachedMapConfigValue<String, List<String>> {
 
@@ -16,12 +16,12 @@ public class CachedOredictionificatorConfigValue extends CachedMapConfigValue<St
         super(config, internal);
     }
 
-    public static CachedOredictionificatorConfigValue define(IMekanismConfig config, ModConfigSpec.Builder builder, String path,
+    public static CachedOredictionificatorConfigValue define(IMekanismConfig config, IConfigBuilder builder, String path,
           Supplier<Map<String, List<String>>> defaults) {
-        return new CachedOredictionificatorConfigValue(config, new NeoConfigValue<>(builder.defineListAllowEmpty(path,
+        return new CachedOredictionificatorConfigValue(config, builder.defineListAllowEmpty(path,
               () -> encodeStatic(defaults.get(), CachedOredictionificatorConfigValue::encodeStatic),
               () -> "c:ingots/",
-              o -> o instanceof String string && Identifier.tryParse(string.toLowerCase(Locale.ROOT)) != null)));
+              o -> o instanceof String string && Identifier.tryParse(string.toLowerCase(Locale.ROOT)) != null));
     }
 
     @Override

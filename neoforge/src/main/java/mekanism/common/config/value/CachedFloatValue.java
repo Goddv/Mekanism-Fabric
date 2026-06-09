@@ -18,10 +18,6 @@ public class CachedFloatValue extends CachedValue<Double> implements FloatSuppli
         return new CachedFloatValue(config, internal);
     }
 
-    public static CachedFloatValue wrap(IMekanismConfig config, net.neoforged.neoforge.common.ModConfigSpec.ConfigValue<Double> internal) {
-        return wrap(config, new NeoConfigValue<>(internal));
-    }
-
     public float getOrDefault() {
         if (resolved || isLoaded()) {
             return get();

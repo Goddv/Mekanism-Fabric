@@ -16,10 +16,6 @@ public class CachedBooleanValue extends CachedValue<Boolean> implements BooleanS
         return new CachedBooleanValue(config, internal);
     }
 
-    public static CachedBooleanValue wrap(IMekanismConfig config, net.neoforged.neoforge.common.ModConfigSpec.ConfigValue<Boolean> internal) {
-        return wrap(config, new NeoConfigValue<>(internal));
-    }
-
     public boolean getOrDefault() {
         if (resolved || isLoaded()) {
             return get();

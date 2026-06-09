@@ -1,7 +1,6 @@
 package mekanism.common.config;
 
 import mekanism.api.text.IHasTranslationKey;
-import net.neoforged.neoforge.common.ModConfigSpec;
 import org.jetbrains.annotations.Nullable;
 
 public interface IConfigTranslation extends IHasTranslationKey {
@@ -15,7 +14,7 @@ public interface IConfigTranslation extends IHasTranslationKey {
         return null;
     }
 
-    default ModConfigSpec.Builder applyToBuilder(ModConfigSpec.Builder builder) {
+    default IConfigBuilder applyToBuilder(IConfigBuilder builder) {
         return builder.translation(getTranslationKey()).comment(tooltip());
     }
 

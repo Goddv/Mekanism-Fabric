@@ -16,10 +16,6 @@ public class CachedShortValue extends CachedValue<Short> implements ShortSupplie
         return new CachedShortValue(config, internal);
     }
 
-    public static CachedShortValue wrap(IMekanismConfig config, net.neoforged.neoforge.common.ModConfigSpec.ConfigValue<Short> internal) {
-        return wrap(config, new NeoConfigValue<>(internal));
-    }
-
     public short getOrDefault() {
         if (resolved || isLoaded()) {
             return get();

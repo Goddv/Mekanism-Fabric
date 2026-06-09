@@ -25,7 +25,7 @@ public class TierConfig extends BaseMekanismConfig {
     private final ModConfigSpec configSpec;
 
     TierConfig() {
-        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        IConfigBuilder builder = new NeoConfigBuilder();
         addEnergyCubeCategory(builder);
         addFluidTankCategory(builder);
         addChemicalTankCategory(builder);
@@ -33,10 +33,10 @@ public class TierConfig extends BaseMekanismConfig {
         addInductionCategory(builder);
         addTransmittersCategory(builder);
 
-        configSpec = builder.build();
+        configSpec = ((NeoConfigBuilder) builder).buildSpec();
     }
 
-    private void addEnergyCubeCategory(ModConfigSpec.Builder builder) {
+    private void addEnergyCubeCategory(IConfigBuilder builder) {
         MekanismConfigTranslations.TIER_ENERGY_CUBE.applyToBuilder(builder).push("energy_cubes");
         for (EnergyCubeTier tier : EnumUtils.ENERGY_CUBE_TIERS) {
             TierTranslations translations = TierTranslations.create(tier);
@@ -50,7 +50,7 @@ public class TierConfig extends BaseMekanismConfig {
         builder.pop();
     }
 
-    private void addFluidTankCategory(ModConfigSpec.Builder builder) {
+    private void addFluidTankCategory(IConfigBuilder builder) {
         MekanismConfigTranslations.TIER_FLUID_TANK.applyToBuilder(builder).push("fluid_tanks");
         for (FluidTankTier tier : EnumUtils.FLUID_TANK_TIERS) {
             TierTranslations translations = TierTranslations.create(tier);
@@ -64,7 +64,7 @@ public class TierConfig extends BaseMekanismConfig {
         builder.pop();
     }
 
-    private void addChemicalTankCategory(ModConfigSpec.Builder builder) {
+    private void addChemicalTankCategory(IConfigBuilder builder) {
         MekanismConfigTranslations.TIER_CHEMICAL_TANK.applyToBuilder(builder).push("chemical_tanks");
         for (ChemicalTankTier tier : EnumUtils.CHEMICAL_TANK_TIERS) {
             TierTranslations translations = TierTranslations.create(tier);
@@ -78,7 +78,7 @@ public class TierConfig extends BaseMekanismConfig {
         builder.pop();
     }
 
-    private void addBinCategory(ModConfigSpec.Builder builder) {
+    private void addBinCategory(IConfigBuilder builder) {
         MekanismConfigTranslations.TIER_BIN.applyToBuilder(builder).push("bins");
         for (BinTier tier : EnumUtils.BIN_TIERS) {
             TierTranslations translations = TierTranslations.create(tier);
@@ -90,7 +90,7 @@ public class TierConfig extends BaseMekanismConfig {
         builder.pop();
     }
 
-    private void addInductionCategory(ModConfigSpec.Builder builder) {
+    private void addInductionCategory(IConfigBuilder builder) {
         MekanismConfigTranslations.TIER_INDUCTION.applyToBuilder(builder).push("induction");
         for (InductionCellTier tier : EnumUtils.INDUCTION_CELL_TIERS) {
             TierTranslations translations = TierTranslations.create(tier);
@@ -109,7 +109,7 @@ public class TierConfig extends BaseMekanismConfig {
         builder.pop();
     }
 
-    private void addTransmittersCategory(ModConfigSpec.Builder builder) {
+    private void addTransmittersCategory(IConfigBuilder builder) {
         MekanismConfigTranslations.TIER_TRANSMITTERS.applyToBuilder(builder).push("transmitters");
         addUniversalCableCategory(builder);
         addMechanicalPipeCategory(builder);
@@ -119,7 +119,7 @@ public class TierConfig extends BaseMekanismConfig {
         builder.pop();
     }
 
-    private void addUniversalCableCategory(ModConfigSpec.Builder builder) {
+    private void addUniversalCableCategory(IConfigBuilder builder) {
         MekanismConfigTranslations.TIER_TRANSMITTERS_ENERGY.applyToBuilder(builder).push("energy");
         for (CableTier tier : EnumUtils.CABLE_TIERS) {
             TierTranslations translations = TierTranslations.create(tier);
@@ -131,7 +131,7 @@ public class TierConfig extends BaseMekanismConfig {
         builder.pop();
     }
 
-    private void addMechanicalPipeCategory(ModConfigSpec.Builder builder) {
+    private void addMechanicalPipeCategory(IConfigBuilder builder) {
         MekanismConfigTranslations.TIER_TRANSMITTERS_FLUID.applyToBuilder(builder).push("fluid");
         for (PipeTier tier : EnumUtils.PIPE_TIERS) {
             TierTranslations translations = TierTranslations.create(tier);
@@ -145,7 +145,7 @@ public class TierConfig extends BaseMekanismConfig {
         builder.pop();
     }
 
-    private void addPressurizedTubesCategory(ModConfigSpec.Builder builder) {
+    private void addPressurizedTubesCategory(IConfigBuilder builder) {
         MekanismConfigTranslations.TIER_TRANSMITTERS_CHEMICAL.applyToBuilder(builder).push("chemical");
         for (TubeTier tier : EnumUtils.TUBE_TIERS) {
             TierTranslations translations = TierTranslations.create(tier);
@@ -159,7 +159,7 @@ public class TierConfig extends BaseMekanismConfig {
         builder.pop();
     }
 
-    private void addLogisticalTransportersCategory(ModConfigSpec.Builder builder) {
+    private void addLogisticalTransportersCategory(IConfigBuilder builder) {
         MekanismConfigTranslations.TIER_TRANSMITTERS_ITEM.applyToBuilder(builder).push("items");
         for (TransporterTier tier : EnumUtils.TRANSPORTER_TIERS) {
             TierTranslations translations = TierTranslations.create(tier);
@@ -173,7 +173,7 @@ public class TierConfig extends BaseMekanismConfig {
         builder.pop();
     }
 
-    private void addThermodynamicConductorsCategory(ModConfigSpec.Builder builder) {
+    private void addThermodynamicConductorsCategory(IConfigBuilder builder) {
         MekanismConfigTranslations.TIER_TRANSMITTERS_HEAT.applyToBuilder(builder).push("heat");
         for (ConductorTier tier : EnumUtils.CONDUCTOR_TIERS) {
             TierTranslations translations = TierTranslations.create(tier);

@@ -30,7 +30,7 @@ public class MekanismStartupConfig extends BaseMekanismConfig {
     public final CachedFloatValue mekaSuitKnockbackResistance;
 
     MekanismStartupConfig() {
-        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        IConfigBuilder builder = new NeoConfigBuilder();
 
         MekanismConfigTranslations.STARTUP_GEAR.applyToBuilder(builder).push("gear");
 
@@ -80,7 +80,7 @@ public class MekanismStartupConfig extends BaseMekanismConfig {
         builder.pop();//End mekasuit
 
         builder.pop();//End gear
-        configSpec = builder.build();
+        configSpec = ((NeoConfigBuilder) builder).buildSpec();
     }
 
     @Override

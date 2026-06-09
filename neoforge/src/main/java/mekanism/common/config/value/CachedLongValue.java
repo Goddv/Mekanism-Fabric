@@ -1,9 +1,9 @@
 package mekanism.common.config.value;
 
 import java.util.function.LongSupplier;
+import mekanism.common.config.IConfigBuilder;
 import mekanism.common.config.IConfigTranslation;
 import mekanism.common.config.IMekanismConfig;
-import net.neoforged.neoforge.common.ModConfigSpec.Builder;
 
 public class CachedLongValue extends CachedValue<Long> implements LongSupplier {
 
@@ -18,19 +18,15 @@ public class CachedLongValue extends CachedValue<Long> implements LongSupplier {
         return new CachedLongValue(config, internal);
     }
 
-    public static CachedLongValue wrap(IMekanismConfig config, net.neoforged.neoforge.common.ModConfigSpec.ConfigValue<Long> internal) {
-        return wrap(config, new NeoConfigValue<>(internal));
-    }
-
-    public static CachedLongValue definePositive(IMekanismConfig config, Builder builder, IConfigTranslation comment, String path, long defaultValue) {
+    public static CachedLongValue definePositive(IMekanismConfig config, IConfigBuilder builder, IConfigTranslation comment, String path, long defaultValue) {
         return define(config, builder, comment, path, defaultValue, 0, Long.MAX_VALUE);
     }
 
-    public static CachedLongValue definedMin(IMekanismConfig config, Builder builder, IConfigTranslation comment, String path, long defaultValue, long min) {
+    public static CachedLongValue definedMin(IMekanismConfig config, IConfigBuilder builder, IConfigTranslation comment, String path, long defaultValue, long min) {
         return define(config, builder, comment, path, defaultValue, min, Long.MAX_VALUE);
     }
 
-    public static CachedLongValue define(IMekanismConfig config, Builder builder, IConfigTranslation comment, String path, long defaultValue, long min, long max) {
+    public static CachedLongValue define(IMekanismConfig config, IConfigBuilder builder, IConfigTranslation comment, String path, long defaultValue, long min, long max) {
         return wrap(config, comment.applyToBuilder(builder).defineInRange(path, defaultValue, min, max));
     }
 

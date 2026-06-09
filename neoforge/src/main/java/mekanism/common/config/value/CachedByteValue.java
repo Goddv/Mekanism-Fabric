@@ -16,10 +16,6 @@ public class CachedByteValue extends CachedValue<Byte> implements ByteSupplier {
         return new CachedByteValue(config, internal);
     }
 
-    public static CachedByteValue wrap(IMekanismConfig config, net.neoforged.neoforge.common.ModConfigSpec.ConfigValue<Byte> internal) {
-        return wrap(config, new NeoConfigValue<>(internal));
-    }
-
     public byte getOrDefault() {
         if (resolved || isLoaded()) {
             return get();

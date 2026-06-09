@@ -1,19 +1,19 @@
 package mekanism.common.world.height;
 
+import mekanism.common.config.IConfigBuilder;
 import mekanism.common.config.IConfigTranslation;
 import mekanism.common.config.IMekanismConfig;
 import mekanism.common.config.MekanismConfigTranslations;
 import mekanism.common.config.value.CachedEnumValue;
 import mekanism.common.config.value.CachedIntValue;
+import mekanism.common.config.value.IConfigValue;
 import mekanism.common.resource.ore.OreAnchor;
 import net.minecraft.world.level.levelgen.WorldGenerationContext;
-import net.neoforged.neoforge.common.ModConfigSpec;
-import net.neoforged.neoforge.common.ModConfigSpec.ConfigValue;
 import org.jetbrains.annotations.Nullable;
 
 public record ConfigurableVerticalAnchor(CachedEnumValue<AnchorType> anchorType, CachedIntValue value) {
 
-    public static ConfigurableVerticalAnchor create(IMekanismConfig config, ModConfigSpec.Builder builder, String path, IConfigTranslation translation, OreAnchor defaultAnchor,
+    public static ConfigurableVerticalAnchor create(IMekanismConfig config, IConfigBuilder builder, String path, IConfigTranslation translation, OreAnchor defaultAnchor,
           @Nullable ConfigurableVerticalAnchor minAnchor) {
         translation.applyToBuilder(builder).push(path);
         CachedEnumValue<AnchorType> type = CachedEnumValue.wrap(config, MekanismConfigTranslations.WORLD_ANCHOR_TYPE.applyToBuilder(builder)
@@ -23,7 +23,7 @@ public record ConfigurableVerticalAnchor(CachedEnumValue<AnchorType> anchorType,
                     "Above Bottom (y = minY + value)",
                     "Below Top (y = depth - 1 + minY - value)"
               ).defineEnum("type", defaultAnchor.type()));
-        ConfigValue<Integer> value;
+        IConfigValue<Integer> value;
         if (minAnchor == null) {
             value = MekanismConfigTranslations.WORLD_ANCHOR_VALUE.applyToBuilder(builder).define("value", defaultAnchor.value());
         } else {

@@ -46,7 +46,7 @@ public class UsageConfig extends BaseMekanismConfig {
     public final CachedLongValue teleporterDimensionPenalty;
 
     UsageConfig() {
-        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        IConfigBuilder builder = new NeoConfigBuilder();
 
         enrichmentChamber = CachedLongValue.definePositive(this, builder, MekanismConfigTranslations.ENERGY_USAGE_ENRICHMENT_CHAMBER, "enrichmentChamber", 5L);
         osmiumCompressor = CachedLongValue.definePositive(this, builder, MekanismConfigTranslations.ENERGY_USAGE_COMPRESSOR, "osmiumCompressor", 15L);
@@ -89,7 +89,7 @@ public class UsageConfig extends BaseMekanismConfig {
         teleporterDimensionPenalty = CachedLongValue.definePositive(this, builder, MekanismConfigTranslations.USAGE_TELEPORTER_PENALTY, "dimensionPenalty", 1000L);
         builder.pop();
 
-        configSpec = builder.build();
+        configSpec = ((NeoConfigBuilder) builder).buildSpec();
     }
 
     @Override

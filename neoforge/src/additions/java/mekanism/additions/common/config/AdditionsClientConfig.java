@@ -1,5 +1,7 @@
 package mekanism.additions.common.config;
 
+import mekanism.common.config.NeoConfigBuilder;
+import mekanism.common.config.IConfigBuilder;
 import mekanism.common.config.BaseMekanismConfig;
 import mekanism.common.config.value.CachedBooleanValue;
 import net.neoforged.fml.config.ModConfig.Type;
@@ -12,12 +14,12 @@ public class AdditionsClientConfig extends BaseMekanismConfig {
     public final CachedBooleanValue pushToTalk;
 
     AdditionsClientConfig() {
-        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        IConfigBuilder builder = new NeoConfigBuilder();
 
         pushToTalk = CachedBooleanValue.wrap(this, AdditionsConfigTranslations.CLIENT_PUSH_TO_TALK.applyToBuilder(builder)
               .define("pushToTalk", true));
 
-        configSpec = builder.build();
+        configSpec = ((NeoConfigBuilder) builder).buildSpec();
     }
 
     @Override
