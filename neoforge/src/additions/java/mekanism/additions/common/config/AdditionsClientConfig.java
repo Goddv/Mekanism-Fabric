@@ -1,25 +1,22 @@
 package mekanism.additions.common.config;
 
-import mekanism.common.config.NeoConfigBuilder;
+import mekanism.common.config.ConfigType;
+import mekanism.common.config.IConfigBuilderFactory;
 import mekanism.common.config.IConfigBuilder;
 import mekanism.common.config.BaseMekanismConfig;
 import mekanism.common.config.value.CachedBooleanValue;
-import net.neoforged.fml.config.ModConfig.Type;
-import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class AdditionsClientConfig extends BaseMekanismConfig {
-
-    private final ModConfigSpec configSpec;
 
     public final CachedBooleanValue pushToTalk;
 
     AdditionsClientConfig() {
-        IConfigBuilder builder = new NeoConfigBuilder();
+        IConfigBuilder builder = IConfigBuilderFactory.INSTANCE.create();
 
         pushToTalk = CachedBooleanValue.wrap(this, AdditionsConfigTranslations.CLIENT_PUSH_TO_TALK.applyToBuilder(builder)
               .define("pushToTalk", true));
 
-        configSpec = ((NeoConfigBuilder) builder).buildSpec();
+        this.configSpec = builder.build();
     }
 
     @Override
@@ -33,12 +30,7 @@ public class AdditionsClientConfig extends BaseMekanismConfig {
     }
 
     @Override
-    public ModConfigSpec getConfigSpec() {
-        return configSpec;
-    }
-
-    @Override
-    public Type getConfigType() {
-        return Type.CLIENT;
+    public ConfigType getConfigType() {
+        return ConfigType.CLIENT;
     }
 }

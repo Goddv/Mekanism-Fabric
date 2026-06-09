@@ -1,16 +1,15 @@
 package mekanism.common.config;
 
-import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
+/**
+ * NeoForge-only extension of {@link IMekanismConfig} that exposes the wrapped {@link ModConfigSpec} for NeoForge
+ * registration ({@code MekanismConfigHelper}). The spec is reached through the loader-neutral {@link #getSpec()} seam,
+ * cast to {@link NeoConfigSpec}; the config classes themselves never name {@code ModConfigSpec}.
+ */
 public interface INeoMekanismConfig extends IMekanismConfig {
 
-    ModConfigSpec getConfigSpec();
-
-    ModConfig.Type getConfigType();
-
-    @Override
-    default boolean isLoaded() {
-        return getConfigSpec().isLoaded();
+    default ModConfigSpec getConfigSpec() {
+        return ((NeoConfigSpec) getSpec()).getModConfigSpec();
     }
 }

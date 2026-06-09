@@ -8,6 +8,12 @@ public interface IMekanismConfig {
 
     String getTranslation();
 
+    /** Loader-neutral config type, used by the (loader-specific) registration path to bind this config to a file. */
+    ConfigType getConfigType();
+
+    /** The built spec handle for this config (load-state + persistence). */
+    IConfigSpec getSpec();
+
     boolean isLoaded();
 
     void save();

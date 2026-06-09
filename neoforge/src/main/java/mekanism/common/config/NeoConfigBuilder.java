@@ -101,7 +101,8 @@ public class NeoConfigBuilder implements IConfigBuilder {
         return this;
     }
 
-    public ModConfigSpec buildSpec() {
-        return builder.build();
+    @Override
+    public IConfigSpec build() {
+        return new NeoConfigSpec(builder.build());
     }
 }

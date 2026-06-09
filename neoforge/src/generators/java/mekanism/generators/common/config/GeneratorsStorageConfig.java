@@ -1,15 +1,12 @@
 package mekanism.generators.common.config;
 
-import mekanism.common.config.NeoConfigBuilder;
+import mekanism.common.config.ConfigType;
+import mekanism.common.config.IConfigBuilderFactory;
 import mekanism.common.config.IConfigBuilder;
 import mekanism.common.config.BaseMekanismConfig;
 import mekanism.common.config.value.CachedLongValue;
-import net.neoforged.fml.config.ModConfig.Type;
-import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class GeneratorsStorageConfig extends BaseMekanismConfig {
-
-    private final ModConfigSpec configSpec;
 
     public final CachedLongValue heatGenerator;
     public final CachedLongValue bioGenerator;
@@ -18,7 +15,7 @@ public class GeneratorsStorageConfig extends BaseMekanismConfig {
     public final CachedLongValue windGenerator;
 
     GeneratorsStorageConfig() {
-        IConfigBuilder builder = new NeoConfigBuilder();
+        IConfigBuilder builder = IConfigBuilderFactory.INSTANCE.create();
 
         heatGenerator = CachedLongValue.definedMin(this, builder, GeneratorsConfigTranslations.ENERGY_STORAGE_GENERATOR_HEAT, "heatGenerator",
               12 * 20, 1);
@@ -31,7 +28,7 @@ public class GeneratorsStorageConfig extends BaseMekanismConfig {
         windGenerator = CachedLongValue.definedMin(this, builder, GeneratorsConfigTranslations.ENERGY_STORAGE_GENERATOR_WIND, "windGenerator",
               5 * 20, 1);
 
-        configSpec = ((NeoConfigBuilder) builder).buildSpec();
+        this.configSpec = builder.build();
     }
 
     @Override
@@ -45,12 +42,7 @@ public class GeneratorsStorageConfig extends BaseMekanismConfig {
     }
 
     @Override
-    public ModConfigSpec getConfigSpec() {
-        return configSpec;
-    }
-
-    @Override
-    public Type getConfigType() {
-        return Type.SERVER;
+    public ConfigType getConfigType() {
+        return ConfigType.SERVER;
     }
 }

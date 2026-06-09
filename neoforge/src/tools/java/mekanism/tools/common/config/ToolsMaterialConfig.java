@@ -1,6 +1,7 @@
 package mekanism.tools.common.config;
 
-import mekanism.common.config.NeoConfigBuilder;
+import mekanism.common.config.ConfigType;
+import mekanism.common.config.IConfigBuilderFactory;
 import mekanism.common.config.IConfigBuilder;
 import mekanism.common.config.BaseMekanismConfig;
 import mekanism.tools.common.material.MaterialCreator;
@@ -17,12 +18,8 @@ import mekanism.tools.common.material.impl.vanilla.IronPaxelMaterialDefaults;
 import mekanism.tools.common.material.impl.vanilla.NetheritePaxelMaterialDefaults;
 import mekanism.tools.common.material.impl.vanilla.StonePaxelMaterialDefaults;
 import mekanism.tools.common.material.impl.vanilla.WoodPaxelMaterialDefaults;
-import net.neoforged.fml.config.ModConfig.Type;
-import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class ToolsMaterialConfig extends BaseMekanismConfig {
-
-    private final ModConfigSpec configSpec;
 
     public final VanillaPaxelMaterialCreator wood;
     public final VanillaPaxelMaterialCreator stone;
@@ -38,7 +35,7 @@ public class ToolsMaterialConfig extends BaseMekanismConfig {
     public final MaterialCreator steel;
 
     ToolsMaterialConfig() {
-        IConfigBuilder builder = new NeoConfigBuilder();
+        IConfigBuilder builder = IConfigBuilderFactory.INSTANCE.create();
 
         ToolsConfigTranslations.STARTUP_MATERIALS.applyToBuilder(builder).push("materials");
         wood = new VanillaPaxelMaterialCreator(this, builder, new WoodPaxelMaterialDefaults());
@@ -56,7 +53,7 @@ public class ToolsMaterialConfig extends BaseMekanismConfig {
         refinedObsidian = new MaterialCreator(this, builder, new RefinedObsidianMaterialDefaults());
         builder.pop();
 
-        configSpec = ((NeoConfigBuilder) builder).buildSpec();
+        this.configSpec = builder.build();
     }
 
     @Override
@@ -70,12 +67,7 @@ public class ToolsMaterialConfig extends BaseMekanismConfig {
     }
 
     @Override
-    public ModConfigSpec getConfigSpec() {
-        return configSpec;
-    }
-
-    @Override
-    public Type getConfigType() {
-        return Type.STARTUP;
+    public ConfigType getConfigType() {
+        return ConfigType.STARTUP;
     }
 }

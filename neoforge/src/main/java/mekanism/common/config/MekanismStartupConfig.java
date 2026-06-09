@@ -4,14 +4,10 @@ import mekanism.common.config.value.CachedFloatValue;
 import mekanism.common.config.value.CachedIntValue;
 import net.minecraft.world.item.equipment.ArmorMaterials;
 import net.minecraft.world.item.equipment.ArmorType;
-import net.neoforged.fml.config.ModConfig.Type;
-import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class MekanismStartupConfig extends BaseMekanismConfig {
 
     private static final String ARMORED_SUBCATEGORY = "armored";
-
-    private final ModConfigSpec configSpec;
 
     //Armored Free Runner
     public final CachedIntValue armoredFreeRunnerArmor;
@@ -30,7 +26,7 @@ public class MekanismStartupConfig extends BaseMekanismConfig {
     public final CachedFloatValue mekaSuitKnockbackResistance;
 
     MekanismStartupConfig() {
-        IConfigBuilder builder = new NeoConfigBuilder();
+        IConfigBuilder builder = IConfigBuilderFactory.INSTANCE.create();
 
         MekanismConfigTranslations.STARTUP_GEAR.applyToBuilder(builder).push("gear");
 
@@ -80,7 +76,7 @@ public class MekanismStartupConfig extends BaseMekanismConfig {
         builder.pop();//End mekasuit
 
         builder.pop();//End gear
-        configSpec = ((NeoConfigBuilder) builder).buildSpec();
+        this.configSpec = builder.build();
     }
 
     @Override
@@ -94,12 +90,7 @@ public class MekanismStartupConfig extends BaseMekanismConfig {
     }
 
     @Override
-    public ModConfigSpec getConfigSpec() {
-        return configSpec;
-    }
-
-    @Override
-    public Type getConfigType() {
-        return Type.STARTUP;
+    public ConfigType getConfigType() {
+        return ConfigType.STARTUP;
     }
 }

@@ -19,13 +19,9 @@ import mekanism.common.tier.EnergyCubeTier;
 import mekanism.common.tier.FluidTankTier;
 import net.minecraft.SharedConstants;
 import net.minecraft.resources.Identifier;
-import net.neoforged.fml.config.ModConfig.Type;
-import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.fluids.FluidType;
 
 public class GeneralConfig extends BaseMekanismConfig {
-
-    private final ModConfigSpec configSpec;
 
     public final BooleanSupplier enableAlphaWarning;
 
@@ -112,7 +108,7 @@ public class GeneralConfig extends BaseMekanismConfig {
     public final CachedLongValue spsEnergyPerInput;
 
     GeneralConfig() {
-        IConfigBuilder builder = new NeoConfigBuilder();
+        IConfigBuilder builder = IConfigBuilderFactory.INSTANCE.create();
 
         //Note: We only enable this config option in dev mode
         if (SharedConstants.IS_RUNNING_IN_IDE) {
@@ -312,7 +308,7 @@ public class GeneralConfig extends BaseMekanismConfig {
         spsEnergyPerInput = CachedLongValue.definePositive(this, builder, MekanismConfigTranslations.GENERAL_SPS_ENERGY_PER, "energyPerInput", 1_000_000);
         builder.pop();
 
-        configSpec = ((NeoConfigBuilder) builder).buildSpec();
+        this.configSpec = builder.build();
     }
 
     @Override
@@ -320,19 +316,13 @@ public class GeneralConfig extends BaseMekanismConfig {
         return "general";
     }
 
-
     @Override
     public String getTranslation() {
         return "General Config";
     }
 
     @Override
-    public ModConfigSpec getConfigSpec() {
-        return configSpec;
-    }
-
-    @Override
-    public Type getConfigType() {
-        return Type.SERVER;
+    public ConfigType getConfigType() {
+        return ConfigType.SERVER;
     }
 }

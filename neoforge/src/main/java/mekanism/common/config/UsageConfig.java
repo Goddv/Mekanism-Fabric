@@ -2,12 +2,8 @@ package mekanism.common.config;
 
 import mekanism.common.config.value.CachedBooleanValue;
 import mekanism.common.config.value.CachedLongValue;
-import net.neoforged.fml.config.ModConfig.Type;
-import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class UsageConfig extends BaseMekanismConfig {
-
-    private final ModConfigSpec configSpec;
 
     public final CachedLongValue enrichmentChamber;
     public final CachedLongValue osmiumCompressor;
@@ -46,7 +42,7 @@ public class UsageConfig extends BaseMekanismConfig {
     public final CachedLongValue teleporterDimensionPenalty;
 
     UsageConfig() {
-        IConfigBuilder builder = new NeoConfigBuilder();
+        IConfigBuilder builder = IConfigBuilderFactory.INSTANCE.create();
 
         enrichmentChamber = CachedLongValue.definePositive(this, builder, MekanismConfigTranslations.ENERGY_USAGE_ENRICHMENT_CHAMBER, "enrichmentChamber", 5L);
         osmiumCompressor = CachedLongValue.definePositive(this, builder, MekanismConfigTranslations.ENERGY_USAGE_COMPRESSOR, "osmiumCompressor", 15L);
@@ -89,7 +85,7 @@ public class UsageConfig extends BaseMekanismConfig {
         teleporterDimensionPenalty = CachedLongValue.definePositive(this, builder, MekanismConfigTranslations.USAGE_TELEPORTER_PENALTY, "dimensionPenalty", 1000L);
         builder.pop();
 
-        configSpec = ((NeoConfigBuilder) builder).buildSpec();
+        this.configSpec = builder.build();
     }
 
     @Override
@@ -97,19 +93,13 @@ public class UsageConfig extends BaseMekanismConfig {
         return "machine-usage";
     }
 
-
     @Override
     public String getTranslation() {
         return "Usage Config";
     }
 
     @Override
-    public ModConfigSpec getConfigSpec() {
-        return configSpec;
-    }
-
-    @Override
-    public Type getConfigType() {
-        return Type.SERVER;
+    public ConfigType getConfigType() {
+        return ConfigType.SERVER;
     }
 }

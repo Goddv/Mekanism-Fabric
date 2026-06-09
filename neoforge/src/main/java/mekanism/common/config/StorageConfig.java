@@ -1,12 +1,8 @@
 package mekanism.common.config;
 
 import mekanism.common.config.value.CachedLongValue;
-import net.neoforged.fml.config.ModConfig.Type;
-import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class StorageConfig extends BaseMekanismConfig {
-
-    private final ModConfigSpec configSpec;
 
     public final CachedLongValue enrichmentChamber;
     public final CachedLongValue osmiumCompressor;
@@ -46,7 +42,7 @@ public class StorageConfig extends BaseMekanismConfig {
     public final CachedLongValue dimensionalStabilizer;
 
     StorageConfig() {
-        IConfigBuilder builder = new NeoConfigBuilder();
+        IConfigBuilder builder = IConfigBuilderFactory.INSTANCE.create();
 
         enrichmentChamber = CachedLongValue.definedMin(this, builder, MekanismConfigTranslations.ENERGY_STORAGE_ENRICHMENT_CHAMBER, "enrichmentChamber",
               1_000, 1);
@@ -120,7 +116,7 @@ public class StorageConfig extends BaseMekanismConfig {
         dimensionalStabilizer = CachedLongValue.definedMin(this, builder, MekanismConfigTranslations.ENERGY_STORAGE_DIMENSIONAL_STABILIZER, "dimensionalStabilizer",
               600L, 1);
 
-        configSpec = ((NeoConfigBuilder) builder).buildSpec();
+        this.configSpec = builder.build();
     }
 
     @Override
@@ -128,19 +124,13 @@ public class StorageConfig extends BaseMekanismConfig {
         return "machine-storage";
     }
 
-
     @Override
     public String getTranslation() {
         return "Storage Config";
     }
 
     @Override
-    public ModConfigSpec getConfigSpec() {
-        return configSpec;
-    }
-
-    @Override
-    public Type getConfigType() {
-        return Type.SERVER;
+    public ConfigType getConfigType() {
+        return ConfigType.SERVER;
     }
 }

@@ -1,6 +1,7 @@
 package mekanism.generators.common.config;
 
-import mekanism.common.config.NeoConfigBuilder;
+import mekanism.common.config.ConfigType;
+import mekanism.common.config.IConfigBuilderFactory;
 import mekanism.common.config.IConfigBuilder;
 import mekanism.common.config.BaseMekanismConfig;
 import mekanism.common.config.value.CachedBooleanValue;
@@ -12,13 +13,9 @@ import mekanism.common.util.EnumUtils;
 import mekanism.generators.common.content.fission.FissionReactorMultiblockData;
 import mekanism.generators.common.content.fusion.FusionReactorMultiblockData;
 import net.minecraft.world.level.dimension.DimensionType;
-import net.neoforged.fml.config.ModConfig.Type;
-import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.fluids.FluidType;
 
 public class GeneratorsConfig extends BaseMekanismConfig {
-
-    private final ModConfigSpec configSpec;
 
     public final CachedLongValue advancedSolarGeneration;
 
@@ -77,7 +74,7 @@ public class GeneratorsConfig extends BaseMekanismConfig {
     public final CachedLongValue fusionSteamPerInjection;
 
     GeneratorsConfig() {
-        IConfigBuilder builder = new NeoConfigBuilder();
+        IConfigBuilder builder = IConfigBuilderFactory.INSTANCE.create();
 
         GeneratorsConfigTranslations.SERVER_HOHLRAUM.applyToBuilder(builder).push("hohlraum");
         hohlraumMaxGas = CachedLongValue.wrap(this, GeneratorsConfigTranslations.SERVER_HOHLRAUM_CAPACITY.applyToBuilder(builder)
@@ -203,7 +200,7 @@ public class GeneratorsConfig extends BaseMekanismConfig {
               .defineInRange("steamPerInjection", 100L * baseMaxWater, 1, Long.MAX_VALUE / FusionReactorMultiblockData.MAX_INJECTION));
         builder.pop();
 
-        configSpec = ((NeoConfigBuilder) builder).buildSpec();
+        this.configSpec = builder.build();
     }
 
     @Override
@@ -217,12 +214,7 @@ public class GeneratorsConfig extends BaseMekanismConfig {
     }
 
     @Override
-    public ModConfigSpec getConfigSpec() {
-        return configSpec;
-    }
-
-    @Override
-    public Type getConfigType() {
-        return Type.SERVER;
+    public ConfigType getConfigType() {
+        return ConfigType.SERVER;
     }
 }

@@ -18,12 +18,9 @@ import mekanism.common.resource.ore.OreType.OreVeinType;
 import mekanism.common.util.EnumUtils;
 import mekanism.common.world.height.ConfigurableHeightRange;
 import net.minecraft.world.level.dimension.DimensionType;
-import net.neoforged.fml.config.ModConfig.Type;
-import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class WorldConfig extends BaseMekanismConfig {
 
-    private final ModConfigSpec configSpec;
     public final CachedBooleanValue enableRegeneration;
     public final CachedIntValue userGenVersion;
 
@@ -31,7 +28,7 @@ public class WorldConfig extends BaseMekanismConfig {
     public final SaltConfig salt;
 
     WorldConfig() {
-        IConfigBuilder builder = new NeoConfigBuilder();
+        IConfigBuilder builder = IConfigBuilderFactory.INSTANCE.create();
 
         enableRegeneration = CachedBooleanValue.wrap(this, MekanismConfigTranslations.WORLD_RETROGEN.applyToBuilder(builder)
               .define("enableRegeneration", false));
@@ -42,7 +39,7 @@ public class WorldConfig extends BaseMekanismConfig {
         }
         salt = new SaltConfig(this, builder, 2, 2, 3, 1);
 
-        configSpec = ((NeoConfigBuilder) builder).buildSpec();
+        this.configSpec = builder.build();
     }
 
     @Override
@@ -56,13 +53,8 @@ public class WorldConfig extends BaseMekanismConfig {
     }
 
     @Override
-    public ModConfigSpec getConfigSpec() {
-        return configSpec;
-    }
-
-    @Override
-    public Type getConfigType() {
-        return Type.SERVER;
+    public ConfigType getConfigType() {
+        return ConfigType.SERVER;
     }
 
     public OreVeinConfig getVeinConfig(OreVeinType oreVeinType) {

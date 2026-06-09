@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 import mekanism.common.Mekanism;
 import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.config.IConfigSpec;
 import net.neoforged.fml.event.config.ModConfigEvent;
 
 public class MekanismConfig {
@@ -14,7 +13,7 @@ public class MekanismConfig {
     private MekanismConfig() {
     }
 
-    private static final Map<IConfigSpec, IMekanismConfig> KNOWN_CONFIGS = new HashMap<>();
+    private static final Map<net.neoforged.fml.config.IConfigSpec, IMekanismConfig> KNOWN_CONFIGS = new HashMap<>();
     public static final ClientConfig client = new ClientConfig();
     public static final CommonConfig common = new CommonConfig();
     public static final GeneralConfig general = new GeneralConfig();

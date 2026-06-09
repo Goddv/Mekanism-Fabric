@@ -8,8 +8,6 @@ import mekanism.common.config.value.CachedLongValue;
 import mekanism.common.content.gear.mekasuit.ModuleGravitationalModulatingUnit;
 import net.minecraft.SharedConstants;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.neoforged.fml.config.ModConfig.Type;
-import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.fluids.FluidType;
 
 public class GearConfig extends BaseMekanismConfig {
@@ -18,8 +16,6 @@ public class GearConfig extends BaseMekanismConfig {
     public static final String JETPACK_CATEGORY = "jetpack";
     public static final String MEKASUIT_CATEGORY = "mekasuit";
     public static final String MEKASUIT_DAMAGE_CATEGORY = "damage_absorption";
-
-    private final ModConfigSpec configSpec;
 
     //Atomic Disassembler
     public final CachedLongValue disassemblerEnergyUsage;
@@ -120,7 +116,7 @@ public class GearConfig extends BaseMekanismConfig {
     public final CachedFloatValue mekaSuitUnspecifiedDamageRatio;
 
     GearConfig() {
-        IConfigBuilder builder = new NeoConfigBuilder();
+        IConfigBuilder builder = IConfigBuilderFactory.INSTANCE.create();
 
         MekanismConfigTranslations.GEAR_DISASSEMBLER.applyToBuilder(builder).push("atomic_disassembler");
         disassemblerMaxEnergy = CachedLongValue.definePositive(this, builder, MekanismConfigTranslations.GEAR_DISASSEMBLER_MAX_ENERGY, "maxEnergy", 1_000_000);
@@ -286,7 +282,7 @@ public class GearConfig extends BaseMekanismConfig {
               .defineInRange("unspecifiedDamageReductionRatio", 1D, 0, 1));
         builder.pop(2);
 
-        configSpec = ((NeoConfigBuilder) builder).buildSpec();
+        this.configSpec = builder.build();
     }
 
     @Override
@@ -300,12 +296,7 @@ public class GearConfig extends BaseMekanismConfig {
     }
 
     @Override
-    public ModConfigSpec getConfigSpec() {
-        return configSpec;
-    }
-
-    @Override
-    public Type getConfigType() {
-        return Type.SERVER;
+    public ConfigType getConfigType() {
+        return ConfigType.SERVER;
     }
 }

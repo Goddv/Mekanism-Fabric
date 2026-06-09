@@ -1,6 +1,7 @@
 package mekanism.tools.common.config;
 
-import mekanism.common.config.NeoConfigBuilder;
+import mekanism.common.config.ConfigType;
+import mekanism.common.config.IConfigBuilderFactory;
 import mekanism.common.config.IConfigBuilder;
 import mekanism.common.config.BaseMekanismConfig;
 import mekanism.common.config.IMekanismConfig;
@@ -8,12 +9,8 @@ import mekanism.common.config.value.CachedBooleanValue;
 import mekanism.common.config.value.CachedFloatValue;
 import mekanism.tools.common.config.ToolsConfigTranslations.ArmorSpawnChanceTranslations;
 import mekanism.tools.common.material.MaterialCreator;
-import net.neoforged.fml.config.ModConfig.Type;
-import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class ToolsConfig extends BaseMekanismConfig {
-
-    private final ModConfigSpec configSpec;
 
     public final CachedFloatValue armorSpawnChance;
     public final CachedFloatValue weaponSpawnChance;
@@ -26,7 +23,7 @@ public class ToolsConfig extends BaseMekanismConfig {
     public final ArmorSpawnChanceConfig steelSpawnRate;
 
     ToolsConfig() {
-        IConfigBuilder builder = new NeoConfigBuilder();
+        IConfigBuilder builder = IConfigBuilderFactory.INSTANCE.create();
 
         ToolsConfigTranslations.SERVER_GEAR_SPAWN_CHANCE.applyToBuilder(builder).push("mobGearSpawnRate");
         armorSpawnChance = CachedFloatValue.wrap(this, ToolsConfigTranslations.SERVER_GEAR_SPAWN_CHANCE_ARMOR.applyToBuilder(builder)
@@ -44,7 +41,7 @@ public class ToolsConfig extends BaseMekanismConfig {
         steelSpawnRate = new ArmorSpawnChanceConfig(this, builder, MekanismToolsConfig.materials.steel);
         builder.pop();
 
-        configSpec = ((NeoConfigBuilder) builder).buildSpec();
+        this.configSpec = builder.build();
     }
 
     @Override
@@ -58,13 +55,8 @@ public class ToolsConfig extends BaseMekanismConfig {
     }
 
     @Override
-    public ModConfigSpec getConfigSpec() {
-        return configSpec;
-    }
-
-    @Override
-    public Type getConfigType() {
-        return Type.SERVER;
+    public ConfigType getConfigType() {
+        return ConfigType.SERVER;
     }
 
     public static class ArmorSpawnChanceConfig {

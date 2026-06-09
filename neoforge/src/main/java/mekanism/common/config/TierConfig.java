@@ -17,15 +17,11 @@ import mekanism.common.tier.PipeTier;
 import mekanism.common.tier.TransporterTier;
 import mekanism.common.tier.TubeTier;
 import mekanism.common.util.EnumUtils;
-import net.neoforged.fml.config.ModConfig.Type;
-import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class TierConfig extends BaseMekanismConfig {
 
-    private final ModConfigSpec configSpec;
-
     TierConfig() {
-        IConfigBuilder builder = new NeoConfigBuilder();
+        IConfigBuilder builder = IConfigBuilderFactory.INSTANCE.create();
         addEnergyCubeCategory(builder);
         addFluidTankCategory(builder);
         addChemicalTankCategory(builder);
@@ -33,7 +29,7 @@ public class TierConfig extends BaseMekanismConfig {
         addInductionCategory(builder);
         addTransmittersCategory(builder);
 
-        configSpec = ((NeoConfigBuilder) builder).buildSpec();
+        this.configSpec = builder.build();
     }
 
     private void addEnergyCubeCategory(IConfigBuilder builder) {
@@ -200,12 +196,7 @@ public class TierConfig extends BaseMekanismConfig {
     }
 
     @Override
-    public ModConfigSpec getConfigSpec() {
-        return configSpec;
-    }
-
-    @Override
-    public Type getConfigType() {
-        return Type.SERVER;
+    public ConfigType getConfigType() {
+        return ConfigType.SERVER;
     }
 }

@@ -46,4 +46,10 @@ public interface IConfigBuilder {
     IConfigBuilder worldRestart();
 
     IConfigBuilder gameRestart();
+
+    /**
+     * Finalizes the spec being built and returns the loader-neutral {@link IConfigSpec} handle. The NeoForge
+     * implementation builds the underlying {@code ModConfigSpec} (verbatim) and wraps it.
+     */
+    IConfigSpec build();
 }
