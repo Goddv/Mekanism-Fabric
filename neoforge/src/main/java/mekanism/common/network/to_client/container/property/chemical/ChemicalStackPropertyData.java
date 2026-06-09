@@ -1,7 +1,7 @@
 package mekanism.common.network.to_client.container.property.chemical;
 
 import mekanism.api.chemical.ChemicalStack;
-import mekanism.common.inventory.container.MekanismContainer;
+import mekanism.common.inventory.container.IPropertyDataReceiver;
 import mekanism.common.network.to_client.container.property.PropertyData;
 import mekanism.common.network.to_client.container.property.PropertyType;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -24,7 +24,7 @@ public final class ChemicalStackPropertyData extends PropertyData {
     }
 
     @Override
-    public void handleWindowProperty(MekanismContainer container) {
-        container.handleWindowProperty(getProperty(), value);
+    public void handleWindowProperty(IPropertyDataReceiver receiver) {
+        receiver.handleWindowProperty(getProperty(), value);
     }
 }

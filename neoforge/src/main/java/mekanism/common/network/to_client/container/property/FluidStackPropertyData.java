@@ -1,5 +1,6 @@
 package mekanism.common.network.to_client.container.property;
 
+import mekanism.common.inventory.container.IPropertyDataReceiver;
 import mekanism.common.inventory.container.MekanismContainer;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -24,7 +25,9 @@ public class FluidStackPropertyData extends PropertyData {
     }
 
     @Override
-    public void handleWindowProperty(MekanismContainer container) {
-        container.handleWindowProperty(getProperty(), value);
+    public void handleWindowProperty(IPropertyDataReceiver receiver) {
+        if (receiver instanceof MekanismContainer container) {
+            container.handleWindowProperty(getProperty(), value);
+        }
     }
 }

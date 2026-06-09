@@ -62,7 +62,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class MekanismContainer extends AbstractContainerMenu implements ISecurityContainer {
+public abstract class MekanismContainer extends AbstractContainerMenu implements ISecurityContainer, IPropertyDataReceiver {
 
     public static final int BASE_Y_OFFSET = 84;
     public static final int TRANSPORTER_CONFIG_WINDOW = 0;

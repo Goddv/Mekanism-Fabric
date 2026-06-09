@@ -1,7 +1,7 @@
 package mekanism.common.network.to_client.container.property;
 
 import io.netty.buffer.ByteBuf;
-import mekanism.common.inventory.container.MekanismContainer;
+import mekanism.common.inventory.container.IPropertyDataReceiver;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
@@ -21,7 +21,7 @@ public class IntPropertyData extends PropertyData {
     }
 
     @Override
-    public void handleWindowProperty(MekanismContainer container) {
-        container.handleWindowProperty(getProperty(), value);
+    public void handleWindowProperty(IPropertyDataReceiver receiver) {
+        receiver.handleWindowProperty(getProperty(), value);
     }
 }

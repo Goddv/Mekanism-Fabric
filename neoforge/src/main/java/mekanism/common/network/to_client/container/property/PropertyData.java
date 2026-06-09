@@ -1,6 +1,6 @@
 package mekanism.common.network.to_client.container.property;
 
-import mekanism.common.inventory.container.MekanismContainer;
+import mekanism.common.inventory.container.IPropertyDataReceiver;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 
@@ -25,5 +25,5 @@ public abstract class PropertyData {
         return property;
     }
 
-    public abstract void handleWindowProperty(MekanismContainer container);
+    public abstract void handleWindowProperty(IPropertyDataReceiver receiver);
 }
