@@ -2,19 +2,22 @@ package mekanism.common.config.value;
 
 import java.util.function.DoubleSupplier;
 import mekanism.common.config.IMekanismConfig;
-import net.neoforged.neoforge.common.ModConfigSpec.ConfigValue;
 
 public class CachedDoubleValue extends CachedValue<Double> implements DoubleSupplier {
 
     private boolean resolved;
     private double cachedValue;
 
-    private CachedDoubleValue(IMekanismConfig config, ConfigValue<Double> internal) {
+    private CachedDoubleValue(IMekanismConfig config, IConfigValue<Double> internal) {
         super(config, internal);
     }
 
-    public static CachedDoubleValue wrap(IMekanismConfig config, ConfigValue<Double> internal) {
+    public static CachedDoubleValue wrap(IMekanismConfig config, IConfigValue<Double> internal) {
         return new CachedDoubleValue(config, internal);
+    }
+
+    public static CachedDoubleValue wrap(IMekanismConfig config, net.neoforged.neoforge.common.ModConfigSpec.ConfigValue<Double> internal) {
+        return wrap(config, new NeoConfigValue<>(internal));
     }
 
     public double getOrDefault() {

@@ -2,7 +2,6 @@ package mekanism.common.config.value;
 
 import mekanism.api.functions.FloatSupplier;
 import mekanism.common.config.IMekanismConfig;
-import net.neoforged.neoforge.common.ModConfigSpec.ConfigValue;
 
 //TODO: Once https://github.com/MinecraftForge/MinecraftForge/pull/6464 is merged make this extend CachedPrimitiveValue<Float>
 // and make it so that our get is cleaner
@@ -11,12 +10,16 @@ public class CachedFloatValue extends CachedValue<Double> implements FloatSuppli
     private boolean resolved;
     private float cachedValue;
 
-    private CachedFloatValue(IMekanismConfig config, ConfigValue<Double> internal) {
+    private CachedFloatValue(IMekanismConfig config, IConfigValue<Double> internal) {
         super(config, internal);
     }
 
-    public static CachedFloatValue wrap(IMekanismConfig config, ConfigValue<Double> internal) {
+    public static CachedFloatValue wrap(IMekanismConfig config, IConfigValue<Double> internal) {
         return new CachedFloatValue(config, internal);
+    }
+
+    public static CachedFloatValue wrap(IMekanismConfig config, net.neoforged.neoforge.common.ModConfigSpec.ConfigValue<Double> internal) {
+        return wrap(config, new NeoConfigValue<>(internal));
     }
 
     public float getOrDefault() {

@@ -6,15 +6,14 @@ import java.util.Set;
 import java.util.function.BiPredicate;
 import mekanism.common.Mekanism;
 import mekanism.common.config.IMekanismConfig;
-import net.neoforged.neoforge.common.ModConfigSpec.ConfigValue;
 
 public abstract class CachedValue<T> {
 
     private final IMekanismConfig config;
-    protected final ConfigValue<T> internal;
+    protected final IConfigValue<T> internal;
     private Set<IConfigValueInvalidationListener> invalidationListeners;
 
-    protected CachedValue(IMekanismConfig config, ConfigValue<T> internal) {
+    protected CachedValue(IMekanismConfig config, IConfigValue<T> internal) {
         this.config = config;
         this.internal = internal;
         this.config.addCachedValue(this);

@@ -4,19 +4,22 @@ import java.util.function.LongSupplier;
 import mekanism.common.config.IConfigTranslation;
 import mekanism.common.config.IMekanismConfig;
 import net.neoforged.neoforge.common.ModConfigSpec.Builder;
-import net.neoforged.neoforge.common.ModConfigSpec.ConfigValue;
 
 public class CachedLongValue extends CachedValue<Long> implements LongSupplier {
 
     private boolean resolved;
     private long cachedValue;
 
-    private CachedLongValue(IMekanismConfig config, ConfigValue<Long> internal) {
+    private CachedLongValue(IMekanismConfig config, IConfigValue<Long> internal) {
         super(config, internal);
     }
 
-    public static CachedLongValue wrap(IMekanismConfig config, ConfigValue<Long> internal) {
+    public static CachedLongValue wrap(IMekanismConfig config, IConfigValue<Long> internal) {
         return new CachedLongValue(config, internal);
+    }
+
+    public static CachedLongValue wrap(IMekanismConfig config, net.neoforged.neoforge.common.ModConfigSpec.ConfigValue<Long> internal) {
+        return wrap(config, new NeoConfigValue<>(internal));
     }
 
     public static CachedLongValue definePositive(IMekanismConfig config, Builder builder, IConfigTranslation comment, String path, long defaultValue) {

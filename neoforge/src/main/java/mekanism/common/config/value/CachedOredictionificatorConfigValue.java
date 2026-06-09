@@ -9,20 +9,19 @@ import java.util.function.Supplier;
 import mekanism.common.config.IMekanismConfig;
 import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.common.ModConfigSpec;
-import net.neoforged.neoforge.common.ModConfigSpec.ConfigValue;
 
 public class CachedOredictionificatorConfigValue extends CachedMapConfigValue<String, List<String>> {
 
-    private CachedOredictionificatorConfigValue(IMekanismConfig config, ConfigValue<List<? extends String>> internal) {
+    private CachedOredictionificatorConfigValue(IMekanismConfig config, IConfigValue<List<? extends String>> internal) {
         super(config, internal);
     }
 
     public static CachedOredictionificatorConfigValue define(IMekanismConfig config, ModConfigSpec.Builder builder, String path,
           Supplier<Map<String, List<String>>> defaults) {
-        return new CachedOredictionificatorConfigValue(config, builder.defineListAllowEmpty(path,
+        return new CachedOredictionificatorConfigValue(config, new NeoConfigValue<>(builder.defineListAllowEmpty(path,
               () -> encodeStatic(defaults.get(), CachedOredictionificatorConfigValue::encodeStatic),
               () -> "c:ingots/",
-              o -> o instanceof String string && Identifier.tryParse(string.toLowerCase(Locale.ROOT)) != null));
+              o -> o instanceof String string && Identifier.tryParse(string.toLowerCase(Locale.ROOT)) != null)));
     }
 
     @Override

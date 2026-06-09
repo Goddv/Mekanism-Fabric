@@ -2,19 +2,22 @@ package mekanism.common.config.value;
 
 import mekanism.api.functions.ByteSupplier;
 import mekanism.common.config.IMekanismConfig;
-import net.neoforged.neoforge.common.ModConfigSpec.ConfigValue;
 
 public class CachedByteValue extends CachedValue<Byte> implements ByteSupplier {
 
     private boolean resolved;
     private byte cachedValue;
 
-    private CachedByteValue(IMekanismConfig config, ConfigValue<Byte> internal) {
+    private CachedByteValue(IMekanismConfig config, IConfigValue<Byte> internal) {
         super(config, internal);
     }
 
-    public static CachedByteValue wrap(IMekanismConfig config, ConfigValue<Byte> internal) {
+    public static CachedByteValue wrap(IMekanismConfig config, IConfigValue<Byte> internal) {
         return new CachedByteValue(config, internal);
+    }
+
+    public static CachedByteValue wrap(IMekanismConfig config, net.neoforged.neoforge.common.ModConfigSpec.ConfigValue<Byte> internal) {
+        return wrap(config, new NeoConfigValue<>(internal));
     }
 
     public byte getOrDefault() {

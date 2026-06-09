@@ -2,20 +2,19 @@ package mekanism.common.config.value;
 
 import java.util.function.Supplier;
 import mekanism.common.config.IMekanismConfig;
-import net.neoforged.neoforge.common.ModConfigSpec.ConfigValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * @param <TYPE> The type this {@link CachedResolvableConfigValue} resolves to
- * @param <REAL> The real type that the {@link ConfigValue} holds
+ * @param <REAL> The real type that the {@link IConfigValue} holds
  */
 public abstract class CachedResolvableConfigValue<TYPE, REAL> extends CachedValue<REAL> implements Supplier<TYPE> {
 
     @Nullable
     private TYPE cachedValue;
 
-    protected CachedResolvableConfigValue(IMekanismConfig config, ConfigValue<REAL> internal) {
+    protected CachedResolvableConfigValue(IMekanismConfig config, IConfigValue<REAL> internal) {
         super(config, internal);
     }
 

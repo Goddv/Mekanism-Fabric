@@ -3,19 +3,22 @@ package mekanism.common.config.value;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import mekanism.common.config.IMekanismConfig;
-import net.neoforged.neoforge.common.ModConfigSpec.ConfigValue;
 
 public class CachedIntValue extends CachedValue<Integer> implements IntSupplier, LongSupplier {
 
     private boolean resolved;
     private int cachedValue;
 
-    private CachedIntValue(IMekanismConfig config, ConfigValue<Integer> internal) {
+    private CachedIntValue(IMekanismConfig config, IConfigValue<Integer> internal) {
         super(config, internal);
     }
 
-    public static CachedIntValue wrap(IMekanismConfig config, ConfigValue<Integer> internal) {
+    public static CachedIntValue wrap(IMekanismConfig config, IConfigValue<Integer> internal) {
         return new CachedIntValue(config, internal);
+    }
+
+    public static CachedIntValue wrap(IMekanismConfig config, net.neoforged.neoforge.common.ModConfigSpec.ConfigValue<Integer> internal) {
+        return wrap(config, new NeoConfigValue<>(internal));
     }
 
     public int getOrDefault() {

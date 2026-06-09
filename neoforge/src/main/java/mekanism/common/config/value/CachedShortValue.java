@@ -2,19 +2,22 @@ package mekanism.common.config.value;
 
 import mekanism.api.functions.ShortSupplier;
 import mekanism.common.config.IMekanismConfig;
-import net.neoforged.neoforge.common.ModConfigSpec.ConfigValue;
 
 public class CachedShortValue extends CachedValue<Short> implements ShortSupplier {
 
     private boolean resolved;
     private short cachedValue;
 
-    private CachedShortValue(IMekanismConfig config, ConfigValue<Short> internal) {
+    private CachedShortValue(IMekanismConfig config, IConfigValue<Short> internal) {
         super(config, internal);
     }
 
-    public static CachedShortValue wrap(IMekanismConfig config, ConfigValue<Short> internal) {
+    public static CachedShortValue wrap(IMekanismConfig config, IConfigValue<Short> internal) {
         return new CachedShortValue(config, internal);
+    }
+
+    public static CachedShortValue wrap(IMekanismConfig config, net.neoforged.neoforge.common.ModConfigSpec.ConfigValue<Short> internal) {
+        return wrap(config, new NeoConfigValue<>(internal));
     }
 
     public short getOrDefault() {

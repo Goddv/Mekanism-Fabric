@@ -2,19 +2,22 @@ package mekanism.common.config.value;
 
 import java.util.function.BooleanSupplier;
 import mekanism.common.config.IMekanismConfig;
-import net.neoforged.neoforge.common.ModConfigSpec.ConfigValue;
 
 public class CachedBooleanValue extends CachedValue<Boolean> implements BooleanSupplier {
 
     private boolean resolved;
     private boolean cachedValue;
 
-    private CachedBooleanValue(IMekanismConfig config, ConfigValue<Boolean> internal) {
+    private CachedBooleanValue(IMekanismConfig config, IConfigValue<Boolean> internal) {
         super(config, internal);
     }
 
-    public static CachedBooleanValue wrap(IMekanismConfig config, ConfigValue<Boolean> internal) {
+    public static CachedBooleanValue wrap(IMekanismConfig config, IConfigValue<Boolean> internal) {
         return new CachedBooleanValue(config, internal);
+    }
+
+    public static CachedBooleanValue wrap(IMekanismConfig config, net.neoforged.neoforge.common.ModConfigSpec.ConfigValue<Boolean> internal) {
+        return wrap(config, new NeoConfigValue<>(internal));
     }
 
     public boolean getOrDefault() {

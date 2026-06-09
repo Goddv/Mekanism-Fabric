@@ -7,11 +7,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import mekanism.common.config.IMekanismConfig;
-import net.neoforged.neoforge.common.ModConfigSpec.ConfigValue;
 
 public abstract class CachedMapConfigValue<KEY, VALUE> extends CachedResolvableConfigValue<Map<KEY, VALUE>, List<? extends String>> {
 
-    protected CachedMapConfigValue(IMekanismConfig config, ConfigValue<List<? extends String>> internal) {
+    protected CachedMapConfigValue(IMekanismConfig config, IConfigValue<List<? extends String>> internal) {
         super(config, internal);
     }
 
