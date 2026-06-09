@@ -181,7 +181,7 @@ public class BoilerMultiblockData extends MultiblockData implements IValveHandle
             double heatAvailable = getHeatAvailable();
             lastMaxBoil = Mth.floor(HeatUtils.getSteamEnergyEfficiency() * heatAvailable / HeatUtils.getWaterThermalEnthalpy());
 
-            int amountToBoil = Math.min(lastMaxBoil, waterTank.getFluidAmount());
+            int amountToBoil = (int) Math.min(lastMaxBoil, waterTank.getFluidAmount());
             amountToBoil = Math.min(amountToBoil, Ints.saturatedCast(steamTank.getNeeded()));
             if (!waterTank.isEmpty()) {
                 waterTank.shrinkStack(amountToBoil, Action.EXECUTE);
@@ -246,7 +246,7 @@ public class BoilerMultiblockData extends MultiblockData implements IValveHandle
         input.getInt(SerializationConstants.VOLUME).ifPresent(this::setWaterVolume);
         input.getInt(SerializationConstants.LOWER_VOLUME).ifPresent(this::setSteamVolume);
         //TODO - 26.1: Should this be an orElse empty and then set it regardless?
-        input.read(SerializationConstants.FLUID, FluidStack.OPTIONAL_CODEC).ifPresent(waterTank::setStack);
+        input.read(SerializationConstants.FLUID, mekanism.api.fluid.IFluidStackProvider.INSTANCE.optionalCodec()).ifPresent(waterTank::setStack);
         input.read(SerializationConstants.CHEMICAL, ChemicalStack.OPTIONAL_CODEC).ifPresent(steamTank::setStack);
         input.read(SerializationConstants.RENDER_Y, BlockPos.CODEC).ifPresent(value -> upperRenderLocation = value);
         readValves(input);
@@ -259,7 +259,7 @@ public class BoilerMultiblockData extends MultiblockData implements IValveHandle
         output.putFloat(SerializationConstants.SCALE_ALT, prevSteamScale);
         output.putInt(SerializationConstants.VOLUME, getWaterVolume());
         output.putInt(SerializationConstants.LOWER_VOLUME, getSteamVolume());
-        output.store(SerializationConstants.FLUID, FluidStack.OPTIONAL_CODEC, waterTank.getFluid());
+        output.store(SerializationConstants.FLUID, mekanism.api.fluid.IFluidStackProvider.INSTANCE.optionalCodec(), waterTank.getFluid());
         output.store(SerializationConstants.CHEMICAL, ChemicalStack.OPTIONAL_CODEC, steamTank.getStack());
         output.store(SerializationConstants.RENDER_Y, BlockPos.CODEC, upperRenderLocation);
         writeValves(output);

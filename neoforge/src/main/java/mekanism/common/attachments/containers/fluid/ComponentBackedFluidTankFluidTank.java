@@ -3,6 +3,7 @@ package mekanism.common.attachments.containers.fluid;
 import mekanism.api.Action;
 import mekanism.api.AutomationType;
 import mekanism.api.annotations.NothingNullByDefault;
+import mekanism.api.fluid.IFluidStack;
 import mekanism.api.functions.ConstantPredicates;
 import mekanism.common.attachments.containers.ContainerType;
 import mekanism.common.item.block.machine.ItemBlockFluidTank;
@@ -28,23 +29,23 @@ public class ComponentBackedFluidTankFluidTank extends ComponentBackedFluidTank 
     }
 
     @Override
-    public FluidStack insert(FluidStack stack, Action action, AutomationType automationType) {
+    public IFluidStack insert(IFluidStack stack, Action action, AutomationType automationType) {
         return super.insert(stack, action.combine(!isCreative), automationType);
     }
 
     @Override
-    public FluidStack extract(AttachedFluids attachedFluids, FluidStack stored, int amount, Action action, AutomationType automationType) {
+    public FluidStack extract(AttachedFluids attachedFluids, FluidStack stored, long amount, Action action, AutomationType automationType) {
         return super.extract(attachedFluids, stored, amount, action.combine(!isCreative), automationType);
     }
 
     /**
      * {@inheritDoc}
      *
-     * Note: We are only patching {@link #setStackSize(AttachedFluids, FluidStack, int, Action)}, as both {@link #growStack(int, Action)} and
-     * {@link #shrinkStack(int, Action)} are wrapped through this method.
+     * Note: We are only patching {@link #setStackSize(AttachedFluids, FluidStack, long, Action)}, as both {@link #growStack(long, Action)} and
+     * {@link #shrinkStack(long, Action)} are wrapped through this method.
      */
     @Override
-    public int setStackSize(AttachedFluids attachedFluids, FluidStack stored, int amount, Action action) {
+    public long setStackSize(AttachedFluids attachedFluids, FluidStack stored, long amount, Action action) {
         return super.setStackSize(attachedFluids, stored, amount, action.combine(!isCreative));
     }
 }

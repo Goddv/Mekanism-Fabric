@@ -45,7 +45,7 @@ public class GuiFluidBar extends GuiTankBar<FluidStack> {
             @NotNull
             @Override
             public FluidStack getStack() {
-                return tank.getFluid();
+                return mekanism.common.fluid.NeoFluidStack.unwrap(tank.getFluid());
             }
 
             @Override

@@ -6,7 +6,9 @@ import mekanism.api.Action;
 import mekanism.api.AutomationType;
 import mekanism.api.IContentsListener;
 import mekanism.api.annotations.NothingNullByDefault;
+import mekanism.api.fluid.IFluidStack;
 import mekanism.api.functions.ConstantPredicates;
+import mekanism.common.fluid.NeoFluidStack;
 import mekanism.common.tier.FluidTankTier;
 import mekanism.common.tile.TileEntityFluidTank;
 import mekanism.common.util.WorldUtils;
@@ -45,8 +47,8 @@ public class FluidTankFluidTank extends BasicFluidTank {
     }
 
     @Override
-    public FluidStack insert(FluidStack stack, Action action, AutomationType automationType) {
-        FluidStack remainder;
+    public IFluidStack insert(IFluidStack stack, Action action, AutomationType automationType) {
+        IFluidStack remainder;
         if (isCreative && isEmpty() && action.execute() && automationType != AutomationType.EXTERNAL) {
             //If a player manually inserts into a creative tank (or internally, via a FluidInventorySlot), that is empty we need to allow setting the type,
             // Note: We check that it is not external insertion because an empty creative tanks acts as a "void" for automation
@@ -59,7 +61,7 @@ public class FluidTankFluidTank extends BasicFluidTank {
             remainder = super.insert(stack, action.combine(!isCreative), automationType);
         }
         //Ensure we have the same type of fluid stored as we failed to insert, in which case we want to try to insert to the one above
-        if (!remainder.isEmpty() && FluidStack.isSameFluidSameComponents(stored, remainder)) {
+        if (!remainder.isEmpty() && FluidStack.isSameFluidSameComponents(stored, NeoFluidStack.unwrap(remainder))) {
             //If we have any leftover check if we can send it to the tank that is above
             TileEntityFluidTank tileAbove = WorldUtils.getTileEntity(TileEntityFluidTank.class, this.tile.getLevel(), this.tile.getBlockPos().above());
             if (tileAbove != null) {
@@ -71,18 +73,18 @@ public class FluidTankFluidTank extends BasicFluidTank {
     }
 
     @Override
-    public int growStack(int amount, Action action) {
-        int grownAmount = super.growStack(amount, action);
+    public long growStack(long amount, Action action) {
+        long grownAmount = super.growStack(amount, action);
         if (amount > 0 && grownAmount < amount) {
             //If we grew our stack less than we tried to, and we were actually growing and not shrinking it
             // try inserting into above tiles
             if (!tile.getActive()) {
                 TileEntityFluidTank tileAbove = WorldUtils.getTileEntity(TileEntityFluidTank.class, this.tile.getLevel(), this.tile.getBlockPos().above());
                 if (tileAbove != null) {
-                    int leftOverToInsert = amount - grownAmount;
+                    long leftOverToInsert = amount - grownAmount;
                     //Note: We do external so that it is not limited by the internal rate limits
-                    FluidStack remainder = tileAbove.fluidTank.insert(stored.copyWithAmount(leftOverToInsert), action, AutomationType.EXTERNAL);
-                    grownAmount += leftOverToInsert - remainder.amount();
+                    IFluidStack remainder = tileAbove.fluidTank.insert(NeoFluidStack.wrap(stored.copyWithAmount((int) leftOverToInsert)), action, AutomationType.EXTERNAL);
+                    grownAmount += leftOverToInsert - remainder.getAmount();
                 }
             }
         }
@@ -90,18 +92,18 @@ public class FluidTankFluidTank extends BasicFluidTank {
     }
 
     @Override
-    public FluidStack extract(int amount, Action action, AutomationType automationType) {
+    public IFluidStack extract(long amount, Action action, AutomationType automationType) {
         return super.extract(amount, action.combine(!isCreative), automationType);
     }
 
     /**
      * {@inheritDoc}
      *
-     * Note: We are only patching {@link #setStackSize(int, Action)}, as both {@link #growStack(int, Action)} and {@link #shrinkStack(int, Action)} are wrapped through
+     * Note: We are only patching {@link #setStackSize(long, Action)}, as both {@link #growStack(long, Action)} and {@link #shrinkStack(long, Action)} are wrapped through
      * this method.
      */
     @Override
-    public int setStackSize(int amount, Action action) {
+    public long setStackSize(long amount, Action action) {
         return super.setStackSize(amount, action.combine(!isCreative));
     }
 }

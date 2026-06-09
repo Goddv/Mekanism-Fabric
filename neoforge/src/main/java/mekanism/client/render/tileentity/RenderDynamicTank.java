@@ -54,7 +54,7 @@ public class RenderDynamicTank extends MultiblockTileEntityRenderer<TankMultiblo
 
         switch (multiblock.mergedTank.getCurrentType()) {
             case FLUID -> {
-                FluidStack fluid = multiblock.getFluidTank().getFluid();
+                FluidStack fluid = mekanism.common.fluid.NeoFluidStack.unwrap(multiblock.getFluidTank().getFluid());
                 state.tankTexture = MekanismRenderer.getSinglePicker(MekanismRenderer.getFluidTexture(fluid, MekanismRenderer.FluidTextureType.STILL));
                 state.tankGlow = MekanismRenderer.calculateGlowLight(LightCoordsUtil.FULL_SKY, fluid);
                 state.tankColor = MekanismRenderer.getColorARGB(fluid, scale);

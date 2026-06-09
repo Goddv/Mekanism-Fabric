@@ -71,9 +71,9 @@ public class ItemGaugeDropper extends Item {
         if (player.isShiftKeyDown()) {
             if (!world.isClientSide()) {
                 IFluidHandlerItem fluidHandler = Capabilities.FLUID.getCapability(ItemAccess.forStack(stack));
-                if (fluidHandler instanceof IExtendedFluidHandler fluidHandlerItem) {
-                    for (int tank = 0, tanks = fluidHandlerItem.getTanks(); tank < tanks; tank++) {
-                        fluidHandlerItem.setFluidInTank(tank, FluidStack.EMPTY);
+                if (fluidHandler instanceof mekanism.common.attachments.containers.fluid.ComponentBackedFluidHandler fluidHandlerItem) {
+                    for (mekanism.api.fluid.IExtendedFluidTank fluidTank : fluidHandlerItem.getContainers()) {
+                        fluidTank.setEmpty();
                     }
                 }
                 IChemicalHandler handler = Capabilities.CHEMICAL.getCapability(ItemAccess.forStack(stack));

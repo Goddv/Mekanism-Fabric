@@ -138,7 +138,7 @@ public class TileEntityFluidicPlenisher extends TileEntityMekanism implements IC
                     if (finishedCalc) {
                         BlockPos below = getBlockPos().below();
                         if (canReplace(below, false, false) && canExtractBucket() &&
-                            WorldUtils.tryPlaceContainedLiquid(null, level, below, fluidTank.getFluid(), null)) {
+                            WorldUtils.tryPlaceContainedLiquid(null, level, below, mekanism.common.fluid.NeoFluidStack.unwrap(fluidTank.getFluid()), null)) {
                             level.gameEvent(null, GameEvent.FLUID_PLACE, below);
                             clientEnergyUsed = energyContainer.extract(energyPerTick, Action.EXECUTE, AutomationType.INTERNAL);
                             fluidTank.extract(FluidType.BUCKET_VOLUME, Action.EXECUTE, AutomationType.INTERNAL);
@@ -154,7 +154,7 @@ public class TileEntityFluidicPlenisher extends TileEntityMekanism implements IC
     }
 
     private boolean canExtractBucket() {
-        return fluidTank.extract(FluidType.BUCKET_VOLUME, Action.SIMULATE, AutomationType.INTERNAL).amount() == FluidType.BUCKET_VOLUME;
+        return fluidTank.extract(FluidType.BUCKET_VOLUME, Action.SIMULATE, AutomationType.INTERNAL).getAmount() == FluidType.BUCKET_VOLUME;
     }
 
     private void doPlenish() {
@@ -180,7 +180,7 @@ public class TileEntityFluidicPlenisher extends TileEntityMekanism implements IC
         for (BlockPos nodePos : activeNodes) {
             if (WorldUtils.isBlockLoaded(level, nodePos)) {
                 if (canReplace(nodePos, true, false) && canExtractBucket() &&
-                    WorldUtils.tryPlaceContainedLiquid(null, level, nodePos, fluidTank.getFluid(), null)) {
+                    WorldUtils.tryPlaceContainedLiquid(null, level, nodePos, mekanism.common.fluid.NeoFluidStack.unwrap(fluidTank.getFluid()), null)) {
                     level.gameEvent(null, GameEvent.FLUID_PLACE, nodePos);
                     fluidTank.extract(FluidType.BUCKET_VOLUME, Action.EXECUTE, AutomationType.INTERNAL);
                 }
@@ -218,7 +218,7 @@ public class TileEntityFluidicPlenisher extends TileEntityMekanism implements IC
             //Always return true if it is not a source block
             return true;
         }
-        FluidStack stack = fluidTank.getFluid();
+        FluidStack stack = mekanism.common.fluid.NeoFluidStack.unwrap(fluidTank.getFluid());
         if (stack.isEmpty()) {
             //If we are empty, base it off of if it is replaceable in general or if it is a liquid container
             return state.canBeReplaced() || state.getBlock() instanceof LiquidBlockContainer;

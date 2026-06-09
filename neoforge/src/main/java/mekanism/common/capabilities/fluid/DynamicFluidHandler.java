@@ -7,10 +7,10 @@ import mekanism.api.Action;
 import mekanism.api.IContentsListener;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.fluid.IExtendedFluidTank;
+import mekanism.api.fluid.IFluidStack;
 import mekanism.api.fluid.IMekanismFluidHandler;
 import mekanism.common.capabilities.DynamicHandler;
 import net.minecraft.core.Direction;
-import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.Nullable;
 
 @NothingNullByDefault
@@ -27,32 +27,32 @@ public class DynamicFluidHandler extends DynamicHandler<IExtendedFluidTank> impl
     }
 
     @Override
-    public FluidStack insertFluid(int tank, FluidStack stack, @Nullable Direction side, Action action) {
+    public IFluidStack insertFluid(int tank, IFluidStack stack, @Nullable Direction side, Action action) {
         //If we can insert into the specific side, try to. Otherwise exit
         return canInsert.test(side) ? IMekanismFluidHandler.super.insertFluid(tank, stack, side, action) : stack;
     }
 
     @Override
-    public FluidStack extractFluid(int tank, int amount, @Nullable Direction side, Action action) {
+    public IFluidStack extractFluid(int tank, long amount, @Nullable Direction side, Action action) {
         //If we can extract from a specific side, try to. Otherwise exit
-        return canExtract.test(side) ? IMekanismFluidHandler.super.extractFluid(tank, amount, side, action) : FluidStack.EMPTY;
+        return canExtract.test(side) ? IMekanismFluidHandler.super.extractFluid(tank, amount, side, action) : IFluidStack.empty();
     }
 
     @Override
-    public FluidStack insertFluid(FluidStack stack, @Nullable Direction side, Action action) {
+    public IFluidStack insertFluid(IFluidStack stack, @Nullable Direction side, Action action) {
         //If we can insert into the specific side, try to. Otherwise exit
         return canInsert.test(side) ? IMekanismFluidHandler.super.insertFluid(stack, side, action) : stack;
     }
 
     @Override
-    public FluidStack extractFluid(int amount, @Nullable Direction side, Action action) {
+    public IFluidStack extractFluid(long amount, @Nullable Direction side, Action action) {
         //If we can extract from a specific side, try to. Otherwise exit
-        return canExtract.test(side) ? IMekanismFluidHandler.super.extractFluid(amount, side, action) : FluidStack.EMPTY;
+        return canExtract.test(side) ? IMekanismFluidHandler.super.extractFluid(amount, side, action) : IFluidStack.empty();
     }
 
     @Override
-    public FluidStack extractFluid(FluidStack stack, @Nullable Direction side, Action action) {
+    public IFluidStack extractFluid(IFluidStack stack, @Nullable Direction side, Action action) {
         //If we can extract from a specific side, try to. Otherwise exit
-        return canExtract.test(side) ? IMekanismFluidHandler.super.extractFluid(stack, side, action) : FluidStack.EMPTY;
+        return canExtract.test(side) ? IMekanismFluidHandler.super.extractFluid(stack, side, action) : IFluidStack.empty();
     }
 }

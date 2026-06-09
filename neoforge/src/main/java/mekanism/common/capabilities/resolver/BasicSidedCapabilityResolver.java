@@ -11,7 +11,7 @@ import net.neoforged.neoforge.capabilities.BlockCapability;
 import org.jetbrains.annotations.Nullable;
 
 @NothingNullByDefault
-public class BasicSidedCapabilityResolver<HANDLER, SIDED_HANDLER extends HANDLER> implements ICapabilityResolver<@Nullable Direction> {
+public class BasicSidedCapabilityResolver<HANDLER, SIDED_HANDLER> implements ICapabilityResolver<@Nullable Direction> {
 
     private final ProxyCreator<HANDLER, SIDED_HANDLER> proxyCreator;
     private final Map<Direction, HANDLER> handlers;
@@ -86,13 +86,13 @@ public class BasicSidedCapabilityResolver<HANDLER, SIDED_HANDLER extends HANDLER
     }
 
     @FunctionalInterface
-    public interface ProxyCreator<HANDLER, SIDED_HANDLER extends HANDLER> {
+    public interface ProxyCreator<HANDLER, SIDED_HANDLER> {
 
         HANDLER create(SIDED_HANDLER handler, @Nullable Direction side, @Nullable IHolder holder);
     }
 
     @FunctionalInterface
-    public interface BasicProxyCreator<HANDLER, SIDED_HANDLER extends HANDLER> extends ProxyCreator<HANDLER, SIDED_HANDLER> {
+    public interface BasicProxyCreator<HANDLER, SIDED_HANDLER> extends ProxyCreator<HANDLER, SIDED_HANDLER> {
 
         HANDLER create(SIDED_HANDLER handler, @Nullable Direction side);
 

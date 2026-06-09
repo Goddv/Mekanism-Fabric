@@ -122,18 +122,18 @@ public class TileEntityFissionReactorPort extends TileEntityFissionReactorCasing
 
     @NotNull
     @Override
-    public FluidStack insertFluid(int tank, @NotNull FluidStack stack, Direction side, @NotNull Action action) {
+    public mekanism.api.fluid.IFluidStack insertFluid(int tank, @NotNull mekanism.api.fluid.IFluidStack stack, Direction side, @NotNull Action action) {
         return handleValves(stack, action, super.insertFluid(tank, stack, side, action));
     }
 
     @NotNull
     @Override
-    public FluidStack insertFluid(@NotNull FluidStack stack, Direction side, @NotNull Action action) {
+    public mekanism.api.fluid.IFluidStack insertFluid(@NotNull mekanism.api.fluid.IFluidStack stack, Direction side, @NotNull Action action) {
         return handleValves(stack, action, super.insertFluid(stack, side, action));
     }
 
-    private FluidStack handleValves(@NotNull FluidStack stack, @NotNull Action action, @NotNull FluidStack remainder) {
-        if (action.execute() && remainder.amount() < stack.amount()) {
+    private mekanism.api.fluid.IFluidStack handleValves(@NotNull mekanism.api.fluid.IFluidStack stack, @NotNull Action action, @NotNull mekanism.api.fluid.IFluidStack remainder) {
+        if (action.execute() && remainder.getAmount() < stack.getAmount()) {
             getMultiblock().triggerValveTransfer(this);
         }
         return remainder;

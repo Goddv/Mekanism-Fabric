@@ -43,7 +43,7 @@ public interface IFluidHandlerSlot extends IInventorySlot {
                         FluidStack fluidInTank = fluidHandlerItem.getFluidInTank(tank);
                         if (fluidInTank.isEmpty()) {
                             hasEmpty = true;
-                        } else if (!isDraining() && getFluidTank().insert(fluidInTank, Action.SIMULATE, AutomationType.INTERNAL).amount() < fluidInTank.amount()) {
+                        } else if (!isDraining() && getFluidTank().insert(mekanism.common.fluid.NeoFluidStack.wrap(fluidInTank), Action.SIMULATE, AutomationType.INTERNAL).getAmount() < fluidInTank.amount()) {
                             //If we support either mode and our container is not empty or currently being filled, then drain the item into the tank
                             fillTank(outputSlot);
                             return;
@@ -57,7 +57,7 @@ public interface IFluidHandlerSlot extends IInventorySlot {
                     }
                     //If we have no valid fluids/can't fill the tank with it, we return if there is at least
                     // one empty tank in the item so that we can then drain into it
-                    else if (getFluidTank().isEmpty() && hasEmpty || isDraining() || fluidHandlerItem.fill(getFluidTank().getFluid().copy(), FluidAction.SIMULATE) > 0) {
+                    else if (getFluidTank().isEmpty() && hasEmpty || isDraining() || fluidHandlerItem.fill(mekanism.common.fluid.NeoFluidStack.unwrap(getFluidTank().getFluid()).copy(), FluidAction.SIMULATE) > 0) {
                         //we return if there is at least one empty tank in the item so that we can then drain into it
                         drainTank(outputSlot);
                     }
@@ -297,7 +297,7 @@ public interface IFluidHandlerSlot extends IInventorySlot {
                 FluidStack knownFluid = knownFluids.get(fluidInItem);
                 //If we have a fluid that can be drained from the item and is valid then we add it to our known fluids
                 if (knownFluid == null) {
-                    if (!itemFluidHandler.drain(fluidInItem.copy(), FluidAction.SIMULATE).isEmpty() && getFluidTank().isFluidValid(fluidInItem)) {
+                    if (!itemFluidHandler.drain(fluidInItem.copy(), FluidAction.SIMULATE).isEmpty() && getFluidTank().isFluidValid(mekanism.common.fluid.NeoFluidStack.wrap(fluidInItem))) {
                         //Note: While theoretically we could store the initial fluidInItem as they key as we don't mutate it...
                         // doing it this way allows for us to return the keySet from this method as the only thing we change (the amount)
                         // is not part of the hashCode or equals, so it will not cause things to break by mutating the key as well
@@ -326,12 +326,12 @@ public interface IFluidHandlerSlot extends IInventorySlot {
         FluidStack simulatedDrain = handlerToDrain.drain(fluid.copy(), FluidAction.SIMULATE);
         if (!simulatedDrain.isEmpty()) {
             //Check how much of it we will be able to put into the handler we are filling
-            FluidStack simulatedRemainder = getFluidTank().insert(simulatedDrain, Action.SIMULATE, AutomationType.INTERNAL);
-            int remainder = simulatedRemainder.amount();
+            mekanism.api.fluid.IFluidStack simulatedRemainder = getFluidTank().insert(mekanism.common.fluid.NeoFluidStack.wrap(simulatedDrain), Action.SIMULATE, AutomationType.INTERNAL);
+            int remainder = (int) simulatedRemainder.getAmount();
             int drained = simulatedDrain.amount();
             if (remainder < drained) {
                 //Drain the handler to drain, filling the handler to fill while we are at it
-                handlerToFill.insert(handlerToDrain.drain(fluid.copyWithAmount(drained - remainder), FluidAction.EXECUTE), Action.EXECUTE, AutomationType.INTERNAL);
+                handlerToFill.insert(mekanism.common.fluid.NeoFluidStack.wrap(handlerToDrain.drain(fluid.copyWithAmount(drained - remainder), FluidAction.EXECUTE)), Action.EXECUTE, AutomationType.INTERNAL);
                 return true;
             }
         }

@@ -128,7 +128,7 @@ public class InputHelper {
             @NotNull
             @Override
             public FluidStack getInput() {
-                return tank.getFluid();
+                return mekanism.api.fluid.NeoFluidStackBridge.unwrap(tank.getFluid());
             }
 
             @NotNull

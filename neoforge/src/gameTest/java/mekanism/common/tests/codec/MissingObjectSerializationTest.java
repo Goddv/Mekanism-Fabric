@@ -298,7 +298,7 @@ public class MissingObjectSerializationTest {
                   frequency.getEnergyContainers(null).getFirst().setEnergy(100);
                   frequency.getHeatCapacitors(null).getFirst().setHeat(1_000);
                   frequency.getChemicalTanks(null).getFirst().setStack(help.failureChemical());
-                  frequency.getFluidTanks(null).getFirst().setStack(help.failureFluid());
+                  frequency.getFluidTanks(null).getFirst().setStack(mekanism.common.fluid.NeoFluidStack.wrap(help.failureFluid()));
                   frequency.getInventorySlots(null).getFirst().setStack(help.failureItem());
                   return frequency;
               }, frequency -> frequency.getName().equals("test") && frequency.getSecurity() == SecurityMode.PUBLIC &&

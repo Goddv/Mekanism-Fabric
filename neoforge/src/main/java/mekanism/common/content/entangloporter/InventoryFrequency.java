@@ -83,7 +83,7 @@ public class InventoryFrequency extends Frequency implements IMekanismInventory,
           UUIDUtil.CODEC.optionalFieldOf(SerializationConstants.OWNER_UUID).forGetter(freq -> Optional.ofNullable(freq.getOwner())),
           SecurityMode.CODEC.fieldOf(SerializationConstants.SECURITY_MODE).forGetter(Frequency::getSecurity),
           SerializerHelper.POSITIVE_LONG_CODEC.fieldOf(SerializationConstants.ENERGY).forGetter(freq -> freq.storedEnergy.getEnergy()),
-          FluidCodecHelper.LENIENT_OPTIONAL_FLUID_CODEC.fieldOf(SerializationConstants.FLUID).forGetter(freq -> freq.storedFluid.getFluid()),
+          FluidCodecHelper.LENIENT_OPTIONAL_FLUID_CODEC.fieldOf(SerializationConstants.FLUID).forGetter(freq -> mekanism.common.fluid.NeoFluidStack.unwrap(freq.storedFluid.getFluid())),
           ChemicalStack.LENIENT_OPTIONAL_CODEC.fieldOf(SerializationConstants.CHEMICAL).forGetter(freq -> freq.storedChemical.getStack()),
           SerializerHelper.LENIENT_OPTIONAL_STACK_CODEC.fieldOf(SerializationConstants.ITEM).forGetter(freq -> freq.storedItem.getStack()),
           Codec.DOUBLE.fieldOf(SerializationConstants.HEAT_STORED).forGetter(freq -> freq.storedHeat.getHeat()),
@@ -91,7 +91,7 @@ public class InventoryFrequency extends Frequency implements IMekanismInventory,
     ).apply(instance, (name, owner, securityMode, energy, fluid, chemical, item, heat, heatCapacity) -> {
         InventoryFrequency frequency = new InventoryFrequency(name, owner.orElse(null), securityMode);
         frequency.storedEnergy.setEnergy(energy);
-        frequency.storedFluid.setStackUnchecked(fluid);
+        frequency.storedFluid.setStackUnchecked(mekanism.common.fluid.NeoFluidStack.wrap(fluid));
         frequency.storedChemical.setStackUnchecked(chemical);
         frequency.storedItem.setStackUnchecked(item);
         frequency.storedHeat.setHeat(heat);
@@ -101,13 +101,13 @@ public class InventoryFrequency extends Frequency implements IMekanismInventory,
     public static final StreamCodec<RegistryFriendlyByteBuf, InventoryFrequency> STREAM_CODEC = StreamCodec.composite(
           baseStreamCodec(InventoryFrequency::new), Function.identity(),
           ByteBufCodecs.VAR_LONG, freq -> freq.storedEnergy.getEnergy(),
-          FluidStack.OPTIONAL_STREAM_CODEC, freq -> freq.storedFluid.getFluid(),
+          FluidStack.OPTIONAL_STREAM_CODEC, freq -> mekanism.common.fluid.NeoFluidStack.unwrap(freq.storedFluid.getFluid()),
           ChemicalStack.OPTIONAL_STREAM_CODEC, freq -> freq.storedChemical.getStack(),
           ItemStack.OPTIONAL_STREAM_CODEC, freq -> freq.storedItem.getStack(),
           ByteBufCodecs.DOUBLE, freq -> freq.storedHeat.getHeat(),
           (frequency, energy, fluid, chemical, item, heat) -> {
               frequency.storedEnergy.setEnergy(energy);
-              frequency.storedFluid.setStack(fluid);
+              frequency.storedFluid.setStack(mekanism.common.fluid.NeoFluidStack.wrap(fluid));
               frequency.storedChemical.setStack(chemical);
               frequency.storedItem.setStack(item);
               frequency.storedHeat.setHeat(heat);
@@ -271,7 +271,7 @@ public class InventoryFrequency extends Frequency implements IMekanismInventory,
     }
 
     private void addFluidTransferHandler(Map<TransmissionType, Consumer<?>> typesToEject, List<Runnable> transferHandlers, int expected) {
-        FluidStack fluidToSend = storedFluid.extract(storedFluid.getCapacity(), Action.SIMULATE, AutomationType.INTERNAL);
+        FluidStack fluidToSend = mekanism.common.fluid.NeoFluidStack.unwrap(storedFluid.extract(storedFluid.getCapacity(), Action.SIMULATE, AutomationType.INTERNAL));
         if (!fluidToSend.isEmpty()) {
             SendingFluidHandlerTarget target = new SendingFluidHandlerTarget(fluidToSend, expected, storedFluid);
             typesToEject.put(TransmissionType.FLUID, target);

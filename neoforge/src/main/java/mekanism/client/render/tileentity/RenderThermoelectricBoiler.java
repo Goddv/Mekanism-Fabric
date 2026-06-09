@@ -58,7 +58,7 @@ public class RenderThermoelectricBoiler extends MultiblockTileEntityRenderer<Boi
 
         int height = multiblock.upperRenderLocation.getY() - 1 - multiblock.renderLocation.getY();
         if (height > 0) {
-            FluidStack fluid = multiblock.waterTank.getFluid();
+            FluidStack fluid = mekanism.common.fluid.NeoFluidStack.unwrap(multiblock.waterTank.getFluid());
             state.height = height;
             state.waterTexture = MekanismRenderer.getSinglePicker(MekanismRenderer.getFluidTexture(fluid, MekanismRenderer.FluidTextureType.STILL));
             state.valveTexture = MekanismRenderer.getValveTexture(fluid);

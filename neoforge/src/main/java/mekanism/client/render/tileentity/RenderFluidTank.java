@@ -45,7 +45,7 @@ public class RenderFluidTank extends MekanismTileEntityRenderer<TileEntityFluidT
     @Override
     public void extractRenderState(TileEntityFluidTank tank, FluidTankRenderState state, float partialTick, Vec3 cameraPosition, @Nullable ModelFeatureRenderer.CrumblingOverlay breakProgress) {
         super.extractRenderState(tank, state, partialTick, cameraPosition, breakProgress);
-        FluidStack fluid = tank.fluidTank.getFluid();
+        FluidStack fluid = mekanism.common.fluid.NeoFluidStack.unwrap(tank.fluidTank.getFluid());
         state.fluidTint = MekanismRenderer.getColorARGB(fluid, state.fluidScale);
         state.fluidGlow = MekanismRenderer.calculateGlowLight(state.lightCoords, fluid);
         state.fluidScale = fluid.isEmpty() ? 0 : tank.prevScale;

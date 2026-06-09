@@ -178,7 +178,7 @@ public class EvaporationMultiblockData extends MultiblockData implements IValveH
     public void readUpdateTag(@NotNull ValueInput input) {
         super.readUpdateTag(input);
         //TODO - 26.1: Should this be an orElse empty and then set it regardless?
-        input.read(SerializationConstants.FLUID, FluidStack.OPTIONAL_CODEC).ifPresent(inputTank::setStack);
+        input.read(SerializationConstants.FLUID, mekanism.api.fluid.IFluidStackProvider.INSTANCE.optionalCodec()).ifPresent(inputTank::setStack);
         prevScale = input.getFloatOr(SerializationConstants.SCALE, prevScale);
         readValves(input);
     }
@@ -186,7 +186,7 @@ public class EvaporationMultiblockData extends MultiblockData implements IValveH
     @Override
     public void writeUpdateTag(@NotNull ValueOutput output) {
         super.writeUpdateTag(output);
-        output.store(SerializationConstants.FLUID, FluidStack.OPTIONAL_CODEC, inputTank.getFluid());
+        output.store(SerializationConstants.FLUID, mekanism.api.fluid.IFluidStackProvider.INSTANCE.optionalCodec(), inputTank.getFluid());
         output.putFloat(SerializationConstants.SCALE, prevScale);
         writeValves(output);
     }

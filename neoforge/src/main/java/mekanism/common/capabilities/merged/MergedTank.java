@@ -6,10 +6,10 @@ import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.chemical.ChemicalStack;
 import mekanism.api.chemical.IChemicalTank;
 import mekanism.api.fluid.IExtendedFluidTank;
+import mekanism.api.fluid.IFluidStackProvider;
 import mekanism.common.capabilities.fluid.FluidTankWrapper;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
 
 @NothingNullByDefault
@@ -45,12 +45,12 @@ public class MergedTank {
     }
 
     public void addToUpdateTag(@NotNull ValueOutput output) {
-        output.store(SerializationConstants.FLUID, FluidStack.OPTIONAL_CODEC, fluidTank.getFluid());
+        output.store(SerializationConstants.FLUID, IFluidStackProvider.INSTANCE.optionalCodec(), fluidTank.getFluid());
         output.store(SerializationConstants.CHEMICAL, ChemicalStack.OPTIONAL_CODEC, chemicalTank.getStack());
     }
 
     public void readFromUpdateTag(@NotNull ValueInput input) {
-        input.read(SerializationConstants.FLUID, FluidStack.OPTIONAL_CODEC).ifPresent(fluidTank::setStack);
+        input.read(SerializationConstants.FLUID, IFluidStackProvider.INSTANCE.optionalCodec()).ifPresent(fluidTank::setStack);
         input.read(SerializationConstants.CHEMICAL, ChemicalStack.OPTIONAL_CODEC).ifPresent(chemicalTank::setStack);
 
     }

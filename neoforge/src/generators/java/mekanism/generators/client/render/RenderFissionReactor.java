@@ -61,7 +61,7 @@ public class RenderFissionReactor extends MultiblockTileEntityRenderer<FissionRe
         state.heatedCoolantTexture = null;
         boolean isGaseous = false;
         if (multiblock.coolantTank.getCurrentType() == CurrentType.FLUID) {
-            FluidStack fluid = multiblock.coolantTank.getFluidTank().getFluid();
+            FluidStack fluid = mekanism.common.fluid.NeoFluidStack.unwrap(multiblock.coolantTank.getFluidTank().getFluid());
             state.coolantTexture = MekanismRenderer.getSinglePicker(MekanismRenderer.getFluidTexture(fluid, MekanismRenderer.FluidTextureType.STILL));
             isGaseous = MekanismUtils.lighterThanAirGas(fluid);
             state.coolantGlow = MekanismRenderer.calculateGlowLight(LightCoordsUtil.FULL_SKY, fluid);

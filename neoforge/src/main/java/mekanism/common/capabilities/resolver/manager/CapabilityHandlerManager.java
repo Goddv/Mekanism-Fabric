@@ -11,7 +11,7 @@ import net.neoforged.neoforge.capabilities.BlockCapability;
 import org.jetbrains.annotations.Nullable;
 
 @NothingNullByDefault
-public class CapabilityHandlerManager<HOLDER extends IHolder, CONTAINER, HANDLER, SIDED_HANDLER extends HANDLER> extends BasicSidedCapabilityResolver<HANDLER, SIDED_HANDLER>
+public class CapabilityHandlerManager<HOLDER extends IHolder, CONTAINER, HANDLER, SIDED_HANDLER> extends BasicSidedCapabilityResolver<HANDLER, SIDED_HANDLER>
       implements ICapabilityHandlerManager<CONTAINER> {
 
     private final BiFunction<HOLDER, Direction, List<CONTAINER>> containerGetter;

@@ -173,16 +173,16 @@ public record PacketDropperUse(DropperAction action, TankType tankType, int tank
 
     private static void transferBetweenTanks(IExtendedFluidTank drainTank, IExtendedFluidTank fillTank, Player player) {
         if (!drainTank.isEmpty() && fillTank.getNeeded() > 0) {
-            FluidStack fluidInDrainTank = drainTank.getFluid();
-            FluidStack simulatedRemainder = fillTank.insert(fluidInDrainTank, Action.SIMULATE, AutomationType.MANUAL);
-            int remainder = simulatedRemainder.amount();
-            int amount = fluidInDrainTank.amount();
+            mekanism.api.fluid.IFluidStack fluidInDrainTank = drainTank.getFluid();
+            mekanism.api.fluid.IFluidStack simulatedRemainder = fillTank.insert(fluidInDrainTank, Action.SIMULATE, AutomationType.MANUAL);
+            long remainder = simulatedRemainder.getAmount();
+            long amount = fluidInDrainTank.getAmount();
             if (remainder < amount) {
                 //We are able to fit at least some of the fluid from our drain tank into the fill tank
-                FluidStack extractedFluid = drainTank.extract(amount - remainder, Action.EXECUTE, AutomationType.MANUAL);
+                mekanism.api.fluid.IFluidStack extractedFluid = drainTank.extract(amount - remainder, Action.EXECUTE, AutomationType.MANUAL);
                 if (!extractedFluid.isEmpty()) {
                     //If we were able to actually extract it from our tank, then insert it into the tank
-                    MekanismUtils.logMismatchedStackSize(fillTank.insert(extractedFluid, Action.EXECUTE, AutomationType.MANUAL).amount(), 0);
+                    MekanismUtils.logMismatchedStackSize(fillTank.insert(extractedFluid, Action.EXECUTE, AutomationType.MANUAL).getAmount(), 0);
                     player.containerMenu.synchronizeCarriedToRemote();
                 }
             }

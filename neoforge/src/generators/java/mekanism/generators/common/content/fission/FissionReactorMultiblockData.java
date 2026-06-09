@@ -264,7 +264,7 @@ public class FissionReactorMultiblockData extends MultiblockData implements IVal
         prevWasteScale = input.getFloatOr(SerializationConstants.SCALE_ALT_3, prevWasteScale);
         input.getInt(SerializationConstants.VOLUME).ifPresent(this::setVolume);
         //TODO - 26.1: Should this be an orElse empty and then set it regardless?
-        input.read(SerializationConstants.FLUID, FluidStack.OPTIONAL_CODEC).ifPresent(coolantTank.getFluidTank()::setStack);
+        input.read(SerializationConstants.FLUID, mekanism.api.fluid.IFluidStackProvider.INSTANCE.optionalCodec()).ifPresent(coolantTank.getFluidTank()::setStack);
         input.read(SerializationConstants.CHEMICAL, ChemicalStack.OPTIONAL_CODEC).ifPresent(fuelTank::setStack);
         input.read(SerializationConstants.CHEMICAL_STORED_ALT, ChemicalStack.OPTIONAL_CODEC).ifPresent(heatedCoolantTank::setStack);
         input.read(SerializationConstants.CHEMICAL_STORED_ALT_2, ChemicalStack.OPTIONAL_CODEC).ifPresent(wasteTank::setStack);
@@ -283,7 +283,7 @@ public class FissionReactorMultiblockData extends MultiblockData implements IVal
         output.putFloat(SerializationConstants.SCALE_ALT_2, prevHeatedCoolantScale);
         output.putFloat(SerializationConstants.SCALE_ALT_3, prevWasteScale);
         output.putInt(SerializationConstants.VOLUME, getVolume());
-        output.store(SerializationConstants.FLUID, FluidStack.OPTIONAL_CODEC, coolantTank.getFluidTank().getFluid());
+        output.store(SerializationConstants.FLUID, mekanism.api.fluid.IFluidStackProvider.INSTANCE.optionalCodec(), coolantTank.getFluidTank().getFluid());
         output.store(SerializationConstants.CHEMICAL, ChemicalStack.OPTIONAL_CODEC, fuelTank.getStack());
         output.store(SerializationConstants.CHEMICAL_STORED_ALT, ChemicalStack.OPTIONAL_CODEC, heatedCoolantTank.getStack());
         output.store(SerializationConstants.CHEMICAL_STORED_ALT_2, ChemicalStack.OPTIONAL_CODEC, wasteTank.getStack());
@@ -626,7 +626,7 @@ public class FissionReactorMultiblockData extends MultiblockData implements IVal
         if (coolantTank.getCurrentType() == CurrentType.CHEMICAL) {
             return Either.left(coolantTank.getChemicalTank().getStack());
         }
-        return Either.right(coolantTank.getFluidTank().getFluid());
+        return Either.right(mekanism.common.fluid.NeoFluidStack.unwrap(coolantTank.getFluidTank().getFluid()));
     }
 
     @ComputerMethod

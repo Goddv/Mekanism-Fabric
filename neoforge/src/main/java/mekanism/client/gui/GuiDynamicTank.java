@@ -48,7 +48,7 @@ public class GuiDynamicTank extends GuiMekanismTile<TileEntityDynamicTank, Mekan
             switch (multiblock.mergedTank.getCurrentType()) {
                 case EMPTY -> ret.add(MekanismLang.EMPTY.translate());
                 case FLUID -> {
-                    addStored(ret, multiblock.getFluidTank().getFluid(), FluidInstance::amount);
+                    addStored(ret, multiblock.getFluidTank().getFluid(), mekanism.api.fluid.IFluidStack::getAmount);
                     capacity = multiblock.getTankCapacity();
                 }
                 case CHEMICAL -> addStored(ret, multiblock.getChemicalTank());

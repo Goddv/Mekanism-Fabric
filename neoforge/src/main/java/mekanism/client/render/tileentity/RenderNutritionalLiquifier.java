@@ -69,7 +69,7 @@ public class RenderNutritionalLiquifier extends MekanismTileEntityRenderer<TileE
         super.extractRenderState(liquifier, state, partialTick, cameraPosition, breakProgress);
         Level level = liquifier.getLevel();
         if (!liquifier.fluidTank.isEmpty()) {
-            FluidStack paste = liquifier.fluidTank.getFluid();
+            FluidStack paste = mekanism.common.fluid.NeoFluidStack.unwrap(liquifier.fluidTank.getFluid());
             float fluidScale = paste.amount() / (float) liquifier.fluidTank.getCapacity();
             state.pasteTint = MekanismRenderer.getColorARGB(paste, fluidScale);
             state.stage = ModelRenderer.getStage(paste, stages, fluidScale);

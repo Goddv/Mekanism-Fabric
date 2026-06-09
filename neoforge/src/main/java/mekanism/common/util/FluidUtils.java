@@ -4,7 +4,9 @@ import java.util.Collection;
 import mekanism.api.Action;
 import mekanism.api.AutomationType;
 import mekanism.api.fluid.IExtendedFluidTank;
-import mekanism.api.fluid.IMekanismFluidHandler;
+import mekanism.api.fluid.IFluidStack;
+import mekanism.common.attachments.containers.fluid.ComponentBackedFluidHandler;
+import mekanism.common.fluid.NeoFluidStack;
 import mekanism.client.render.MekanismRenderer;
 import mekanism.common.attachments.containers.ContainerType;
 import mekanism.common.capabilities.Capabilities;
@@ -37,10 +39,10 @@ public final class FluidUtils {
     }
 
     public static ItemStack getFilledVariant(ItemStack toFill, Holder<Fluid> fluid) {
-        IMekanismFluidHandler attachment = ContainerType.FLUID.createHandler(toFill);
+        ComponentBackedFluidHandler attachment = ContainerType.FLUID.createHandler(toFill);
         if (attachment != null) {
-            for (IExtendedFluidTank fluidTank : attachment.getFluidTanks(null)) {
-                fluidTank.setStack(new FluidStack(fluid, fluidTank.getCapacity()));
+            for (IExtendedFluidTank fluidTank : attachment.getContainers()) {
+                fluidTank.setStack(NeoFluidStack.wrap(new FluidStack(fluid, fluidTank.getCapacity())));
             }
         }
         //The item is now filled return it for convenience
@@ -107,7 +109,7 @@ public final class FluidUtils {
                 //If we weren't given a stack by the caller, then we want to lazily try to extract from the tank to see how much we are trying to emit
                 // so that we don't have to attempt an extraction if all our targets are actually not currently fluid handlers
                 if (stack.isEmpty()) {
-                    stack = tank.extract(maxOutput, Action.SIMULATE, AutomationType.INTERNAL);
+                    stack = NeoFluidStack.unwrap(tank.extract(maxOutput, Action.SIMULATE, AutomationType.INTERNAL));
                     if (stack.isEmpty()) {
                         //If we failed to extract from it, just exit early
                         return 0;
@@ -148,11 +150,11 @@ public final class FluidUtils {
                 //Otherwise, try draining the same type of fluid we have stored
                 // We do this to better support multiple tanks in case the fluid we have stored we could pull out of a block's
                 // second tank but just asking to drain a specific amount
-                fluidInItem = handler.drain(fluidTank.getFluid().copyWithAmount(Integer.MAX_VALUE), FluidAction.SIMULATE);
+                fluidInItem = handler.drain(NeoFluidStack.unwrap(fluidTank.getFluid()).copyWithAmount(Integer.MAX_VALUE), FluidAction.SIMULATE);
             }
             if (fluidInItem.isEmpty()) {
                 if (!fluidTank.isEmpty()) {
-                    int filled = handler.fill(fluidTank.getFluid().copy(), player.isCreative() ? FluidAction.SIMULATE : FluidAction.EXECUTE);
+                    int filled = handler.fill(NeoFluidStack.unwrap(fluidTank.getFluid()).copy(), player.isCreative() ? FluidAction.SIMULATE : FluidAction.EXECUTE);
                     ItemStack container = handler.getContainer();
                     if (filled > 0) {
                         if (itemStack.count() == 1) {
@@ -168,8 +170,8 @@ public final class FluidUtils {
                     }
                 }
             } else {
-                FluidStack simulatedRemainder = fluidTank.insert(fluidInItem, Action.SIMULATE, AutomationType.MANUAL);
-                int remainder = simulatedRemainder.amount();
+                IFluidStack simulatedRemainder = fluidTank.insert(NeoFluidStack.wrap(fluidInItem), Action.SIMULATE, AutomationType.MANUAL);
+                int remainder = (int) simulatedRemainder.getAmount();
                 int storedAmount = fluidInItem.amount();
                 if (remainder < storedAmount) {
                     boolean filled = false;
@@ -194,7 +196,7 @@ public final class FluidUtils {
                             filled = true;
                         }
                         if (filled) {
-                            fluidTank.insert(drained, Action.EXECUTE, AutomationType.MANUAL);
+                            fluidTank.insert(NeoFluidStack.wrap(drained), Action.EXECUTE, AutomationType.MANUAL);
                             return true;
                         }
                     }

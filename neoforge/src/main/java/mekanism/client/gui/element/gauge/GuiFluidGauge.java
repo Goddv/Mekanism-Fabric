@@ -104,8 +104,8 @@ public class GuiFluidGauge extends GuiTankGauge<FluidStack, IExtendedFluidTank> 
         if (tank == null || tank.isEmpty()) {
             return Collections.singletonList(MekanismLang.EMPTY.translate());
         }
-        int amount = tank.getFluidAmount();
-        FluidStack fluidStack = tank.getFluid();
+        int amount = (int) tank.getFluidAmount();
+        FluidStack fluidStack = mekanism.common.fluid.NeoFluidStack.unwrap(tank.getFluid());
         if (amount == Integer.MAX_VALUE) {
             return Collections.singletonList(MekanismLang.GENERIC_STORED.translate(fluidStack, MekanismLang.INFINITE));
         }
@@ -114,12 +114,12 @@ public class GuiFluidGauge extends GuiTankGauge<FluidStack, IExtendedFluidTank> 
 
     @Override
     protected int getRenderColor() {
-        return MekanismRenderer.color(dummy || getTank() == null ? dummyType : getTank().getFluid());
+        return MekanismRenderer.color(dummy || getTank() == null ? dummyType : mekanism.common.fluid.NeoFluidStack.unwrap(getTank().getFluid()));
     }
 
     @Override
     public Optional<?> getIngredient(double mouseX, double mouseY) {
-        return getTank().isEmpty() ? Optional.empty() : Optional.of(getTank().getFluid());
+        return getTank().isEmpty() ? Optional.empty() : Optional.of(mekanism.common.fluid.NeoFluidStack.unwrap(getTank().getFluid()));
     }
 
     @Override

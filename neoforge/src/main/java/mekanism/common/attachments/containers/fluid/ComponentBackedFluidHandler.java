@@ -1,22 +1,26 @@
 package mekanism.common.attachments.containers.fluid;
 
-import java.util.List;
-import mekanism.api.Action;
 import mekanism.api.AutomationType;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.fluid.ExtendedFluidHandlerUtils;
+import mekanism.api.fluid.FluidActions;
 import mekanism.api.fluid.IExtendedFluidTank;
-import mekanism.api.fluid.IMekanismFluidHandler;
+import mekanism.api.fluid.IFluidStack;
 import mekanism.common.attachments.containers.ComponentBackedHandler;
 import mekanism.common.attachments.containers.ContainerType;
-import net.minecraft.core.Direction;
+import mekanism.common.fluid.NeoFluidStack;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Item-stack fluid capability for attached fluids. Exposes the NeoForge {@link IFluidHandlerItem} surface (the
+ * {@code Capabilities.FLUID} item cap) while internally managing Mekanism's loader-neutral {@link IExtendedFluidTank}s.
+ * The {@link IFluidStack}&harr;{@link FluidStack} conversion happens here via {@link NeoFluidStack}.
+ */
 @NothingNullByDefault
-public class ComponentBackedFluidHandler extends ComponentBackedHandler<FluidStack, IExtendedFluidTank, AttachedFluids> implements IMekanismFluidHandler, IFluidHandlerItem {
+public class ComponentBackedFluidHandler extends ComponentBackedHandler<FluidStack, IExtendedFluidTank, AttachedFluids> implements IFluidHandlerItem {
 
     public ComponentBackedFluidHandler(ItemStack attachedTo, int totalTanks) {
         super(attachedTo, totalTanks);
@@ -28,39 +32,43 @@ public class ComponentBackedFluidHandler extends ComponentBackedHandler<FluidSta
     }
 
     @Override
-    public List<IExtendedFluidTank> getFluidTanks(@Nullable Direction side) {
-        return getContainers();
-    }
-
-    @Nullable
-    @Override
-    public IExtendedFluidTank getFluidTank(int tank, @Nullable Direction side) {
-        return getContainer(tank);
-    }
-
-    @Override
-    public int getTanks(@Nullable Direction side) {
+    public int getTanks() {
         return size();
     }
 
     @Override
-    public FluidStack getFluidInTank(int tank, @Nullable Direction side) {
+    public FluidStack getFluidInTank(int tank) {
         return getContents(tank);
     }
 
     @Override
-    public FluidStack insertFluid(FluidStack stack, @Nullable Direction side, Action action) {
-        return ExtendedFluidHandlerUtils.insert(stack, action, AutomationType.handler(side), size(), this);
+    public int getTankCapacity(int tank) {
+        IExtendedFluidTank fluidTank = getContainer(tank);
+        return fluidTank == null ? 0 : fluidTank.getCapacity();
     }
 
     @Override
-    public FluidStack extractFluid(int amount, @Nullable Direction side, Action action) {
-        return ExtendedFluidHandlerUtils.extract(amount, action, AutomationType.handler(side), size(), this);
+    public boolean isFluidValid(int tank, FluidStack stack) {
+        IExtendedFluidTank fluidTank = getContainer(tank);
+        return fluidTank != null && fluidTank.isFluidValid(NeoFluidStack.wrap(stack));
     }
 
     @Override
-    public FluidStack extractFluid(FluidStack stack, @Nullable Direction side, Action action) {
-        return ExtendedFluidHandlerUtils.extract(stack, action, AutomationType.handler(side), size(), this);
+    public int fill(FluidStack stack, FluidAction action) {
+        //Note: matches the legacy default IExtendedFluidHandler#fill which distributed via the null (internal) side
+        IFluidStack toInsert = NeoFluidStack.wrap(stack);
+        IFluidStack remainder = ExtendedFluidHandlerUtils.insert(toInsert, FluidActions.from(action), AutomationType.handler(null), size(), this);
+        return (int) Math.min(toInsert.getAmount() - remainder.getAmount(), Integer.MAX_VALUE);
+    }
+
+    @Override
+    public FluidStack drain(FluidStack stack, FluidAction action) {
+        return NeoFluidStack.unwrap(ExtendedFluidHandlerUtils.extract(NeoFluidStack.wrap(stack), FluidActions.from(action), AutomationType.handler(null), size(), this));
+    }
+
+    @Override
+    public FluidStack drain(int amount, FluidAction action) {
+        return NeoFluidStack.unwrap(ExtendedFluidHandlerUtils.extract((long) amount, FluidActions.from(action), AutomationType.handler(null), size(), this));
     }
 
     @Override

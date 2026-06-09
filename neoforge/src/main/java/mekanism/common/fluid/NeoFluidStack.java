@@ -83,4 +83,16 @@ public record NeoFluidStack(FluidStack delegate) implements IFluidStack {
     public int hashFluidAndComponents() {
         return FluidStack.hashFluidAndComponents(delegate);
     }
+
+    // ---- IFluidStack <-> FluidStack bridge (used at every NeoForge capability/AttachedFluids/render boundary) ----
+
+    /** Unwraps a loader-neutral {@link IFluidStack} to the NeoForge {@code FluidStack} it wraps. */
+    public static FluidStack unwrap(IFluidStack stack) {
+        return stack instanceof NeoFluidStack neo ? neo.delegate : FluidStack.EMPTY;
+    }
+
+    /** Wraps a NeoForge {@code FluidStack} as a loader-neutral {@link IFluidStack}. */
+    public static IFluidStack wrap(FluidStack stack) {
+        return new NeoFluidStack(stack);
+    }
 }

@@ -13,6 +13,7 @@ import mekanism.api.energy.IEnergyContainer;
 import mekanism.api.energy.IMekanismStrictEnergyHandler;
 import mekanism.api.energy.IStrictEnergyHandler;
 import mekanism.api.fluid.IExtendedFluidTank;
+import mekanism.common.fluid.NeoFluidStack;
 import mekanism.api.heat.IHeatCapacitor;
 import mekanism.api.math.MathUtils;
 import mekanism.api.text.EnumColor;
@@ -176,7 +177,7 @@ public class StorageUtils {
         List<IExtendedFluidTank> containers = ContainerType.FLUID.getAttachmentContainersIfPresent(stack);
         return switch (containers.size()) {
             case 0 -> FluidStack.EMPTY;
-            case 1 -> containers.getFirst().getFluid().copy();
+            case 1 -> NeoFluidStack.unwrap(containers.getFirst().getFluid()).copy();
             default -> {
                 FluidStack fluid = FluidStack.EMPTY;
                 for (IExtendedFluidTank tank : containers) {
@@ -184,10 +185,10 @@ public class StorageUtils {
                         continue;
                     }
                     if (fluid.isEmpty()) {
-                        fluid = tank.getFluid().copy();
-                    } else if (tank.isFluidEqual(fluid)) {
+                        fluid = NeoFluidStack.unwrap(tank.getFluid()).copy();
+                    } else if (tank.isFluidEqual(NeoFluidStack.wrap(fluid))) {
                         if (fluid.amount() < Integer.MAX_VALUE - tank.getFluidAmount()) {
-                            fluid.grow(tank.getFluidAmount());
+                            fluid.grow((int) tank.getFluidAmount());
                         } else {
                             fluid.setAmount(Integer.MAX_VALUE);
                         }
@@ -210,10 +211,10 @@ public class StorageUtils {
         int size = containers.size();
         return switch (size) {
             case 0 -> FluidStack.EMPTY;
-            case 1 -> containers.getFirst().getFluid();
+            case 1 -> NeoFluidStack.unwrap(containers.getFirst().getFluid());
             default -> {
                 for (int i = 0; i < size; i++) {
-                    FluidStack fluid = containers.get(i).getFluid();
+                    FluidStack fluid = NeoFluidStack.unwrap(containers.get(i).getFluid());
                     if (!fluid.isEmpty()) {
                         yield fluid;
                     }
@@ -407,26 +408,26 @@ public class StorageUtils {
             IExtendedFluidTank mergeTank = toAdd.get(i);
             if (!mergeTank.isEmpty()) {
                 IExtendedFluidTank tank = tanks.get(i);
-                FluidStack mergeStack = mergeTank.getFluid();
+                mekanism.api.fluid.IFluidStack mergeStack = mergeTank.getFluid();
                 if (tank.isEmpty()) {
                     int capacity = tank.getCapacity();
-                    if (mergeStack.amount() <= capacity) {
+                    if (mergeStack.getAmount() <= capacity) {
                         tank.setStack(mergeStack);
                     } else {
                         tank.setStack(mergeStack.copyWithAmount(capacity));
-                        int remaining = mergeStack.amount() - capacity;
+                        long remaining = mergeStack.getAmount() - capacity;
                         if (remaining > 0) {
-                            rejects.add(mergeStack.copyWithAmount(remaining));
+                            rejects.add(NeoFluidStack.unwrap(mergeStack.copyWithAmount(remaining)));
                         }
                     }
                 } else if (tank.isFluidEqual(mergeStack)) {
-                    int amount = tank.growStack(mergeStack.amount(), Action.EXECUTE);
-                    int remaining = mergeStack.amount() - amount;
+                    long amount = tank.growStack(mergeStack.getAmount(), Action.EXECUTE);
+                    long remaining = mergeStack.getAmount() - amount;
                     if (remaining > 0) {
-                        rejects.add(mergeStack.copyWithAmount(remaining));
+                        rejects.add(NeoFluidStack.unwrap(mergeStack.copyWithAmount(remaining)));
                     }
                 } else {
-                    rejects.add(mergeStack);
+                    rejects.add(NeoFluidStack.unwrap(mergeStack));
                 }
             }
         }

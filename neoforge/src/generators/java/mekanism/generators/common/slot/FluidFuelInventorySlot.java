@@ -37,7 +37,7 @@ public class FluidFuelInventorySlot extends FluidInventorySlot {
             IFluidHandlerItem fluidHandlerItem = Capabilities.FLUID.getCapability(ItemAccess.forStack(stack));
             if (fluidHandlerItem != null) {
                 for (int tank = 0, tanks = fluidHandlerItem.getTanks(); tank < tanks; tank++) {
-                    if (fluidTank.isFluidValid(fluidHandlerItem.getFluidInTank(tank))) {
+                    if (fluidTank.isFluidValid(mekanism.common.fluid.NeoFluidStack.wrap(fluidHandlerItem.getFluidInTank(tank)))) {
                         //False if the items contents are still valid
                         return false;
                     }
@@ -65,7 +65,7 @@ public class FluidFuelInventorySlot extends FluidInventorySlot {
      */
     public void fillOrBurn() {
         if (!isEmpty()) {
-            int needed = fluidTank.getNeeded();
+            int needed = (int) fluidTank.getNeeded();
             //Fill the tank from the item
             if (needed > 0 && !fillTank()) {
                 //If filling from item failed, try doing it by conversion
@@ -78,7 +78,7 @@ public class FluidFuelInventorySlot extends FluidInventorySlot {
                         //If we have a container but have more than a single stack of it somehow just exit
                         return;
                     }
-                    fluidTank.insert(fuelCreator.apply(fuel), Action.EXECUTE, AutomationType.INTERNAL);
+                    fluidTank.insert(mekanism.common.fluid.NeoFluidStack.wrap(fuelCreator.apply(fuel)), Action.EXECUTE, AutomationType.INTERNAL);
                     if (hasContainer) {
                         //If the item has a container, then replace it with the container
                         setStack(remainder.convertInto().create());

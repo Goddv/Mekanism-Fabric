@@ -2,15 +2,23 @@ package mekanism.common.capabilities.proxy;
 
 import mekanism.api.Action;
 import mekanism.api.annotations.NothingNullByDefault;
-import mekanism.api.fluid.IExtendedFluidHandler;
+import mekanism.api.fluid.FluidActions;
+import mekanism.api.fluid.IFluidStack;
 import mekanism.api.fluid.ISidedFluidHandler;
 import mekanism.common.capabilities.holder.IHolder;
+import mekanism.common.fluid.NeoFluidStack;
 import net.minecraft.core.Direction;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * NeoForge fluid capability bridge: exposes the NeoForge {@link IFluidHandler} surface (used by {@code Capabilities.FLUID}
+ * for cross-mod interop) while delegating to Mekanism's loader-neutral {@link ISidedFluidHandler}. The
+ * {@link IFluidStack}&harr;{@link FluidStack} conversion happens here via {@link NeoFluidStack#wrap}/{@link NeoFluidStack#unwrap}.
+ */
 @NothingNullByDefault
-public class ProxyFluidHandler extends ProxyHandler implements IExtendedFluidHandler {
+public class ProxyFluidHandler extends ProxyHandler implements IFluidHandler {
 
     private final ISidedFluidHandler fluidHandler;
 
@@ -30,13 +38,12 @@ public class ProxyFluidHandler extends ProxyHandler implements IExtendedFluidHan
 
     @Override
     public FluidStack getFluidInTank(int tank) {
-        return fluidHandler.getFluidInTank(tank, side);
+        return NeoFluidStack.unwrap(fluidHandler.getFluidInTank(tank, side));
     }
 
-    @Override
     public void setFluidInTank(int tank, FluidStack stack) {
         if (!readOnly) {
-            fluidHandler.setFluidInTank(tank, stack, side);
+            fluidHandler.setFluidInTank(tank, NeoFluidStack.wrap(stack), side);
         }
     }
 
@@ -47,31 +54,32 @@ public class ProxyFluidHandler extends ProxyHandler implements IExtendedFluidHan
 
     @Override
     public boolean isFluidValid(int tank, FluidStack stack) {
-        return !readOnly || fluidHandler.isFluidValid(tank, stack, side);
+        return !readOnly || fluidHandler.isFluidValid(tank, NeoFluidStack.wrap(stack), side);
     }
 
     @Override
-    public FluidStack insertFluid(int tank, FluidStack stack, Action action) {
-        return readOnlyInsert() ? stack : fluidHandler.insertFluid(tank, stack, side, action);
+    public int fill(FluidStack stack, FluidAction action) {
+        if (readOnlyInsert()) {
+            return 0;
+        }
+        IFluidStack toInsert = NeoFluidStack.wrap(stack);
+        IFluidStack remainder = fluidHandler.insertFluid(toInsert, side, FluidActions.from(action));
+        return (int) Math.min(toInsert.getAmount() - remainder.getAmount(), Integer.MAX_VALUE);
     }
 
     @Override
-    public FluidStack extractFluid(int tank, int amount, Action action) {
-        return readOnlyExtract() ? FluidStack.EMPTY : fluidHandler.extractFluid(tank, amount, side, action);
+    public FluidStack drain(FluidStack stack, FluidAction action) {
+        if (readOnlyExtract()) {
+            return FluidStack.EMPTY;
+        }
+        return NeoFluidStack.unwrap(fluidHandler.extractFluid(NeoFluidStack.wrap(stack), side, FluidActions.from(action)));
     }
 
     @Override
-    public FluidStack insertFluid(FluidStack stack, Action action) {
-        return readOnlyInsert() ? stack : fluidHandler.insertFluid(stack, side, action);
-    }
-
-    @Override
-    public FluidStack extractFluid(int amount, Action action) {
-        return readOnlyExtract() ? FluidStack.EMPTY : fluidHandler.extractFluid(amount, side, action);
-    }
-
-    @Override
-    public FluidStack extractFluid(FluidStack stack, Action action) {
-        return readOnlyExtract() ? FluidStack.EMPTY : fluidHandler.extractFluid(stack, side, action);
+    public FluidStack drain(int amount, FluidAction action) {
+        if (readOnlyExtract()) {
+            return FluidStack.EMPTY;
+        }
+        return NeoFluidStack.unwrap(fluidHandler.extractFluid(amount, side, FluidActions.from(action)));
     }
 }

@@ -27,7 +27,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
-import net.neoforged.neoforge.fluids.FluidStack;
+import mekanism.api.fluid.IFluidStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -105,18 +105,18 @@ public class TileEntityBoilerValve extends TileEntityBoilerCasing {
 
     @NotNull
     @Override
-    public FluidStack insertFluid(int tank, @NotNull FluidStack stack, Direction side, @NotNull Action action) {
+    public IFluidStack insertFluid(int tank, @NotNull IFluidStack stack, Direction side, @NotNull Action action) {
         return handleValves(stack, action, super.insertFluid(tank, stack, side, action));
     }
 
     @NotNull
     @Override
-    public FluidStack insertFluid(@NotNull FluidStack stack, Direction side, @NotNull Action action) {
+    public IFluidStack insertFluid(@NotNull IFluidStack stack, Direction side, @NotNull Action action) {
         return handleValves(stack, action, super.insertFluid(stack, side, action));
     }
 
-    private FluidStack handleValves(@NotNull FluidStack stack, @NotNull Action action, @NotNull FluidStack remainder) {
-        if (action.execute() && remainder.amount() < stack.amount()) {
+    private IFluidStack handleValves(@NotNull IFluidStack stack, @NotNull Action action, @NotNull IFluidStack remainder) {
+        if (action.execute() && remainder.getAmount() < stack.getAmount()) {
             getMultiblock().triggerValveTransfer(this);
         }
         return remainder;

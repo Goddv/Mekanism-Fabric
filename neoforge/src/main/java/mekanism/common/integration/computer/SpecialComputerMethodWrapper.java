@@ -48,7 +48,7 @@ public class SpecialComputerMethodWrapper {
         @WrappingComputerMethodIndex(0)
         @WrappingComputerMethodHelp("Get the contents of the %s.")
         public static FluidStack getStack(IExtendedFluidTank tank) {
-            return tank.getFluid();
+            return mekanism.common.fluid.NeoFluidStack.unwrap(tank.getFluid());
         }
 
         @WrappingComputerMethodIndex(1)
@@ -60,7 +60,7 @@ public class SpecialComputerMethodWrapper {
         @WrappingComputerMethodIndex(2)
         @WrappingComputerMethodHelp("Get the amount needed to fill the %s.")
         public static int getNeeded(IExtendedFluidTank tank) {
-            return tank.getNeeded();
+            return (int) tank.getNeeded();
         }
 
         @WrappingComputerMethodIndex(3)

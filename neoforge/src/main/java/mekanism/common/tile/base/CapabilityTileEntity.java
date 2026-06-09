@@ -11,6 +11,7 @@ import mekanism.api.chemical.ISidedChemicalHandler;
 import mekanism.api.energy.ISidedStrictEnergyHandler;
 import mekanism.api.fluid.IExtendedFluidTank;
 import mekanism.api.fluid.ISidedFluidHandler;
+import mekanism.common.fluid.NeoFluidStack;
 import mekanism.api.heat.IHeatHandler;
 import mekanism.api.heat.ISidedHeatHandler;
 import mekanism.api.inventory.ISidedItemHandler;
@@ -152,7 +153,7 @@ public abstract class CapabilityTileEntity extends TileEntityUpdateable {
         int size = stacks.size();
         if (size == tanks.size()) {
             for (int i = 0; i < size; i++) {
-                tanks.get(i).setStackUnchecked(stacks.get(i).copy());
+                tanks.get(i).setStackUnchecked(NeoFluidStack.wrap(stacks.get(i).copy()));
             }
         }
     }
@@ -162,7 +163,7 @@ public abstract class CapabilityTileEntity extends TileEntityUpdateable {
         boolean hasNonEmpty = false;
         List<FluidStack> stacks = new ArrayList<>(tanks.size());
         for (IExtendedFluidTank tank : tanks) {
-            stacks.add(tank.getFluid().copy());
+            stacks.add(NeoFluidStack.unwrap(tank.getFluid()).copy());
             if (!tank.isEmpty()) {
                 hasNonEmpty = true;
             }

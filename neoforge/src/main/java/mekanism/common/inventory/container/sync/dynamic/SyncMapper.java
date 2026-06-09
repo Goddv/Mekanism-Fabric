@@ -53,7 +53,8 @@ public class SyncMapper extends BaseAnnotationScanner {
         // longer is valid, we want to ensure that the client is able to properly render it instead of printing an error due
         // to the client thinking that it is invalid
         specialProperties.add(new SpecialPropertyHandler<>(IExtendedFluidTank.class,
-              SpecialPropertyData.create(FluidStack.class, IFluidTank::getFluid, IExtendedFluidTank::setStackUnchecked)
+              SpecialPropertyData.create(FluidStack.class, tank -> mekanism.common.fluid.NeoFluidStack.unwrap(tank.getFluid()),
+                    (tank, val) -> tank.setStackUnchecked(mekanism.common.fluid.NeoFluidStack.wrap(val)))
         ));
         specialProperties.add(new SpecialPropertyHandler<>(IChemicalTank.class,
               SpecialPropertyData.create(ChemicalStack.class, IChemicalTank::getStack, IChemicalTank::setStackUnchecked)
@@ -66,7 +67,8 @@ public class SyncMapper extends BaseAnnotationScanner {
               SpecialPropertyData.create(Double.TYPE, IHeatCapacitor::getHeat, IHeatCapacitor::setHeat)
         ));
         specialProperties.add(new SpecialPropertyHandler<>(MergedTank.class,
-              SpecialPropertyData.create(FluidStack.class, obj -> obj.getFluidTank().getFluid(), (obj, val) -> obj.getFluidTank().setStackUnchecked(val)),
+              SpecialPropertyData.create(FluidStack.class, obj -> mekanism.common.fluid.NeoFluidStack.unwrap(obj.getFluidTank().getFluid()),
+                    (obj, val) -> obj.getFluidTank().setStackUnchecked(mekanism.common.fluid.NeoFluidStack.wrap(val))),
               SpecialPropertyData.create(ChemicalStack.class, obj -> obj.getChemicalTank().getStack(), (obj, val) -> obj.getChemicalTank().setStackUnchecked(val))
         ));
         specialProperties.add(new SpecialPropertyHandler<>(VoxelCuboid.class,

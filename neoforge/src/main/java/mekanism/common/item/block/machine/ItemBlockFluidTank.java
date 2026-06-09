@@ -5,7 +5,8 @@ import java.util.function.Consumer;
 import mekanism.api.Action;
 import mekanism.api.AutomationType;
 import mekanism.api.fluid.IExtendedFluidTank;
-import mekanism.api.fluid.IMekanismFluidHandler;
+import mekanism.common.attachments.containers.fluid.ComponentBackedFluidHandler;
+import mekanism.common.fluid.NeoFluidStack;
 import mekanism.api.security.IItemSecurityUtils;
 import mekanism.api.text.EnumColor;
 import mekanism.common.Mekanism;
@@ -130,7 +131,7 @@ public class ItemBlockFluidTank extends ItemBlockTooltip<BlockTile<?, ?>> implem
                 }
                 FluidStack milk = new FluidStack(NeoForgeMod.MILK.get(), FluidType.BUCKET_VOLUME);
                 //Try to insert the fluid
-                if (fluidTank.insert(milk, Action.EXECUTE, AutomationType.MANUAL).amount() < FluidType.BUCKET_VOLUME) {
+                if (fluidTank.insert(mekanism.common.fluid.NeoFluidStack.wrap(milk), Action.EXECUTE, AutomationType.MANUAL).getAmount() < FluidType.BUCKET_VOLUME) {
                     player.playSound(entity instanceof Cow ? SoundEvents.COW_MILK : SoundEvents.GOAT_MILK, 1.0F, 1.0F);
                     return InteractionResult.SUCCESS;
                 }
@@ -218,11 +219,11 @@ public class ItemBlockFluidTank extends ItemBlockTooltip<BlockTile<?, ?>> implem
                         return InteractionResult.FAIL;
                     }
                 } else {
-                    if (fluidTank.extract(FluidType.BUCKET_VOLUME, Action.SIMULATE, AutomationType.MANUAL).amount() < FluidType.BUCKET_VOLUME
+                    if (fluidTank.extract(FluidType.BUCKET_VOLUME, Action.SIMULATE, AutomationType.MANUAL).getAmount() < FluidType.BUCKET_VOLUME
                         || !player.mayUseItemAt(pos.relative(result.getDirection()), result.getDirection(), stack)) {
                         return InteractionResult.FAIL;
                     }
-                    if (WorldUtils.tryPlaceContainedLiquid(player, world, pos, fluidTank.getFluid(), result.getDirection())) {
+                    if (WorldUtils.tryPlaceContainedLiquid(player, world, pos, mekanism.common.fluid.NeoFluidStack.unwrap(fluidTank.getFluid()), result.getDirection())) {
                         if (!player.isCreative()) {
                             //Manually shrink in case bucket volume is greater than tank input/output rate limit
                             MekanismUtils.logMismatchedStackSize(fluidTank.shrinkStack(FluidType.BUCKET_VOLUME, Action.EXECUTE), FluidType.BUCKET_VOLUME);
@@ -242,7 +243,7 @@ public class ItemBlockFluidTank extends ItemBlockTooltip<BlockTile<?, ?>> implem
         if (getTier() != FluidTankTier.CREATIVE) {
             //No-OP creative handling as that is how insert would be handled for items
             if (fluidTank.isEmpty()) {
-                fluidTank.setStack(fluidStack);
+                fluidTank.setStack(mekanism.common.fluid.NeoFluidStack.wrap(fluidStack));
             } else {
                 //Grow the stack
                 MekanismUtils.logMismatchedStackSize(fluidTank.growStack(fluidStack.amount(), Action.EXECUTE), fluidStack.amount());
@@ -251,13 +252,14 @@ public class ItemBlockFluidTank extends ItemBlockTooltip<BlockTile<?, ?>> implem
     }
 
     private static boolean validFluid(@NotNull IExtendedFluidTank fluidTank, @NotNull FluidStack fluidStack) {
-        return !fluidStack.isEmpty() && fluidTank.insert(fluidStack, Action.SIMULATE, AutomationType.MANUAL).isEmpty();
+        return !fluidStack.isEmpty() && fluidTank.insert(mekanism.common.fluid.NeoFluidStack.wrap(fluidStack), Action.SIMULATE, AutomationType.MANUAL).isEmpty();
     }
 
     private static IExtendedFluidTank getExtendedFluidTank(@NotNull ItemStack stack) {
         IFluidHandlerItem fluidHandlerItem = Capabilities.FLUID.getCapability(ItemAccess.forStack(stack));
-        if (fluidHandlerItem instanceof IMekanismFluidHandler fluidHandler) {
-            return fluidHandler.getFluidTank(0, null);
+        if (fluidHandlerItem instanceof ComponentBackedFluidHandler fluidHandler) {
+            java.util.List<IExtendedFluidTank> tanks = fluidHandler.getContainers();
+            return tanks.isEmpty() ? null : tanks.getFirst();
         }
         return null;
     }
@@ -350,8 +352,8 @@ public class ItemBlockFluidTank extends ItemBlockTooltip<BlockTile<?, ?>> implem
                         //Success, don't dispense anything just return our resulting stack
                         return stack;
                     }
-                } else if (fluidTank.extract(FluidType.BUCKET_VOLUME, Action.SIMULATE, AutomationType.MANUAL).amount() >= FluidType.BUCKET_VOLUME) {
-                    if (WorldUtils.tryPlaceContainedLiquid(null, world, pos, fluidTank.getFluid(), null)) {
+                } else if (fluidTank.extract(FluidType.BUCKET_VOLUME, Action.SIMULATE, AutomationType.MANUAL).getAmount() >= FluidType.BUCKET_VOLUME) {
+                    if (WorldUtils.tryPlaceContainedLiquid(null, world, pos, mekanism.common.fluid.NeoFluidStack.unwrap(fluidTank.getFluid()), null)) {
                         //Manually shrink in case bucket volume is greater than tank input/output rate limit
                         MekanismUtils.logMismatchedStackSize(fluidTank.shrinkStack(FluidType.BUCKET_VOLUME, Action.EXECUTE), FluidType.BUCKET_VOLUME);
                         world.gameEvent(null, GameEvent.FLUID_PLACE, pos);
@@ -383,9 +385,9 @@ public class ItemBlockFluidTank extends ItemBlockTooltip<BlockTile<?, ?>> implem
             @Override
             protected InteractionResult interact(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player,
                   @NotNull InteractionHand hand, @NotNull ItemStack stack, @NotNull IExtendedFluidTank fluidTank) {
-                FluidStack fluidStack = fluidTank.getFluid();
+                FluidStack fluidStack = mekanism.common.fluid.NeoFluidStack.unwrap(fluidTank.getFluid());
                 BlockState endState = getState(fluidStack);
-                if (endState != null && fluidTank.extract(FluidType.BUCKET_VOLUME, Action.SIMULATE, AutomationType.MANUAL).amount() >= FluidType.BUCKET_VOLUME) {
+                if (endState != null && fluidTank.extract(FluidType.BUCKET_VOLUME, Action.SIMULATE, AutomationType.MANUAL).getAmount() >= FluidType.BUCKET_VOLUME) {
                     if (!level.isClientSide()) {
                         if (!player.isCreative()) {
                             //Manually shrink in case bucket volume is greater than tank input/output rate limit
@@ -457,7 +459,7 @@ public class ItemBlockFluidTank extends ItemBlockTooltip<BlockTile<?, ?>> implem
         protected InteractionResult interact(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player,
               @NotNull InteractionHand hand, @NotNull ItemStack stack, @NotNull IExtendedFluidTank fluidTank) {
             FluidStack fluidStack = new FluidStack(type, FluidType.BUCKET_VOLUME);
-            FluidStack remainder = fluidTank.insert(fluidStack, Action.SIMULATE, AutomationType.MANUAL);
+            mekanism.api.fluid.IFluidStack remainder = fluidTank.insert(mekanism.common.fluid.NeoFluidStack.wrap(fluidStack), Action.SIMULATE, AutomationType.MANUAL);
             if (remainder.isEmpty()) {
                 //We can fit all the fluid we would be removing
                 if (!level.isClientSide()) {

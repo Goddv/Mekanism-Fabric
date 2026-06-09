@@ -8,6 +8,8 @@ import mekanism.api.IConfigurable;
 import mekanism.api.IContentsListener;
 import mekanism.api.SerializationConstants;
 import mekanism.api.fluid.IExtendedFluidTank;
+import mekanism.api.fluid.IFluidStack;
+import mekanism.common.fluid.NeoFluidStack;
 import mekanism.api.functions.ConstantPredicates;
 import mekanism.common.Mekanism;
 import mekanism.common.attachments.containers.ContainerType;
@@ -190,7 +192,7 @@ public class TileEntityFluidTank extends TileEntityMekanism implements IConfigur
             } else {
                 //If the block below this tank, is also a tank. Only emit as much as it might be able to accept.
                 // This prevents it then trying to go up the chain back to this tank and any ones above it
-                FluidUtils.emit(fluidHandlerBelow, fluidTank, Math.min(below.getNeeded(), tier.getOutput()));
+                FluidUtils.emit(fluidHandlerBelow, fluidTank, (int) Math.min(below.getNeeded(), tier.getOutput()));
             }
         }
         if (needsPacket) {
@@ -249,24 +251,24 @@ public class TileEntityFluidTank extends TileEntityMekanism implements IConfigur
 
     @NotNull
     @Override
-    public FluidStack insertFluid(int tank, @NotNull FluidStack stack, @Nullable Direction side, @NotNull Action action) {
+    public IFluidStack insertFluid(int tank, @NotNull IFluidStack stack, @Nullable Direction side, @NotNull Action action) {
         return insertExcess(stack, side, action, super.insertFluid(tank, stack, side, action));
     }
 
     @NotNull
     @Override
-    public FluidStack insertFluid(@NotNull FluidStack stack, @Nullable Direction side, @NotNull Action action) {
+    public IFluidStack insertFluid(@NotNull IFluidStack stack, @Nullable Direction side, @NotNull Action action) {
         return insertExcess(stack, side, action, super.insertFluid(stack, side, action));
     }
 
-    private FluidStack insertExcess(@NotNull FluidStack stack, @Nullable Direction side, @NotNull Action action, @NotNull FluidStack remainder) {
-        if (side == Direction.UP && action.execute() && remainder.amount() < stack.amount() && !isRemote()) {
+    private IFluidStack insertExcess(@NotNull IFluidStack stack, @Nullable Direction side, @NotNull Action action, @NotNull IFluidStack remainder) {
+        if (side == Direction.UP && action.execute() && remainder.getAmount() < stack.getAmount() && !isRemote()) {
             if (valve == 0) {
                 //TODO - 1.21: Only mark it as needing a packet if our fluid tank volume is below a certain amount??
                 needsPacket = true;
             }
             valve = SharedConstants.TICKS_PER_SECOND;
-            valveFluid = stack.copyWithAmount(1);
+            valveFluid = NeoFluidStack.unwrap(stack).copyWithAmount(1);
         }
         return remainder;
     }
@@ -313,7 +315,7 @@ public class TileEntityFluidTank extends TileEntityMekanism implements IConfigur
             inputSlot.setStack(data.inputSlot.getStack());
             outputSlot.setStack(data.outputSlot.getStack());
             editMode = data.editMode;
-            fluidTank.setStack(data.stored);
+            fluidTank.setStack(NeoFluidStack.wrap(data.stored));
             try (var reporter = new ProblemReporter.ScopedCollector(problemPath(), Mekanism.logger)) {
                 ValueInput input = TagValueInput.create(reporter, provider, data.components);
                 for (ITileComponent component : getComponents()) {
@@ -328,7 +330,7 @@ public class TileEntityFluidTank extends TileEntityMekanism implements IConfigur
     @NotNull
     @Override
     public FluidTankUpgradeData getUpgradeData(HolderLookup.Provider provider) {
-        return new FluidTankUpgradeData(provider, redstone, inputSlot, outputSlot, editMode, fluidTank.getFluid(), getComponents(), problemPath());
+        return new FluidTankUpgradeData(provider, redstone, inputSlot, outputSlot, editMode, NeoFluidStack.unwrap(fluidTank.getFluid()), getComponents(), problemPath());
     }
 
     @Override
@@ -356,7 +358,7 @@ public class TileEntityFluidTank extends TileEntityMekanism implements IConfigur
         //updateTag.put(SerializationConstants.VALVE, valveFluid.saveOptional(provider));
         output.putFloat(SerializationConstants.SCALE, prevScale);
         //TODO - 26.1: Re-evaluate this alternate encoding further (check history)
-        FluidStack fluid = fluidTank.getFluid();
+        FluidStack fluid = NeoFluidStack.unwrap(fluidTank.getFluid());
         if (!fluid.isEmpty()) {
             output.store(SerializationConstants.FLUID, FluidStack.CODEC, fluid);
         }
@@ -382,7 +384,7 @@ public class TileEntityFluidTank extends TileEntityMekanism implements IConfigur
         //TODO - 26.1: Should we only update this when the scale has changed? And/or if we had updated the light level?
         prevScale = scale;
 
-        fluidTank.setStack(input.read(SerializationConstants.FLUID, FluidStack.CODEC).orElse(FluidStack.EMPTY));
+        fluidTank.setStack(NeoFluidStack.wrap(input.read(SerializationConstants.FLUID, FluidStack.CODEC).orElse(FluidStack.EMPTY)));
         valveFluid = input.read(SerializationConstants.VALVE, VALVE_FLUID_CODEC).orElse(FluidStack.EMPTY);
     }
 

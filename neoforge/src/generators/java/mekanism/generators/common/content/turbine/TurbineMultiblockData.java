@@ -154,7 +154,7 @@ public class TurbineMultiblockData extends MultiblockData {
                     flowRate = rate / origRate;
                     energyContainer.insert(amountGenerated, Action.EXECUTE, AutomationType.INTERNAL);
                     chemicalTank.shrinkStack(clientFlow, Action.EXECUTE);
-                    ventTank.insert(new FluidStack(Fluids.WATER, Math.min(MathUtils.clampToInt(rate), condensers * MekanismGeneratorsConfig.generators.condenserRate.get())), Action.EXECUTE, AutomationType.INTERNAL);
+                    ventTank.insert(mekanism.common.fluid.NeoFluidStack.wrap(new FluidStack(Fluids.WATER, Math.min(MathUtils.clampToInt(rate), condensers * MekanismGeneratorsConfig.generators.condenserRate.get()))), Action.EXECUTE, AutomationType.INTERNAL);
                 } else {
                     clientFlow = 0;
                 }
@@ -164,7 +164,7 @@ public class TurbineMultiblockData extends MultiblockData {
         }
         if (!fluidOutputTargets.isEmpty() && !ventTank.isEmpty()) {
             //Note: We know that the tank has whatever amount it has stored, we can the simulated extraction
-            ventTank.extract(FluidUtils.emit(fluidOutputTargets, ventTank.getFluid()), Action.EXECUTE, AutomationType.INTERNAL);
+            ventTank.extract(FluidUtils.emit(fluidOutputTargets, mekanism.common.fluid.NeoFluidStack.unwrap(ventTank.getFluid())), Action.EXECUTE, AutomationType.INTERNAL);
         }
         CableUtils.emit(energyOutputTargets, energyContainer);
 
@@ -218,7 +218,7 @@ public class TurbineMultiblockData extends MultiblockData {
         lowerVolume = input.getIntOr(SerializationConstants.LOWER_VOLUME, lowerVolume);
         //TODO - 26.1: Should this be an orElse empty and then set it regardless?
         input.read(SerializationConstants.CHEMICAL, ChemicalStack.OPTIONAL_CODEC).ifPresent(chemicalTank::setStack);
-        input.read(SerializationConstants.FLUID, FluidStack.OPTIONAL_CODEC).ifPresent(ventTank::setStack);
+        input.read(SerializationConstants.FLUID, mekanism.api.fluid.IFluidStackProvider.INSTANCE.optionalCodec()).ifPresent(ventTank::setStack);
         input.read(SerializationConstants.COMPLEX, BlockPos.CODEC).ifPresent(value -> complex = value);
         clientRotation = input.getFloatOr(SerializationConstants.ROTATION, clientRotation);
         clientRotationMap.put(inventoryID, clientRotation);
@@ -231,7 +231,7 @@ public class TurbineMultiblockData extends MultiblockData {
         output.putInt(SerializationConstants.VOLUME, getVolume());
         output.putInt(SerializationConstants.LOWER_VOLUME, lowerVolume);
         output.store(SerializationConstants.CHEMICAL, ChemicalStack.OPTIONAL_CODEC, chemicalTank.getStack());
-        output.store(SerializationConstants.FLUID, FluidStack.OPTIONAL_CODEC, ventTank.getFluid());
+        output.store(SerializationConstants.FLUID, mekanism.api.fluid.IFluidStackProvider.INSTANCE.optionalCodec(), ventTank.getFluid());
         output.store(SerializationConstants.COMPLEX, BlockPos.CODEC, complex);
         output.putFloat(SerializationConstants.ROTATION, clientRotation);
     }

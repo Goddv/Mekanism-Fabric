@@ -13,6 +13,7 @@ import mekanism.api.functions.ConstantPredicates;
 import mekanism.common.Mekanism;
 import mekanism.common.MekanismLang;
 import mekanism.common.capabilities.fluid.VariableCapacityFluidTank;
+import mekanism.common.fluid.NeoFluidStack;
 import mekanism.common.content.network.distribution.FluidHandlerTarget;
 import mekanism.common.content.network.distribution.FluidTransmitterSaveTarget;
 import mekanism.common.content.network.transmitter.MechanicalPipe;
@@ -70,15 +71,15 @@ public class FluidNetwork extends DynamicBufferedNetwork<IFluidHandler, FluidNet
         currentScale = Math.min(1, capacity == 0 ? 0 : (currentScale * oldCapacity + net.currentScale * net.capacity) / capacity);
         if (isRemote()) {
             if (fluidTank.isEmpty() && !net.fluidTank.isEmpty()) {
-                fluidTank.setStack(net.getBuffer());
+                fluidTank.setStack(NeoFluidStack.wrap(net.getBuffer()));
                 net.fluidTank.setEmpty();
             }
         } else {
             if (!net.fluidTank.isEmpty()) {
                 if (fluidTank.isEmpty()) {
-                    fluidTank.setStack(net.getBuffer());
+                    fluidTank.setStack(NeoFluidStack.wrap(net.getBuffer()));
                 } else if (fluidTank.isFluidEqual(net.fluidTank.getFluid())) {
-                    int amount = net.fluidTank.getFluidAmount();
+                    long amount = net.fluidTank.getFluidAmount();
                     MekanismUtils.logMismatchedStackSize(fluidTank.growStack(amount, Action.EXECUTE), amount);
                 } else {
                     Mekanism.logger.error("Incompatible fluid networks merged.");
@@ -96,7 +97,7 @@ public class FluidNetwork extends DynamicBufferedNetwork<IFluidHandler, FluidNet
     @NotNull
     @Override
     public FluidStack getBuffer() {
-        return fluidTank.getFluid().copy();
+        return NeoFluidStack.unwrap(fluidTank.getFluid()).copy();
     }
 
     @Override
@@ -104,8 +105,8 @@ public class FluidNetwork extends DynamicBufferedNetwork<IFluidHandler, FluidNet
         FluidStack fluid = transmitter.releaseShare();
         if (!fluid.isEmpty()) {
             if (fluidTank.isEmpty()) {
-                fluidTank.setStack(fluid.copy());
-            } else if (fluidTank.isFluidEqual(fluid)) {
+                fluidTank.setStack(NeoFluidStack.wrap(fluid.copy()));
+            } else if (fluidTank.isFluidEqual(NeoFluidStack.wrap(fluid))) {
                 int amount = fluid.amount();
                 MekanismUtils.logMismatchedStackSize(fluidTank.growStack(amount, Action.EXECUTE), amount);
             }
@@ -142,7 +143,7 @@ public class FluidNetwork extends DynamicBufferedNetwork<IFluidHandler, FluidNet
     protected void updateSaveShares(@Nullable MechanicalPipe triggerTransmitter) {
         super.updateSaveShares(triggerTransmitter);
         if (!isEmpty()) {
-            FluidStack fluidType = fluidTank.getFluid();
+            FluidStack fluidType = NeoFluidStack.unwrap(fluidTank.getFluid());
             FluidTransmitterSaveTarget saveTarget = new FluidTransmitterSaveTarget(getTransmitters());
             EmitUtils.sendToAcceptors(saveTarget, fluidType.amount(), fluidType);
             saveTarget.saveShare();
@@ -176,7 +177,7 @@ public class FluidNetwork extends DynamicBufferedNetwork<IFluidHandler, FluidNet
         if (fluidTank.isEmpty()) {
             prevTransferAmount = 0;
         } else {
-            prevTransferAmount = tickEmit(fluidTank.getFluid());
+            prevTransferAmount = tickEmit(NeoFluidStack.unwrap(fluidTank.getFluid()));
             MekanismUtils.logMismatchedStackSize(fluidTank.shrinkStack(prevTransferAmount, Action.EXECUTE), prevTransferAmount);
         }
     }
@@ -240,7 +241,7 @@ public class FluidNetwork extends DynamicBufferedNetwork<IFluidHandler, FluidNet
     @Override
     public void onContentsChanged() {
         markDirty();
-        FluidStack type = fluidTank.getFluid();
+        FluidStack type = NeoFluidStack.unwrap(fluidTank.getFluid());
         if (!FluidStack.isSameFluidSameComponents(lastFluid, type)) {
             //If the fluid type does not match update it, and mark that we need an update
             if (!type.isEmpty()) {
@@ -255,7 +256,7 @@ public class FluidNetwork extends DynamicBufferedNetwork<IFluidHandler, FluidNet
             fluidTank.setEmpty();
         } else {
             lastFluid = fluid;
-            fluidTank.setStack(fluid.copyWithAmount(1));
+            fluidTank.setStack(NeoFluidStack.wrap(fluid.copyWithAmount(1)));
         }
     }
 

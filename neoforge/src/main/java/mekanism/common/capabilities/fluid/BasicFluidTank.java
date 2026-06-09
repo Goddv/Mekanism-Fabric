@@ -9,12 +9,19 @@ import mekanism.api.IContentsListener;
 import mekanism.api.SerializationConstants;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.fluid.IExtendedFluidTank;
+import mekanism.api.fluid.IFluidStack;
 import mekanism.api.functions.ConstantPredicates;
+import mekanism.common.fluid.NeoFluidStack;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Stores its contents as a NeoForge {@link FluidStack} internally (behavior-identical to before the {@link IFluidStack}
+ * gate) and bridges to the loader-neutral {@link IExtendedFluidTank} contract via {@link NeoFluidStack}. Validators stay
+ * NeoForge {@code Predicate<FluidStack>}-typed so existing call sites are unchanged; they receive the unwrapped stack.
+ */
 @NothingNullByDefault
 public class BasicFluidTank implements IExtendedFluidTank {
 
@@ -85,7 +92,7 @@ public class BasicFluidTank implements IExtendedFluidTank {
     }
 
     /**
-     * @apiNote This is only protected for direct querying access. To modify this stack the external methods or {@link #setStackUnchecked(FluidStack)} should be used
+     * @apiNote This is only protected for direct querying access. To modify this stack the external methods or {@link #setStackUnchecked(IFluidStack)} should be used
      * instead.
      */
     protected FluidStack stored = FluidStack.EMPTY;
@@ -120,13 +127,13 @@ public class BasicFluidTank implements IExtendedFluidTank {
 
     @NotNull
     @Override
-    public FluidStack getFluid() {
-        return stored;
+    public IFluidStack getFluid() {
+        return NeoFluidStack.wrap(stored);
     }
 
     @Override
-    public void setStack(FluidStack stack) {
-        setStack(stack, true);
+    public void setStack(IFluidStack stack) {
+        setStack(NeoFluidStack.unwrap(stack), true);
     }
 
     /**
@@ -135,9 +142,6 @@ public class BasicFluidTank implements IExtendedFluidTank {
      * @param automationType The automation type to limit the rate by or null if we don't have access to an automation type.
      *
      * @return The rate this tank can insert/extract at.
-     *
-     * @implNote By default, this returns {@link Integer#MAX_VALUE} to not actually limit the tank's rate. By default, this is also ignored for direct setting of the
-     * stack/stack size
      */
     protected int getInsertRate(@Nullable AutomationType automationType) {
         return Integer.MAX_VALUE;
@@ -149,17 +153,14 @@ public class BasicFluidTank implements IExtendedFluidTank {
      * @param automationType The automation type to limit the rate by or null if we don't have access to an automation type.
      *
      * @return The rate this tank can insert/extract at.
-     *
-     * @implNote By default, this returns {@link Integer#MAX_VALUE} to not actually limit the tank's rate. By default, this is also ignored for direct setting of the
-     * stack/stack size
      */
     protected int getExtractRate(@Nullable AutomationType automationType) {
         return Integer.MAX_VALUE;
     }
 
     @Override
-    public void setStackUnchecked(FluidStack stack) {
-        setStack(stack, false);
+    public void setStackUnchecked(IFluidStack stack) {
+        setStack(NeoFluidStack.unwrap(stack), false);
     }
 
     private void setStack(FluidStack stack, boolean validateStack) {
@@ -169,7 +170,7 @@ public class BasicFluidTank implements IExtendedFluidTank {
                 return;
             }
             stored = FluidStack.EMPTY;
-        } else if (!validateStack || isFluidValid(stack)) {
+        } else if (!validateStack || validator.test(stack)) {
             stored = stack.copy();
         } else {
             //Throws a RuntimeException as specified is allowed when something unexpected happens
@@ -180,19 +181,20 @@ public class BasicFluidTank implements IExtendedFluidTank {
     }
 
     @Override
-    public FluidStack insert(@NotNull FluidStack stack, Action action, AutomationType automationType) {
-        if (stack.isEmpty() || !isFluidValid(stack) || !canInsert.test(stack, automationType)) {
+    public IFluidStack insert(@NotNull IFluidStack stack, Action action, AutomationType automationType) {
+        FluidStack toInsert = NeoFluidStack.unwrap(stack);
+        if (toInsert.isEmpty() || !validator.test(toInsert) || !canInsert.test(toInsert, automationType)) {
             //"Fail quick" if the given stack is empty, or we can never insert the fluid or currently are unable to insert it
             return stack;
         }
-        int needed = Math.min(getInsertRate(automationType), getNeeded());
+        long needed = Math.min(getInsertRate(automationType), getNeeded());
         if (needed <= 0) {
             //Fail if we are a full tank or our rate is zero
             return stack;
         }
         boolean sameType = false;
-        if (isEmpty() || (sameType = isFluidEqual(stack))) {
-            int toAdd = Math.min(stack.amount(), needed);
+        if (isEmpty() || (sameType = FluidStack.isSameFluidSameComponents(stored, toInsert))) {
+            int toAdd = (int) Math.min(toInsert.amount(), needed);
             if (action.execute()) {
                 //If we want to actually insert the fluid, then update the current fluid
                 if (sameType) {
@@ -203,36 +205,36 @@ public class BasicFluidTank implements IExtendedFluidTank {
                     //If we are not the same type then we have to copy the stack and set it
                     // Just set it unchecked as we have already validated it
                     // Note: this also will mark that the contents changed
-                    setStackUnchecked(stack.copyWithAmount(toAdd));
+                    setStack(toInsert.copyWithAmount(toAdd), false);
                 }
             }
-            return stack.copyWithAmount(stack.amount() - toAdd);
+            return stack.copyWithAmount(toInsert.amount() - toAdd);
         }
         //If we didn't accept this fluid, then just return the given stack
         return stack;
     }
 
     @Override
-    public FluidStack extract(int amount, Action action, AutomationType automationType) {
+    public IFluidStack extract(long amount, Action action, AutomationType automationType) {
         if (isEmpty() || amount < 1 || !canExtract.test(stored, automationType)) {
             //"Fail quick" if we don't can never extract from this tank, have a fluid stored, or the amount being requested is less than one
-            return FluidStack.EMPTY;
+            return IFluidStack.empty();
         }
         //Note: While we technically could just return the stack itself if we are removing all that we have, it would require a lot more checks
         // We also are limiting it by the rate this tank has
-        int size = Math.min(Math.min(getExtractRate(automationType), getFluidAmount()), amount);
+        int size = (int) Math.min(Math.min(getExtractRate(automationType), getFluidAmount()), amount);
         FluidStack ret = stored.copyWithAmount(size);
         if (!ret.isEmpty() && action.execute()) {
             //If shrink gets the size to zero it will update the empty state so that isEmpty() returns true.
             stored.shrink(ret.amount());
             onContentsChanged();
         }
-        return ret;
+        return NeoFluidStack.wrap(ret);
     }
 
     @Override
-    public boolean isFluidValid(FluidStack stack) {
-        return validator.test(stack);
+    public boolean isFluidValid(IFluidStack stack) {
+        return validator.test(NeoFluidStack.unwrap(stack));
     }
 
     /**
@@ -240,7 +242,7 @@ public class BasicFluidTank implements IExtendedFluidTank {
      * directly modify our stack instead of having to make a copy.
      */
     @Override
-    public int setStackSize(int amount, Action action) {
+    public long setStackSize(long amount, Action action) {
         if (isEmpty()) {
             return 0;
         } else if (amount <= 0) {
@@ -257,7 +259,7 @@ public class BasicFluidTank implements IExtendedFluidTank {
             //If our size is not changing, or we are only simulating the change, don't do anything
             return amount;
         }
-        stored.setAmount(amount);
+        stored.setAmount((int) amount);
         onContentsChanged();
         return amount;
     }
@@ -266,8 +268,8 @@ public class BasicFluidTank implements IExtendedFluidTank {
      * @implNote Overwritten so that we can make this obey the rate limit our tank may have
      */
     @Override
-    public int growStack(int amount, Action action) {
-        int current = getFluidAmount();
+    public long growStack(long amount, Action action) {
+        long current = getFluidAmount();
         if (current == 0) {
             //"Fail quick" if our stack is empty, so we can't grow it
             return 0;
@@ -279,7 +281,7 @@ public class BasicFluidTank implements IExtendedFluidTank {
             //If we are decreasing the stack's size, use the extract rate
             amount = Math.max(amount, -getExtractRate(null));
         }
-        int newSize = setStackSize(current + amount, action);
+        long newSize = setStackSize(current + amount, action);
         return newSize - current;
     }
 
@@ -295,15 +297,15 @@ public class BasicFluidTank implements IExtendedFluidTank {
      * @implNote Overwritten so that if we decide to change to returning a cached/copy of our stack in {@link #getFluid()}, we can optimize out the copying.
      */
     @Override
-    public boolean isFluidEqual(FluidStack other) {
-        return FluidStack.isSameFluidSameComponents(stored, other);
+    public boolean isFluidEqual(IFluidStack other) {
+        return FluidStack.isSameFluidSameComponents(stored, NeoFluidStack.unwrap(other));
     }
 
     /**
      * @implNote Overwritten so that if we decide to change to returning a cached/copy of our stack in {@link #getFluid()}, we can optimize out the copying.
      */
     @Override
-    public int getFluidAmount() {
+    public long getFluidAmount() {
         return stored.amount();
     }
 

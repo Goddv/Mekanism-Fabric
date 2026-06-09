@@ -6,7 +6,6 @@ import mekanism.api.AutomationType;
 import mekanism.api.IContentsListener;
 import mekanism.api.annotations.NothingNullByDefault;
 import net.minecraft.core.Direction;
-import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.Nullable;
 
 @NothingNullByDefault
@@ -58,13 +57,13 @@ public interface IMekanismFluidHandler extends ISidedFluidHandler, IContentsList
     }
 
     @Override
-    default FluidStack getFluidInTank(int tank, @Nullable Direction side) {
+    default IFluidStack getFluidInTank(int tank, @Nullable Direction side) {
         IExtendedFluidTank fluidTank = getFluidTank(tank, side);
-        return fluidTank == null ? FluidStack.EMPTY : fluidTank.getFluid();
+        return fluidTank == null ? IFluidStack.empty() : fluidTank.getFluid();
     }
 
     @Override
-    default void setFluidInTank(int tank, FluidStack stack, @Nullable Direction side) {
+    default void setFluidInTank(int tank, IFluidStack stack, @Nullable Direction side) {
         IExtendedFluidTank fluidTank = getFluidTank(tank, side);
         if (fluidTank != null) {
             fluidTank.setStack(stack);
@@ -78,43 +77,43 @@ public interface IMekanismFluidHandler extends ISidedFluidHandler, IContentsList
     }
 
     @Override
-    default boolean isFluidValid(int tank, FluidStack stack, @Nullable Direction side) {
+    default boolean isFluidValid(int tank, IFluidStack stack, @Nullable Direction side) {
         IExtendedFluidTank fluidTank = getFluidTank(tank, side);
         return fluidTank != null && fluidTank.isFluidValid(stack);
     }
 
     /**
-     * @implNote Any overrides to this should also override {@link #insertFluid(FluidStack, Direction, Action)} as it bypasses calling this method in order to skip
+     * @implNote Any overrides to this should also override {@link #insertFluid(IFluidStack, Direction, Action)} as it bypasses calling this method in order to skip
      * looking up the containers for every sub operation.
      */
     @Override
-    default FluidStack insertFluid(int tank, FluidStack stack, @Nullable Direction side, Action action) {
+    default IFluidStack insertFluid(int tank, IFluidStack stack, @Nullable Direction side, Action action) {
         IExtendedFluidTank fluidTank = getFluidTank(tank, side);
         return fluidTank == null ? stack : fluidTank.insert(stack, action, AutomationType.handler(side));
     }
 
     /**
-     * @implNote Any overrides to this should also override {@link #extractFluid(int, Direction, Action)} and {@link #extractFluid(FluidStack, Direction, Action)} as they
+     * @implNote Any overrides to this should also override {@link #extractFluid(long, Direction, Action)} and {@link #extractFluid(IFluidStack, Direction, Action)} as they
      * bypass calling this method in order to skip looking up the containers for every sub operation.
      */
     @Override
-    default FluidStack extractFluid(int tank, int amount, @Nullable Direction side, Action action) {
+    default IFluidStack extractFluid(int tank, long amount, @Nullable Direction side, Action action) {
         IExtendedFluidTank fluidTank = getFluidTank(tank, side);
-        return fluidTank == null ? FluidStack.EMPTY : fluidTank.extract(amount, action, AutomationType.handler(side));
+        return fluidTank == null ? IFluidStack.empty() : fluidTank.extract(amount, action, AutomationType.handler(side));
     }
 
     @Override
-    default FluidStack insertFluid(FluidStack stack, @Nullable Direction side, Action action) {
+    default IFluidStack insertFluid(IFluidStack stack, @Nullable Direction side, Action action) {
         return ExtendedFluidHandlerUtils.insert(stack, side, this::getFluidTanks, action, AutomationType.handler(side));
     }
 
     @Override
-    default FluidStack extractFluid(int amount, @Nullable Direction side, Action action) {
+    default IFluidStack extractFluid(long amount, @Nullable Direction side, Action action) {
         return ExtendedFluidHandlerUtils.extract(amount, side, this::getFluidTanks, action, AutomationType.handler(side));
     }
 
     @Override
-    default FluidStack extractFluid(FluidStack stack, @Nullable Direction side, Action action) {
+    default IFluidStack extractFluid(IFluidStack stack, @Nullable Direction side, Action action) {
         return ExtendedFluidHandlerUtils.extract(stack, side, this::getFluidTanks, action, AutomationType.handler(side));
     }
 }

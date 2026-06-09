@@ -46,7 +46,7 @@ public class RenderThermalEvaporationPlant extends MultiblockTileEntityRenderer<
         state.gather(multiblock);
 
         float scale = Math.min(1, multiblock.prevScale);
-        FluidStack fluid = multiblock.inputTank.getFluid();
+        FluidStack fluid = mekanism.common.fluid.NeoFluidStack.unwrap(multiblock.inputTank.getFluid());
 
         state.fluidTexture = fluid.isEmpty() ? null : MekanismRenderer.getSinglePicker(MekanismRenderer.getFluidTexture(fluid, MekanismRenderer.FluidTextureType.STILL));
         state.valveTexture = fluid.isEmpty() ? null : MekanismRenderer.getValveTexture(fluid);

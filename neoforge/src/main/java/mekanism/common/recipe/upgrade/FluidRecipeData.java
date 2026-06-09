@@ -7,10 +7,10 @@ import mekanism.api.AutomationType;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.fluid.ExtendedFluidHandlerUtils;
 import mekanism.api.fluid.IExtendedFluidTank;
-import mekanism.api.fluid.IMekanismFluidHandler;
+import mekanism.api.fluid.IFluidStack;
 import mekanism.common.attachments.containers.ContainerType;
+import mekanism.common.attachments.containers.fluid.ComponentBackedFluidHandler;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.Nullable;
 
 @NothingNullByDefault
@@ -37,13 +37,14 @@ public class FluidRecipeData implements RecipeUpgradeData<FluidRecipeData> {
         }
         //TODO: Improve the logic used so that it tries to batch similar types of fluids together first
         // and maybe make it try multiple slot combinations??
-        IMekanismFluidHandler outputHandler = ContainerType.FLUID.createHandler(stack);
+        ComponentBackedFluidHandler outputHandler = ContainerType.FLUID.createHandler(stack);
         if (outputHandler == null) {
             //Something went wrong, fail
             return false;
         }
+        List<IExtendedFluidTank> outputTanks = outputHandler.getContainers();
         for (IExtendedFluidTank fluidTank : this.fluidTanks) {
-            if (!fluidTank.isEmpty() && !insertManualIntoOutputContainer(outputHandler, fluidTank.getFluid()).isEmpty()) {
+            if (!fluidTank.isEmpty() && !insertManualIntoOutputContainer(outputTanks, fluidTank.getFluid()).isEmpty()) {
                 //If we have a remainder something failed so bail
                 return false;
             }
@@ -51,8 +52,8 @@ public class FluidRecipeData implements RecipeUpgradeData<FluidRecipeData> {
         return true;
     }
 
-    private FluidStack insertManualIntoOutputContainer(IMekanismFluidHandler outputHandler, FluidStack fluid) {
+    private IFluidStack insertManualIntoOutputContainer(List<IExtendedFluidTank> outputTanks, IFluidStack fluid) {
         //Insert into the output using manual as the automation type
-        return ExtendedFluidHandlerUtils.insert(fluid, null, outputHandler::getFluidTanks, Action.EXECUTE, AutomationType.MANUAL);
+        return ExtendedFluidHandlerUtils.insert(fluid, Action.EXECUTE, AutomationType.MANUAL, outputTanks.size(), outputTanks);
     }
 }

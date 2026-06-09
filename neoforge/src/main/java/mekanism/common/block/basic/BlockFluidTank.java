@@ -35,7 +35,7 @@ public class BlockFluidTank extends BlockTileModel<TileEntityFluidTank, Machine<
         }
         TileEntityFluidTank tile = WorldUtils.getTileEntity(TileEntityFluidTank.class, world, pos);
         if (tile != null) {
-            FluidStack fluid = tile.fluidTank.getFluid();
+            FluidStack fluid = mekanism.common.fluid.NeoFluidStack.unwrap(tile.fluidTank.getFluid());
             if (!fluid.isEmpty()) {
                 ambientLight = Math.max(ambientLight, fluid.getFluidType().getLightLevel(fluid));
             }

@@ -256,7 +256,7 @@ public class OutputHelper {
             //This should not happen
             return;
         }
-        fluidTank.insert(toOutput.withAmount(toOutput.amount() * operations).create(), Action.EXECUTE, AutomationType.INTERNAL);
+        fluidTank.insert(mekanism.api.fluid.NeoFluidStackBridge.wrap(toOutput.withAmount(toOutput.amount() * operations).create()), Action.EXECUTE, AutomationType.INTERNAL);
     }
 
     private static void handleOutput(IInventorySlot inventorySlot, @Nullable ItemStackTemplate toOutput, int operations) {
@@ -308,8 +308,8 @@ public class OutputHelper {
             //Copy the stack and make it be max size
             FluidStack maxOutput = toOutput.apply(Integer.MAX_VALUE, DataComponentPatch.EMPTY);
             //Then simulate filling the fluid tank, so we can see how much actually can fit
-            FluidStack remainder = tank.insert(maxOutput, Action.SIMULATE, AutomationType.INTERNAL);
-            int amountUsed = maxOutput.amount() - remainder.amount();
+            mekanism.api.fluid.IFluidStack remainder = tank.insert(mekanism.api.fluid.NeoFluidStackBridge.wrap(maxOutput), Action.SIMULATE, AutomationType.INTERNAL);
+            int amountUsed = (int) (maxOutput.amount() - remainder.getAmount());
             //Divide the amount we can actually use by the amount one output operation is equal to, capping it at the max we were told about
             int operations = amountUsed / toOutput.amount();
             tracker.updateOperations(operations);

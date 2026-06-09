@@ -52,7 +52,7 @@ public class RenderBioGenerator extends MekanismTileEntityRenderer<TileEntityBio
     public void extractRenderState(TileEntityBioGenerator generator, BioGeneratorRenderState state, float partialTick, Vec3 cameraPosition,
           @Nullable ModelFeatureRenderer.CrumblingOverlay breakProgress) {
         super.extractRenderState(generator, state, partialTick, cameraPosition, breakProgress);
-        FluidStack fluid = generator.bioFuelTank.getFluid();
+        FluidStack fluid = mekanism.common.fluid.NeoFluidStack.unwrap(generator.bioFuelTank.getFluid());
         float fluidScale = fluid.amount() / (float) generator.bioFuelTank.getCapacity();
         state.maxY = MODEL_MIN_Y_PAD + MODEL_Y_STAGE_FRACTION * getFluidStagePercent(fluidScale, MekanismUtils.lighterThanAirGas(fluid));
         switch (generator.getDirection()) {

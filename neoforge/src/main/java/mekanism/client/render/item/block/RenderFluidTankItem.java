@@ -58,7 +58,7 @@ public class RenderFluidTankItem implements SpecialModelRenderer<RenderFluidTank
     @Nullable
     @Override
     public TankRenderState extractArgument(ItemStack stack) {
-        IMekanismFluidHandler attachment = ContainerType.FLUID.createHandler(stack);
+        mekanism.common.attachments.containers.fluid.ComponentBackedFluidHandler attachment = ContainerType.FLUID.createHandler(stack);
         int fluidLight = 0;
         int fluidColor = 0;
         float contentsMaxY = 0;

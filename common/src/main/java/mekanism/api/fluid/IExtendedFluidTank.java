@@ -8,67 +8,83 @@ import mekanism.api.annotations.NothingNullByDefault;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import mekanism.api.IValueIOSerializable;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.IFluidTank;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
 
+/**
+ * Loader-neutral fluid tank contract over {@link IFluidStack} (the fluid analog of {@code IChemicalTank}). The NeoForge
+ * {@code IFluidTank}/{@code IFluidHandler} capability surface is supplied separately by a loader bridge so this stays
+ * free of NeoForge types.
+ */
 @NothingNullByDefault
-public interface IExtendedFluidTank extends IFluidTank, IValueIOSerializable, IContentsListener {
+public interface IExtendedFluidTank extends IValueIOSerializable, IContentsListener {
+
+    /**
+     * Returns the {@link IFluidStack} in this tank.
+     *
+     * <p>
+     * <strong>IMPORTANT:</strong> This {@link IFluidStack} <em>MUST NOT</em> be modified. This method is not for altering internal contents. Any implementers who are
+     * able to detect modification via this method should throw an exception. It is ENTIRELY reasonable and likely that the stack returned here will be a copy.
+     * </p>
+     *
+     * <p>
+     * <strong><em>SERIOUSLY: DO NOT MODIFY THE RETURNED FLUID STACK</em></strong>
+     * </p>
+     *
+     * @return {@link IFluidStack} in this tank. Empty instance of the {@link IFluidStack} if the tank is empty.
+     */
+    IFluidStack getFluid();
 
     /**
      * Overrides the stack in this {@link IExtendedFluidTank}.
      *
-     * @param stack {@link FluidStack} to set this tanks' contents to (may be empty).
+     * @param stack {@link IFluidStack} to set this tanks' contents to (may be empty).
      *
      * @throws RuntimeException if this tank is called in a way that it was not expecting.
      * @implNote If the internal stack does get updated make sure to call {@link #onContentsChanged()}
      */
-    void setStack(FluidStack stack);
+    void setStack(IFluidStack stack);
 
     /**
      * Overrides the stack in this {@link IExtendedFluidTank}.
      *
-     * @param stack {@link FluidStack} to set this tank's contents to (may be empty).
+     * @param stack {@link IFluidStack} to set this tank's contents to (may be empty).
      *
-     * @apiNote Unsafe version of {@link #setStack(FluidStack)}. This method is exposed for implementation and code deduplication reasons only and should
-     * <strong>NOT</strong> be directly called outside your own {@link IExtendedFluidTank} where you already know the given {@link FluidStack} is valid, or on the
+     * @apiNote Unsafe version of {@link #setStack(IFluidStack)}. This method is exposed for implementation and code deduplication reasons only and should
+     * <strong>NOT</strong> be directly called outside your own {@link IExtendedFluidTank} where you already know the given {@link IFluidStack} is valid, or on the
      * client side for purposes of receiving sync data and rendering.
      * @implNote If the internal stack does get updated make sure to call {@link #onContentsChanged()}
      */
-    void setStackUnchecked(FluidStack stack);
+    void setStackUnchecked(IFluidStack stack);
 
     /**
      * <p>
-     * Inserts a {@link FluidStack} into this {@link IExtendedFluidTank} and return the remainder. The {@link FluidStack} <em>should not</em> be modified in this
+     * Inserts a {@link IFluidStack} into this {@link IExtendedFluidTank} and return the remainder. The {@link IFluidStack} <em>should not</em> be modified in this
      * function!
      * </p>
-     * Note: This behaviour is subtly <strong>different</strong> from {@link IFluidHandler#fill(FluidStack, FluidAction)}
      *
-     * @param stack          {@link FluidStack} to insert. This must not be modified by the tank.
+     * @param stack          {@link IFluidStack} to insert. This must not be modified by the tank.
      * @param action         The action to perform, either {@link Action#EXECUTE} or {@link Action#SIMULATE}
      * @param automationType The method that this tank is being interacted from.
      *
-     * @return The remaining {@link FluidStack} that was not inserted (if the entire stack is accepted, then return an empty {@link FluidStack}). May be the same as the
-     * input {@link FluidStack} if unchanged, otherwise a new {@link FluidStack}. The returned {@link FluidStack} can be safely modified after
+     * @return The remaining {@link IFluidStack} that was not inserted (if the entire stack is accepted, then return an empty {@link IFluidStack}). May be the same as the
+     * input {@link IFluidStack} if unchanged, otherwise a new {@link IFluidStack}. The returned {@link IFluidStack} can be safely modified after
      *
-     * @implNote The {@link FluidStack} <em>should not</em> be modified in this function! If the internal stack does get updated make sure to call
-     * {@link #onContentsChanged()}. It is also recommended to override this if your internal {@link FluidStack} is mutable so that a copy does not have to be made every
+     * @implNote The {@link IFluidStack} <em>should not</em> be modified in this function! If the internal stack does get updated make sure to call
+     * {@link #onContentsChanged()}. It is also recommended to override this if your internal {@link IFluidStack} is mutable so that a copy does not have to be made every
      * run
      */
-    default FluidStack insert(FluidStack stack, Action action, AutomationType automationType) {
+    default IFluidStack insert(IFluidStack stack, Action action, AutomationType automationType) {
         if (stack.isEmpty() || !isFluidValid(stack)) {
             //"Fail quick" if the given stack is empty, or we can never insert the item or currently are unable to insert it
             return stack;
         }
-        int needed = getNeeded();
+        long needed = getNeeded();
         if (needed <= 0) {
             //Fail if we are a full tank
             return stack;
         }
         boolean sameType = false;
-        if (isEmpty() || (sameType = FluidStack.isSameFluidSameComponents(stack, getFluid()))) {
-            int toAdd = Math.min(stack.amount(), needed);
+        if (isEmpty() || (sameType = IFluidStack.isSameFluidSameComponents(stack, getFluid()))) {
+            long toAdd = Math.min(stack.getAmount(), needed);
             if (action.execute()) {
                 //If we want to actually insert the fluid, then update the current fluid
                 if (sameType) {
@@ -81,14 +97,14 @@ public interface IExtendedFluidTank extends IFluidTank, IValueIOSerializable, IC
                     setStack(stack.copyWithAmount(toAdd));
                 }
             }
-            return stack.copyWithAmount(stack.amount() - toAdd);
+            return stack.copyWithAmount(stack.getAmount() - toAdd);
         }
         //If we didn't accept this fluid, then just return the given stack
         return stack;
     }
 
     /**
-     * Extracts a {@link FluidStack} from this {@link IExtendedFluidTank}.
+     * Extracts a {@link IFluidStack} from this {@link IExtendedFluidTank}.
      * <p>
      * The returned value must be empty if nothing is extracted, otherwise its stack size must be less than or equal to {@code amount}.
      * </p>
@@ -97,24 +113,44 @@ public interface IExtendedFluidTank extends IFluidTank, IValueIOSerializable, IC
      * @param action         The action to perform, either {@link Action#EXECUTE} or {@link Action#SIMULATE}
      * @param automationType The method that this tank is being interacted from.
      *
-     * @return {@link FluidStack} extracted from the tank, must be empty if nothing can be extracted. The returned {@link FluidStack} can be safely modified after, so the
+     * @return {@link IFluidStack} extracted from the tank, must be empty if nothing can be extracted. The returned {@link IFluidStack} can be safely modified after, so the
      * tank should return a new or copied stack.
      *
-     * @implNote The returned {@link FluidStack} can be safely modified after, so a new or copied stack should be returned. If the internal stack does get updated make
-     * sure to call {@link #onContentsChanged()}. It is also recommended to override this if your internal {@link FluidStack} is mutable so that a copy does not have to
+     * @implNote The returned {@link IFluidStack} can be safely modified after, so a new or copied stack should be returned. If the internal stack does get updated make
+     * sure to call {@link #onContentsChanged()}. It is also recommended to override this if your internal {@link IFluidStack} is mutable so that a copy does not have to
      * be made every run
      */
-    default FluidStack extract(int amount, Action action, AutomationType automationType) {
+    default IFluidStack extract(long amount, Action action, AutomationType automationType) {
         if (isEmpty() || amount < 1) {
-            return FluidStack.EMPTY;
+            return IFluidStack.empty();
         }
-        FluidStack ret = getFluid().copyWithAmount(Math.min(getFluidAmount(), amount));
+        IFluidStack ret = getFluid().copyWithAmount(Math.min(getFluidAmount(), amount));
         if (!ret.isEmpty() && action.execute()) {
             // Note: this also will mark that the contents changed
-            shrinkStack(ret.amount(), action);
+            shrinkStack(ret.getAmount(), action);
         }
         return ret;
     }
+
+    /**
+     * Retrieves the maximum stack size allowed to exist in this {@link IExtendedFluidTank}.
+     *
+     * @return The maximum stack size allowed in this {@link IExtendedFluidTank}.
+     */
+    int getCapacity();
+
+    /**
+     * <p>
+     * This function should be used instead of simulated insertions in cases where the contents and state of the tank are irrelevant, mainly for the purpose of automation
+     * and logic.
+     * </p>
+     *
+     * @param stack Stack to test with for validity
+     *
+     * @return true if this {@link IExtendedFluidTank} can accept the {@link IFluidStack}, not considering the current state of the tank. false if this
+     * {@link IExtendedFluidTank} can never insert the {@link IFluidStack} in any situation.
+     */
+    boolean isFluidValid(IFluidStack stack);
 
     /**
      * Convenience method for modifying the size of the stored stack.
@@ -127,10 +163,10 @@ public interface IExtendedFluidTank extends IFluidTank, IValueIOSerializable, IC
      *
      * @return Actual size the stack was set to.
      *
-     * @implNote It is recommended to override this if your internal {@link FluidStack} is mutable so that a copy does not have to be made every run. If the internal
+     * @implNote It is recommended to override this if your internal {@link IFluidStack} is mutable so that a copy does not have to be made every run. If the internal
      * stack does get updated make sure to call {@link #onContentsChanged()}
      */
-    default int setStackSize(int amount, Action action) {
+    default long setStackSize(long amount, Action action) {
         if (isEmpty()) {
             return 0;
         } else if (amount <= 0) {
@@ -139,7 +175,7 @@ public interface IExtendedFluidTank extends IFluidTank, IValueIOSerializable, IC
             }
             return 0;
         }
-        int maxStackSize = getCapacity();
+        long maxStackSize = getCapacity();
         if (amount > maxStackSize) {
             amount = maxStackSize;
         }
@@ -165,16 +201,16 @@ public interface IExtendedFluidTank extends IFluidTank, IValueIOSerializable, IC
      * @apiNote Negative values for amount are valid, and will instead cause the stack to shrink.
      * @implNote If the internal stack does get updated make sure to call {@link #onContentsChanged()}
      */
-    default int growStack(int amount, Action action) {
-        int current = getFluidAmount();
+    default long growStack(long amount, Action action) {
+        long current = getFluidAmount();
         if (current == 0) {
             //"Fail quick" if our stack is empty, so we can't grow it
             return 0;
         } else if (amount > 0) {
-            //Cap adding amount at how much we need, so that we don't risk integer overflow
+            //Cap adding amount at how much we need, so that we don't risk overflow
             amount = Math.min(amount, getNeeded());
         }
-        int newSize = setStackSize(current + amount, action);
+        long newSize = setStackSize(current + amount, action);
         return newSize - current;
     }
 
@@ -192,7 +228,7 @@ public interface IExtendedFluidTank extends IFluidTank, IValueIOSerializable, IC
      * @apiNote Negative values for amount are valid, and will instead cause the stack to grow.
      * @implNote If the internal stack does get updated make sure to call {@link #onContentsChanged()}
      */
-    default int shrinkStack(int amount, Action action) {
+    default long shrinkStack(long amount, Action action) {
         return -growStack(-amount, action);
     }
 
@@ -211,7 +247,7 @@ public interface IExtendedFluidTank extends IFluidTank, IValueIOSerializable, IC
      * Convenience method for emptying this {@link IExtendedFluidTank}.
      */
     default void setEmpty() {
-        setStack(FluidStack.EMPTY);
+        setStack(IFluidStack.empty());
     }
 
     /**
@@ -223,8 +259,8 @@ public interface IExtendedFluidTank extends IFluidTank, IValueIOSerializable, IC
      *
      * @implNote If your implementation of {@link #getFluid()} returns a copy, this should be overridden to directly check against the internal stack.
      */
-    default boolean isFluidEqual(FluidStack other) {
-        return FluidStack.isSameFluidSameComponents(getFluid(), other);
+    default boolean isFluidEqual(IFluidStack other) {
+        return IFluidStack.isSameFluidSameComponents(getFluid(), other);
     }
 
     /**
@@ -232,60 +268,30 @@ public interface IExtendedFluidTank extends IFluidTank, IValueIOSerializable, IC
      *
      * @return Amount of fluid needed
      */
-    default int getNeeded() {
+    default long getNeeded() {
         return Math.max(0, getCapacity() - getFluidAmount());
     }
 
-    @Override
-    default int getFluidAmount() {
-        return getFluid().amount();
+    /**
+     * Convenience method for checking the amount of fluid in this tank.
+     *
+     * @return The size of the stored stack, or zero if the stack is empty.
+     *
+     * @implNote If your implementation of {@link #getFluid()} returns a copy, this should be overridden to directly check against the internal stack.
+     */
+    default long getFluidAmount() {
+        return getFluid().getAmount();
     }
 
     @Override
     default void serialize(ValueOutput output) {
         if (!isEmpty()) {
-            output.store(SerializationConstants.STORED, FluidStack.CODEC, getFluid());
+            output.store(SerializationConstants.STORED, IFluidStackProvider.INSTANCE.codec(), getFluid());
         }
     }
 
     @Override
     default void deserialize(ValueInput input) {
-        setStackUnchecked(input.read(SerializationConstants.STORED, FluidStack.CODEC).orElse(FluidStack.EMPTY));
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * Wrapped to properly use our method declarations
-     */
-    @Override
-    @Deprecated
-    default int fill(FluidStack stack, FluidAction action) {
-        return stack.amount() - insert(stack, FluidActions.from(action), AutomationType.EXTERNAL).amount();
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * Wrapped to properly use our method declarations
-     */
-    @Override
-    @Deprecated
-    default FluidStack drain(FluidStack stack, FluidAction action) {
-        if (!isEmpty() && isFluidEqual(stack)) {
-            return extract(stack.amount(), FluidActions.from(action), AutomationType.EXTERNAL);
-        }
-        return FluidStack.EMPTY;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * Wrapped to properly use our method declarations
-     */
-    @Override
-    @Deprecated
-    default FluidStack drain(int amount, FluidAction action) {
-        return extract(amount, FluidActions.from(action), AutomationType.EXTERNAL);
+        setStackUnchecked(input.read(SerializationConstants.STORED, IFluidStackProvider.INSTANCE.codec()).orElse(IFluidStack.empty()));
     }
 }

@@ -66,7 +66,7 @@ public class VariableCapacityFluidTank extends BasicFluidTank {
     }
 
     @Override
-    public int setStackSize(int amount, @NotNull Action action) {
+    public long setStackSize(long amount, @NotNull Action action) {
         if (isEmpty()) {
             return 0;
         } else if (amount <= 0) {
@@ -86,7 +86,7 @@ public class VariableCapacityFluidTank extends BasicFluidTank {
             //If our size is not changing, or we are only simulating the change, don't do anything
             return amount;
         }
-        stored.setAmount(amount);
+        stored.setAmount((int) amount);
         onContentsChanged();
         return amount;
     }

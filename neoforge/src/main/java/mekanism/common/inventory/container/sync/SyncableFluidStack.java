@@ -3,6 +3,7 @@ package mekanism.common.inventory.container.sync;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import mekanism.api.fluid.IExtendedFluidTank;
+import mekanism.common.fluid.NeoFluidStack;
 import mekanism.common.network.to_client.container.property.FluidStackPropertyData;
 import mekanism.common.network.to_client.container.property.IntPropertyData;
 import mekanism.common.network.to_client.container.property.PropertyData;
@@ -25,7 +26,8 @@ public class SyncableFluidStack implements ISyncableData {
         // that we need to use unchecked setters on the client is that if a recipe got removed so there is a substance
         // in a tank that was valid but no longer is valid, we want to ensure that the client is able to properly render
         // it instead of printing an error due to the client thinking that it is invalid
-        return create(handler::getFluid, isClient ? handler::setStackUnchecked : handler::setStack);
+        return create(() -> NeoFluidStack.unwrap(handler.getFluid()),
+              isClient ? stack -> handler.setStackUnchecked(NeoFluidStack.wrap(stack)) : stack -> handler.setStack(NeoFluidStack.wrap(stack)));
     }
 
     public static SyncableFluidStack create(Supplier<@NotNull FluidStack> getter, Consumer<@NotNull FluidStack> setter) {

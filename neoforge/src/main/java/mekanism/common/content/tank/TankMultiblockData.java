@@ -184,7 +184,7 @@ public class TankMultiblockData extends MultiblockData implements IValveHandler 
     @ComputerMethod
     Either<ChemicalStack, FluidStack> getStored() {
         return switch (mergedTank.getCurrentType()) {
-            case FLUID -> Either.right(getFluidTank().getFluid());
+            case FLUID -> Either.right(mekanism.common.fluid.NeoFluidStack.unwrap(getFluidTank().getFluid()));
             case CHEMICAL -> Either.left(getChemicalTank().getStack());
             default -> Either.right(FluidStack.EMPTY);
         };

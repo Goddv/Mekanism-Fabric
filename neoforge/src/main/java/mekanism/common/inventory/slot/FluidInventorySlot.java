@@ -46,7 +46,7 @@ public class FluidInventorySlot extends BasicInventorySlot implements IFluidHand
                     FluidStack fluidInTank = fluidHandlerItem.getFluidInTank(tank);
                     if (fluidInTank.isEmpty()) {
                         hasEmpty = true;
-                    } else if (fluidTank.insert(fluidInTank, Action.SIMULATE, AutomationType.INTERNAL).amount() < fluidInTank.amount()) {
+                    } else if (fluidTank.insert(mekanism.common.fluid.NeoFluidStack.wrap(fluidInTank), Action.SIMULATE, AutomationType.INTERNAL).getAmount() < fluidInTank.amount()) {
                         //True if the items contents are valid, and we can fill the tank with any of our contents
                         return true;
                     }
@@ -56,7 +56,7 @@ public class FluidInventorySlot extends BasicInventorySlot implements IFluidHand
                     //we return if there is at least one empty tank in the item so that we can then drain into it
                     return hasEmpty;
                 }
-                FluidStack fluid = fluidTank.getFluid();
+                FluidStack fluid = mekanism.common.fluid.NeoFluidStack.unwrap(fluidTank.getFluid());
                 if (fluid.amount() < FluidType.BUCKET_VOLUME) {
                     //Workaround for buckets not being able to be filled until we have enough of our volume
                     fluid = fluid.copyWithAmount(FluidType.BUCKET_VOLUME);
@@ -84,7 +84,7 @@ public class FluidInventorySlot extends BasicInventorySlot implements IFluidHand
                 for (int tank = 0, tanks = fluidHandlerItem.getTanks(); tank < tanks; tank++) {
                     FluidStack fluidInTank = fluidHandlerItem.getFluidInTank(tank);
                     if (!fluidInTank.isEmpty()) {
-                        if (fluidTank.insert(fluidInTank, Action.SIMULATE, AutomationType.INTERNAL).amount() < fluidInTank.amount()) {
+                        if (fluidTank.insert(mekanism.common.fluid.NeoFluidStack.wrap(fluidInTank), Action.SIMULATE, AutomationType.INTERNAL).getAmount() < fluidInTank.amount()) {
                             //True if we are the input tank and the items contents are valid and can fill the tank with any of our contents
                             return mode;
                         }
@@ -112,7 +112,7 @@ public class FluidInventorySlot extends BasicInventorySlot implements IFluidHand
             if (fluidHandlerItem != null) {
                 for (int tank = 0, tanks = fluidHandlerItem.getTanks(); tank < tanks; tank++) {
                     FluidStack fluidInTank = fluidHandlerItem.getFluidInTank(tank);
-                    if (!fluidInTank.isEmpty() && fluidTank.insert(fluidInTank, Action.SIMULATE, AutomationType.INTERNAL).amount() < fluidInTank.amount()) {
+                    if (!fluidInTank.isEmpty() && fluidTank.insert(mekanism.common.fluid.NeoFluidStack.wrap(fluidInTank), Action.SIMULATE, AutomationType.INTERNAL).getAmount() < fluidInTank.amount()) {
                         //True if we can fill the tank with any of our contents
                         // Note: We need to recheck the fact the fluid is not empty and that it is valid,
                         // in case the item has multiple tanks and only some of the fluids are valid
@@ -134,7 +134,7 @@ public class FluidInventorySlot extends BasicInventorySlot implements IFluidHand
         return new FluidInventorySlot(fluidTank, ConstantPredicates.alwaysFalse(), stack -> {
             IFluidHandlerItem itemFluidHandler = tryGetFluidHandlerUnstacked(stack);
             if (itemFluidHandler != null) {
-                FluidStack fluidInTank = fluidTank.getFluid();
+                FluidStack fluidInTank = mekanism.common.fluid.NeoFluidStack.unwrap(fluidTank.getFluid());
                 //True if the tanks contents are valid, and we can fill the item with any of the contents
                 if (fluidInTank.isEmpty()) {
                     return isNonFullFluidContainer(itemFluidHandler);

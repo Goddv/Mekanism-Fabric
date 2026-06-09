@@ -69,7 +69,7 @@ public class ChemicalFluidBarDecorator implements IItemDecorator {
     }
 
     protected static void renderBar(GuiGraphicsExtractor guiGraphics, int stackXPos, int yPos, IExtendedFluidTank tank) {
-        FluidStack fluid = tank.getFluid();
+        FluidStack fluid = mekanism.common.fluid.NeoFluidStack.unwrap(tank.getFluid());
         renderBar(guiGraphics, stackXPos, yPos, fluid.amount(), tank.getCapacity(), FluidUtils.getRGBDurabilityForDisplay(fluid));
     }
 

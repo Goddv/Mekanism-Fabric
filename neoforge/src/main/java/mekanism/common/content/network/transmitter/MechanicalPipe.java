@@ -14,6 +14,7 @@ import mekanism.api.functions.ConstantPredicates;
 import mekanism.common.block.attribute.Attribute;
 import mekanism.common.capabilities.Capabilities;
 import mekanism.common.capabilities.fluid.BasicFluidTank;
+import mekanism.common.fluid.NeoFluidStack;
 import mekanism.common.content.network.FluidNetwork;
 import mekanism.common.lib.transmitter.CompatibleTransmitterValidator;
 import mekanism.common.lib.transmitter.CompatibleTransmitterValidator.CompatibleFluidTransmitterValidator;
@@ -34,6 +35,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -107,9 +109,9 @@ public class MechanicalPipe extends BufferedTransmitter<IFluidHandler, FluidNetw
 
     private int getAvailablePull() {
         if (hasTransmitterNetwork()) {
-            return Math.min(tier.getPipePullAmount(), getTransmitterNetwork().fluidTank.getNeeded());
+            return (int) Math.min(tier.getPipePullAmount(), getTransmitterNetwork().fluidTank.getNeeded());
         }
-        return Math.min(tier.getPipePullAmount(), buffer.getNeeded());
+        return (int) Math.min(tier.getPipePullAmount(), buffer.getNeeded());
     }
 
     @Nullable
@@ -134,7 +136,7 @@ public class MechanicalPipe extends BufferedTransmitter<IFluidHandler, FluidNetw
     public void read(@NotNull ValueInput input) {
         super.read(input);
         saveShare = input.read(SerializationConstants.FLUID, FluidStack.CODEC).orElse(FluidStack.EMPTY);
-        buffer.setStack(saveShare);
+        buffer.setStack(NeoFluidStack.wrap(saveShare));
     }
 
     @Override
@@ -194,7 +196,7 @@ public class MechanicalPipe extends BufferedTransmitter<IFluidHandler, FluidNetw
     @NotNull
     @Override
     public FluidStack releaseShare() {
-        FluidStack ret = buffer.getFluid();
+        FluidStack ret = NeoFluidStack.unwrap(buffer.getFluid());
         buffer.setEmpty();
         return ret;
     }
@@ -218,7 +220,7 @@ public class MechanicalPipe extends BufferedTransmitter<IFluidHandler, FluidNetw
     @NotNull
     @Override
     public FluidStack getShare() {
-        return buffer.getFluid();
+        return NeoFluidStack.unwrap(buffer.getFluid());
     }
 
     @Override
@@ -228,7 +230,7 @@ public class MechanicalPipe extends BufferedTransmitter<IFluidHandler, FluidNetw
             if (!network.fluidTank.isEmpty() && !saveShare.isEmpty()) {
                 int amount = saveShare.amount();
                 MekanismUtils.logMismatchedStackSize(network.fluidTank.shrinkStack(amount, Action.EXECUTE), amount);
-                buffer.setStack(saveShare);
+                buffer.setStack(NeoFluidStack.wrap(saveShare));
             }
         }
     }
@@ -253,9 +255,9 @@ public class MechanicalPipe extends BufferedTransmitter<IFluidHandler, FluidNetw
     @NotNull
     public FluidStack takeFluid(@NotNull FluidStack fluid, Action action) {
         if (hasTransmitterNetwork()) {
-            return getTransmitterNetwork().fluidTank.insert(fluid, action, AutomationType.INTERNAL);
+            return NeoFluidStack.unwrap(getTransmitterNetwork().fluidTank.insert(NeoFluidStack.wrap(fluid), action, AutomationType.INTERNAL));
         }
-        return buffer.insert(fluid, action, AutomationType.INTERNAL);
+        return NeoFluidStack.unwrap(buffer.insert(NeoFluidStack.wrap(fluid), action, AutomationType.INTERNAL));
     }
 
     @Override

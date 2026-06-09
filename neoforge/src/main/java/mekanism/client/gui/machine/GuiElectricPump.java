@@ -37,7 +37,7 @@ public class GuiElectricPump extends GuiMekanismTile<TileEntityElectricPump, Mek
         addRenderableWidget(new GuiInnerScreen(this, 54, 23, 80, 42, () -> {
             List<Component> list = new ArrayList<>();
             list.add(EnergyDisplay.of(tile.getEnergyContainer()).getTextComponent());
-            FluidStack fluidStack = tile.fluidTank.getFluid();
+            FluidStack fluidStack = mekanism.common.fluid.NeoFluidStack.unwrap(tile.fluidTank.getFluid());
             if (fluidStack.isEmpty()) {
                 FluidStack fallBack = tile.getActiveType();
                 if (fallBack.isEmpty()) {

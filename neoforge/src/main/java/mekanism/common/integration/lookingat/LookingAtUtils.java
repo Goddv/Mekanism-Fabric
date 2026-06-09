@@ -152,23 +152,24 @@ public class LookingAtUtils {
     }
 
     private static void displayFluid(LookingAtHelper info, IFluidHandler fluidHandler, FluidStack fallback) {
-        if (fluidHandler instanceof IMekanismFluidHandler mekFluidHandler) {
-            for (IExtendedFluidTank fluidTank : mekFluidHandler.getFluidTanks(null)) {
-                if (fluidTank instanceof FluidTankWrapper wrapper) {
-                    MergedTank mergedTank = wrapper.getMergedTank();
-                    CurrentType currentType = mergedTank.getCurrentType();
-                    if (currentType != CurrentType.EMPTY && currentType != CurrentType.FLUID) {
-                        //Skip if the tank is on a chemical
-                        continue;
-                    }
+        //Fallback handling for the NeoForge fluid capability (e.g. our ProxyFluidHandler); matches legacy behavior which
+        // used this generic loop for the live capability rather than the Mekanism-specific path
+        for (int tank = 0; tank < fluidHandler.getTanks(); tank++) {
+            addFluidInfo(info, fluidHandler.getFluidInTank(tank), fluidHandler.getTankCapacity(tank), fallback);
+        }
+    }
+
+    private static void displayFluid(LookingAtHelper info, IMekanismFluidHandler mekFluidHandler, FluidStack fallback) {
+        for (IExtendedFluidTank fluidTank : mekFluidHandler.getFluidTanks(null)) {
+            if (fluidTank instanceof FluidTankWrapper wrapper) {
+                MergedTank mergedTank = wrapper.getMergedTank();
+                CurrentType currentType = mergedTank.getCurrentType();
+                if (currentType != CurrentType.EMPTY && currentType != CurrentType.FLUID) {
+                    //Skip if the tank is on a chemical
+                    continue;
                 }
-                addFluidInfo(info, fluidTank.getFluid(), fluidTank.getCapacity(), fallback);
             }
-        } else {
-            //Fallback handling if it is not our fluid handler (probably never gets used)
-            for (int tank = 0; tank < fluidHandler.getTanks(); tank++) {
-                addFluidInfo(info, fluidHandler.getFluidInTank(tank), fluidHandler.getTankCapacity(tank), fallback);
-            }
+            addFluidInfo(info, mekanism.common.fluid.NeoFluidStack.unwrap(fluidTank.getFluid()), fluidTank.getCapacity(), fallback);
         }
     }
 

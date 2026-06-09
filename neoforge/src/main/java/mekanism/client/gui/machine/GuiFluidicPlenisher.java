@@ -39,7 +39,7 @@ public class GuiFluidicPlenisher extends GuiMekanismTile<TileEntityFluidicPlenis
             List<Component> list = new ArrayList<>();
             list.add(EnergyDisplay.of(tile.getEnergyContainer()).getTextComponent());
             list.add(MekanismLang.FINISHED.translate(YesNo.of(tile.finishedCalc)));
-            FluidStack fluid = tile.fluidTank.getFluid();
+            FluidStack fluid = mekanism.common.fluid.NeoFluidStack.unwrap(tile.fluidTank.getFluid());
             if (fluid.isEmpty()) {
                 list.add(MekanismLang.NO_FLUID.translate());
             } else {
