@@ -6,7 +6,7 @@ import mekanism.api.Action;
 import mekanism.api.AutomationType;
 import mekanism.api.IContentsListener;
 import mekanism.api.annotations.NothingNullByDefault;
-import mekanism.api.functions.ConstantPredicates;
+import mekanism.api.functions.ConstantPredicatesBase;
 import mekanism.common.tier.EnergyCubeTier;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,7 +22,7 @@ public class EnergyCubeEnergyContainer extends BasicEnergyContainer {
     private final LongSupplier rate;
 
     private EnergyCubeEnergyContainer(EnergyCubeTier tier, @Nullable IContentsListener listener) {
-        super(tier.getMaxEnergy(), ConstantPredicates.alwaysTrue(), ConstantPredicates.alwaysTrue(), listener);
+        super(tier.getMaxEnergy(), ConstantPredicatesBase.alwaysTrue(), ConstantPredicatesBase.alwaysTrue(), listener);
         isCreative = tier == EnergyCubeTier.CREATIVE;
         rate = tier::getOutput;
     }

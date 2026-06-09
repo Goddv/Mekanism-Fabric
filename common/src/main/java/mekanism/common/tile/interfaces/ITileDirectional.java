@@ -1,6 +1,6 @@
 package mekanism.common.tile.interfaces;
 
-import mekanism.common.util.MekanismUtils;
+import mekanism.common.util.MekanismUtilsBase;
 import net.minecraft.core.Direction;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,11 +22,11 @@ public interface ITileDirectional {
 
     @NotNull
     default Direction getRightSide() {
-        return MekanismUtils.getRight(getDirection());
+        return MekanismUtilsBase.getRight(getDirection());
     }
 
     @NotNull
     default Direction getLeftSide() {
-        return MekanismUtils.getLeft(getDirection());
+        return MekanismUtilsBase.getLeft(getDirection());
     }
 }

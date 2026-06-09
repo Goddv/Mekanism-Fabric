@@ -6,7 +6,7 @@ import java.util.function.Predicate;
 import mekanism.api.AutomationType;
 import mekanism.api.IContentsListener;
 import mekanism.api.annotations.NothingNullByDefault;
-import mekanism.api.functions.ConstantPredicates;
+import mekanism.api.functions.ConstantPredicatesBase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,12 +15,12 @@ public class VariableCapacityEnergyContainer extends BasicEnergyContainer {
 
     public static VariableCapacityEnergyContainer input(LongSupplier maxEnergy, @Nullable IContentsListener listener) {
         Objects.requireNonNull(maxEnergy, "Max energy supplier cannot be null");
-        return new VariableCapacityEnergyContainer(maxEnergy, notExternal, ConstantPredicates.alwaysTrue(), listener);
+        return new VariableCapacityEnergyContainer(maxEnergy, notExternal, ConstantPredicatesBase.alwaysTrue(), listener);
     }
 
     public static VariableCapacityEnergyContainer output(LongSupplier maxEnergy, @Nullable IContentsListener listener) {
         Objects.requireNonNull(maxEnergy, "Max energy supplier cannot be null");
-        return new VariableCapacityEnergyContainer(maxEnergy, ConstantPredicates.alwaysTrue(), internalOnly, listener);
+        return new VariableCapacityEnergyContainer(maxEnergy, ConstantPredicatesBase.alwaysTrue(), internalOnly, listener);
     }
 
     public static VariableCapacityEnergyContainer create(LongSupplier maxEnergy, Predicate<@NotNull AutomationType> canExtract,

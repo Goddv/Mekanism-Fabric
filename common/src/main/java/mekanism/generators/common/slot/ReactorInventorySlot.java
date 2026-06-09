@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import mekanism.api.IContentsListener;
 import mekanism.api.annotations.NothingNullByDefault;
-import mekanism.api.functions.ConstantPredicates;
+import mekanism.api.functions.ConstantPredicatesBase;
 import mekanism.common.inventory.slot.BasicInventorySlot;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -19,6 +19,6 @@ public class ReactorInventorySlot extends BasicInventorySlot {
     }
 
     protected ReactorInventorySlot(Predicate<@NotNull ItemStack> validator, @Nullable IContentsListener listener, int x, int y) {
-        super(ConstantPredicates.notExternal(), ConstantPredicates.alwaysTrueBi(), validator, listener, x, y);
+        super(ConstantPredicatesBase.notExternal(), ConstantPredicatesBase.alwaysTrueBi(), validator, listener, x, y);
     }
 }

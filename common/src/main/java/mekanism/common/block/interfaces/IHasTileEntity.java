@@ -1,7 +1,7 @@
 package mekanism.common.block.interfaces;
 
 import mekanism.common.registration.ITileHolder;
-import mekanism.common.util.WorldUtils;
+import mekanism.common.util.WorldUtilsBase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.EntityBlock;
@@ -29,7 +29,7 @@ public interface IHasTileEntity<TILE extends BlockEntity> extends EntityBlock {
     }
 
     default boolean triggerBlockEntityEvent(@NotNull BlockState state, Level level, BlockPos pos, int id, int param) {
-        BlockEntity blockEntity = WorldUtils.getTileEntity(level, pos);
+        BlockEntity blockEntity = WorldUtilsBase.getTileEntity(level, pos);
         return blockEntity != null && blockEntity.triggerEvent(id, param);
     }
 }

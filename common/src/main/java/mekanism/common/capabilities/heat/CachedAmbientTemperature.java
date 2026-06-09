@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import mekanism.api.heat.HeatAPI;
-import mekanism.common.util.EnumUtils;
+import mekanism.common.util.EnumUtilsBase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class CachedAmbientTemperature implements DoubleSupplier {
 
-    private final double[] ambientTemperature = new double[EnumUtils.DIRECTIONS.length + 1];
+    private final double[] ambientTemperature = new double[EnumUtilsBase.DIRECTIONS.length + 1];
     private final Supplier<Level> worldSupplier;
     private final Supplier<BlockPos> positionSupplier;
 
@@ -28,7 +28,7 @@ public class CachedAmbientTemperature implements DoubleSupplier {
     }
 
     public double getTemperature(@Nullable Direction side) {
-        int index = side == null ? EnumUtils.DIRECTIONS.length : side.ordinal();
+        int index = side == null ? EnumUtilsBase.DIRECTIONS.length : side.ordinal();
         double biomeAmbientTemp = ambientTemperature[index];
         if (biomeAmbientTemp == -1) {
             Level world = worldSupplier.get();

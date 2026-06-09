@@ -6,7 +6,7 @@ import mekanism.api.heat.HeatAPI.HeatTransfer;
 import mekanism.api.heat.IHeatCapacitor;
 import mekanism.api.heat.IHeatHandler;
 import mekanism.api.heat.IMekanismHeatHandler;
-import mekanism.common.util.EnumUtils;
+import mekanism.common.util.EnumUtilsBase;
 import net.minecraft.core.Direction;
 import org.jetbrains.annotations.Nullable;
 
@@ -46,7 +46,7 @@ public interface ITileHeatHandler extends IMekanismHeatHandler {
 
     default double simulateEnvironment() {
         double environmentTransfer = 0;
-        for (Direction side : EnumUtils.DIRECTIONS) {
+        for (Direction side : EnumUtilsBase.DIRECTIONS) {
             double heatCapacity = getTotalHeatCapacity(side);
             //transfer to air otherwise
             double invConduction = HeatAPI.AIR_INVERSE_COEFFICIENT + getTotalInverseInsulation(side) + getTotalInverseConductionCoefficient(side);
@@ -63,7 +63,7 @@ public interface ITileHeatHandler extends IMekanismHeatHandler {
 
     default double simulateAdjacent() {
         double adjacentTransfer = 0;
-        for (Direction side : EnumUtils.DIRECTIONS) {
+        for (Direction side : EnumUtilsBase.DIRECTIONS) {
             IHeatHandler sink = getAdjacent(side);
             if (sink != null) {
                 double heatCapacity = getTotalHeatCapacity(side);
