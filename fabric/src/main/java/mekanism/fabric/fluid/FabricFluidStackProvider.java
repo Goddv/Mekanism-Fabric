@@ -54,12 +54,24 @@ public class FabricFluidStackProvider implements IFluidStackProvider {
     }
 
     @Override
+    public boolean matches(IFluidStack a, IFluidStack b) {
+        //Exact match: same fluid + components AND same amount (mirrors NeoForge FluidStack.matches).
+        return a.getAmount() == b.getAmount() && isSameFluidSameComponents(a, b);
+    }
+
+    @Override
     public Codec<IFluidStack> codec() {
         return CODEC;
     }
 
     @Override
     public Codec<IFluidStack> optionalCodec() {
+        return CODEC;
+    }
+
+    @Override
+    public Codec<IFluidStack> lenientOptionalCodec() {
+        //Fabric's CODEC already deserializes to a blank variant on missing/invalid data; reuse it.
         return CODEC;
     }
 

@@ -63,4 +63,24 @@ public record NeoFluidStack(FluidStack delegate) implements IFluidStack {
     public IFluidStack copyWithAmount(long amount) {
         return new NeoFluidStack(delegate.copyWithAmount((int) Math.min(amount, Integer.MAX_VALUE)));
     }
+
+    @Override
+    public void grow(long amount) {
+        delegate.grow((int) Math.min(amount, Integer.MAX_VALUE));
+    }
+
+    @Override
+    public void shrink(long amount) {
+        delegate.shrink((int) Math.min(amount, Integer.MAX_VALUE));
+    }
+
+    @Override
+    public void setAmount(long amount) {
+        delegate.setAmount((int) Math.min(amount, Integer.MAX_VALUE));
+    }
+
+    @Override
+    public int hashFluidAndComponents() {
+        return FluidStack.hashFluidAndComponents(delegate);
+    }
 }

@@ -50,6 +50,16 @@ public final class FabricFluidSelfTest {
                   && IFluidStack.isSameFluidSameComponents(water, water.copy())
                   && IFluidStack.empty().isEmpty();
 
+            // Tier A: M1 in-place mutators + matches/hashFluidAndComponents (the new surface the fluid migration needs).
+            IFluidStack mut = IFluidStack.of(Fluids.WATER.builtInRegistryHolder(), FluidConstants.BUCKET);
+            mut.grow(FluidConstants.BUCKET);          // 2 buckets
+            mut.shrink(FluidConstants.BUCKET / 2);    // 1.5 buckets
+            mut.setAmount(FluidConstants.BUCKET);     // back to 1 bucket
+            boolean mutOk = mut.getAmount() == FluidConstants.BUCKET
+                  && IFluidStack.matches(mut, water)
+                  && mut.hashFluidAndComponents() == water.hashFluidAndComponents()
+                  && !IFluidStack.matches(water, water.copyWithAmount(FluidConstants.BUCKET * 2));
+
             // Tier A: codec round-trips (the hard part — FluidVariant.CODEC / PACKET_CODEC composed with a long).
             Codec<IFluidStack> codec = IFluidStackProvider.INSTANCE.codec();
             Tag encoded = codec.encodeStart(level.registryAccess().createSerializationContext(NbtOps.INSTANCE), water).getOrThrow();
@@ -75,9 +85,9 @@ public final class FabricFluidSelfTest {
             }
             level.removeBlock(pos, false);
 
-            ok = basicsOk && codecOk && streamOk && capabilityOk;
-            LOGGER.info("{} {} fluid abstraction+capability: basics={} codec={} streamCodec={} capability={}",
-                  TAG, ok ? "OK  " : "FAIL", basicsOk, codecOk, streamOk, capabilityOk);
+            ok = basicsOk && mutOk && codecOk && streamOk && capabilityOk;
+            LOGGER.info("{} {} fluid abstraction+capability: basics={} mutators={} codec={} streamCodec={} capability={}",
+                  TAG, ok ? "OK  " : "FAIL", basicsOk, mutOk, codecOk, streamOk, capabilityOk);
         } catch (Throwable t) {
             LOGGER.error("{} FAIL fluid test threw", TAG, t);
         }

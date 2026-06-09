@@ -1,6 +1,7 @@
 package mekanism.api.fluid;
 
 import net.minecraft.core.Holder;
+import net.minecraft.core.TypedInstance;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.TagKey;
@@ -17,8 +18,9 @@ import net.minecraft.world.level.material.Fluid;
  * <p>Amounts are {@code long} to unify NeoForge's int-mB with Fabric's long-droplets; each loader keeps its own units
  * (no scaling here — unit conversion happens only at the fabric-transfer Storage bridge, a future slice).
  */
-public interface IFluidStack {
+public interface IFluidStack extends TypedInstance<Fluid> {
 
+    @Override
     Holder<Fluid> typeHolder();
 
     Fluid getFluid();
@@ -39,7 +41,24 @@ public interface IFluidStack {
 
     IFluidStack copyWithAmount(long amount);
 
+    // ---- in-place mutators (zero-alloc tank ops; mirrors the Mekanism-owned ChemicalStack). On NeoForge these mutate
+    //      the wrapped FluidStack; on Fabric the mutable long amount. Clamp long->int at the NeoForge boundary. ----
+
+    void grow(long amount);
+
+    void shrink(long amount);
+
+    void setAmount(long amount);
+
+    /** Component-aware hash (mirrors NeoForge {@code FluidStack.hashFluidAndComponents}); used by network/recipe keys. */
+    int hashFluidAndComponents();
+
     // ---- statics routed through the per-loader provider so :common stays loader-free ----
+
+    /** Exact match — same fluid, same components, AND same amount (mirrors NeoForge {@code FluidStack.matches}). */
+    static boolean matches(IFluidStack a, IFluidStack b) {
+        return IFluidStackProvider.INSTANCE.matches(a, b);
+    }
 
     static IFluidStack empty() {
         return IFluidStackProvider.INSTANCE.empty();

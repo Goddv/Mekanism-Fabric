@@ -28,9 +28,15 @@ public interface IFluidStackProvider {
 
     boolean isSameFluidSameComponents(IFluidStack a, IFluidStack b);
 
+    /** Exact match incl. amount (mirrors NeoForge {@code FluidStack.matches}). */
+    boolean matches(IFluidStack a, IFluidStack b);
+
     Codec<IFluidStack> codec();
 
     Codec<IFluidStack> optionalCodec();
+
+    /** Optional codec that falls back to empty (logging) on a deserialization error — replaces FluidCodecHelper. */
+    Codec<IFluidStack> lenientOptionalCodec();
 
     StreamCodec<RegistryFriendlyByteBuf, IFluidStack> streamCodec();
 

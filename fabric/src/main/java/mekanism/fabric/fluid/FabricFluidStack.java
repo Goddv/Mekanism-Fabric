@@ -1,5 +1,6 @@
 package mekanism.fabric.fluid;
 
+import java.util.Objects;
 import mekanism.api.fluid.IFluidStack;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.minecraft.core.Holder;
@@ -15,8 +16,30 @@ import net.minecraft.world.level.material.Fluid;
  * a {@code long} amount in droplets (the amount lives outside the immutable variant, mirroring how
  * {@code ChemicalStack} stores its long amount alongside a Holder). copyWithAmount allocates only a new wrapper (the
  * variant is shared/immutable).
+ *
+ * <p>This is a MUTABLE class (was a record): the {@code amount} is non-final so the loader-neutral tank/util algorithms
+ * can do NeoForge's zero-allocation in-place {@code grow}/{@code shrink}/{@code setAmount} (the {@link FluidVariant}
+ * stays immutable). The 2-arg constructor + {@link #variant()}/{@link #amount()} accessors are preserved verbatim
+ * because {@link FabricFluidStackProvider}'s codecs reference {@code FabricFluidStack::new} + {@code variant()}.
  */
-public record FabricFluidStack(FluidVariant variant, long amount) implements IFluidStack {
+public final class FabricFluidStack implements IFluidStack {
+
+    private final FluidVariant variant;
+    private long amount;
+
+    public FabricFluidStack(FluidVariant variant, long amount) {
+        this.variant = variant;
+        this.amount = amount;
+    }
+
+    public FluidVariant variant() {
+        return variant;
+    }
+
+    /** Raw stored amount (not empty-clamped — use {@link #getAmount()} for the sentinel-aware value). */
+    public long amount() {
+        return amount;
+    }
 
     @Override
     public Holder<Fluid> typeHolder() {
@@ -67,5 +90,46 @@ public record FabricFluidStack(FluidVariant variant, long amount) implements IFl
     @Override
     public IFluidStack copyWithAmount(long newAmount) {
         return newAmount <= 0L ? IFluidStack.empty() : new FabricFluidStack(variant, newAmount);
+    }
+
+    // ---- in-place mutators (the variant stays immutable; only the long amount changes) ----
+
+    @Override
+    public void grow(long delta) {
+        this.amount += delta;
+    }
+
+    @Override
+    public void shrink(long delta) {
+        this.amount -= delta;
+    }
+
+    @Override
+    public void setAmount(long newAmount) {
+        this.amount = newAmount;
+    }
+
+    @Override
+    public int hashFluidAndComponents() {
+        //FluidVariant hashes fluid + components (NOT amount), mirroring NeoForge FluidStack.hashFluidAndComponents.
+        return variant.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        return o instanceof FabricFluidStack other && this.amount == other.amount && this.variant.equals(other.variant);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(variant, amount);
+    }
+
+    @Override
+    public String toString() {
+        return "FabricFluidStack[variant=" + variant + ", amount=" + amount + ']';
     }
 }

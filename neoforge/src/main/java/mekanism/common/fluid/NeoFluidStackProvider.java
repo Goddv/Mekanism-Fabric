@@ -1,6 +1,7 @@
 package mekanism.common.fluid;
 
 import com.mojang.serialization.Codec;
+import mekanism.api.MekanismAPIBase;
 import mekanism.api.fluid.IFluidStack;
 import mekanism.api.fluid.IFluidStackProvider;
 import net.minecraft.core.Holder;
@@ -41,6 +42,11 @@ public class NeoFluidStackProvider implements IFluidStackProvider {
     }
 
     @Override
+    public boolean matches(IFluidStack a, IFluidStack b) {
+        return FluidStack.matches(unwrap(a), unwrap(b));
+    }
+
+    @Override
     public Codec<IFluidStack> codec() {
         return FluidStack.CODEC.xmap(NeoFluidStack::new, NeoFluidStackProvider::unwrap);
     }
@@ -48,6 +54,15 @@ public class NeoFluidStackProvider implements IFluidStackProvider {
     @Override
     public Codec<IFluidStack> optionalCodec() {
         return FluidStack.OPTIONAL_CODEC.xmap(NeoFluidStack::new, NeoFluidStackProvider::unwrap);
+    }
+
+    @Override
+    public Codec<IFluidStack> lenientOptionalCodec() {
+        //Lifted from FluidCodecHelper.LENIENT_OPTIONAL_FLUID_CODEC (falls back to empty + logs on a deserialization error).
+        return FluidStack.OPTIONAL_CODEC
+              .promotePartial(error -> MekanismAPIBase.logger.error("Tried to load invalid fluid: '{}'", error))
+              .orElse(FluidStack.EMPTY)
+              .xmap(NeoFluidStack::new, NeoFluidStackProvider::unwrap);
     }
 
     @Override
