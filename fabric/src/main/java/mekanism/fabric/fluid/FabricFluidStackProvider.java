@@ -81,6 +81,12 @@ public class FabricFluidStackProvider implements IFluidStackProvider {
     }
 
     @Override
+    public StreamCodec<RegistryFriendlyByteBuf, IFluidStack> optionalStreamCodec() {
+        //FluidVariant.PACKET_CODEC handles blank variants natively, so the optional variant reuses the same codec.
+        return STREAM_CODEC;
+    }
+
+    @Override
     public Codec<IFluidStack> fixedAmountCodec(long amount) {
         return FluidVariant.CODEC.xmap(variant -> new FabricFluidStack(variant, amount), FabricFluidStackProvider::variantOf);
     }

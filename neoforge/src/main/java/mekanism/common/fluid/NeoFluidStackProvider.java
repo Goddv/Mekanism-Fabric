@@ -71,6 +71,11 @@ public class NeoFluidStackProvider implements IFluidStackProvider {
     }
 
     @Override
+    public StreamCodec<RegistryFriendlyByteBuf, IFluidStack> optionalStreamCodec() {
+        return FluidStack.OPTIONAL_STREAM_CODEC.map(NeoFluidStack::new, NeoFluidStackProvider::unwrap);
+    }
+
+    @Override
     public Codec<IFluidStack> fixedAmountCodec(long amount) {
         return FluidStack.fixedAmountCodec((int) Math.min(amount, Integer.MAX_VALUE)).xmap(NeoFluidStack::new, NeoFluidStackProvider::unwrap);
     }

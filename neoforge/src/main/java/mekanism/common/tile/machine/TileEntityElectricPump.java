@@ -401,7 +401,8 @@ public class TileEntityElectricPump extends TileEntityMekanism implements IConfi
     public void addContainerTrackers(MekanismContainer container) {
         super.addContainerTrackers(container);
         container.track(SyncableBoolean.create(this::usedEnergy, value -> usedEnergy = value));
-        container.track(SyncableFluidStack.create(this::getActiveType, value -> activeType = value));
+        container.track(SyncableFluidStack.create(() -> mekanism.common.fluid.NeoFluidStack.wrap(getActiveType()),
+              value -> activeType = mekanism.common.fluid.NeoFluidStack.unwrap(value)));
     }
 
     //Methods relating to IComputerTile

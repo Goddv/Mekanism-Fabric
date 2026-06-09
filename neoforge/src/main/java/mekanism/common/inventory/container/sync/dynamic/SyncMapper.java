@@ -21,6 +21,7 @@ import mekanism.api.chemical.ChemicalStack;
 import mekanism.api.chemical.IChemicalTank;
 import mekanism.api.energy.IEnergyContainer;
 import mekanism.api.fluid.IExtendedFluidTank;
+import mekanism.api.fluid.IFluidStack;
 import mekanism.api.heat.IHeatCapacitor;
 import mekanism.common.Mekanism;
 import mekanism.common.capabilities.heat.BasicHeatCapacitor;
@@ -33,8 +34,6 @@ import mekanism.common.lib.math.voxel.VoxelCuboid;
 import mekanism.common.network.to_client.container.property.PropertyType;
 import mekanism.common.util.LambdaMetaFactoryUtil;
 import net.minecraft.core.BlockPos;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforgespi.language.IModFileInfo;
 import net.neoforged.neoforgespi.language.ModFileScanData.AnnotationData;
 import org.objectweb.asm.Type;
@@ -53,8 +52,7 @@ public class SyncMapper extends BaseAnnotationScanner {
         // longer is valid, we want to ensure that the client is able to properly render it instead of printing an error due
         // to the client thinking that it is invalid
         specialProperties.add(new SpecialPropertyHandler<>(IExtendedFluidTank.class,
-              SpecialPropertyData.create(FluidStack.class, tank -> mekanism.common.fluid.NeoFluidStack.unwrap(tank.getFluid()),
-                    (tank, val) -> tank.setStackUnchecked(mekanism.common.fluid.NeoFluidStack.wrap(val)))
+              SpecialPropertyData.create(IFluidStack.class, IExtendedFluidTank::getFluid, IExtendedFluidTank::setStackUnchecked)
         ));
         specialProperties.add(new SpecialPropertyHandler<>(IChemicalTank.class,
               SpecialPropertyData.create(ChemicalStack.class, IChemicalTank::getStack, IChemicalTank::setStackUnchecked)
@@ -67,8 +65,8 @@ public class SyncMapper extends BaseAnnotationScanner {
               SpecialPropertyData.create(Double.TYPE, IHeatCapacitor::getHeat, IHeatCapacitor::setHeat)
         ));
         specialProperties.add(new SpecialPropertyHandler<>(MergedTank.class,
-              SpecialPropertyData.create(FluidStack.class, obj -> mekanism.common.fluid.NeoFluidStack.unwrap(obj.getFluidTank().getFluid()),
-                    (obj, val) -> obj.getFluidTank().setStackUnchecked(mekanism.common.fluid.NeoFluidStack.wrap(val))),
+              SpecialPropertyData.create(IFluidStack.class, obj -> obj.getFluidTank().getFluid(),
+                    (obj, val) -> obj.getFluidTank().setStackUnchecked(val)),
               SpecialPropertyData.create(ChemicalStack.class, obj -> obj.getChemicalTank().getStack(), (obj, val) -> obj.getChemicalTank().setStackUnchecked(val))
         ));
         specialProperties.add(new SpecialPropertyHandler<>(VoxelCuboid.class,

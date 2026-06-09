@@ -3,12 +3,11 @@ package mekanism.common.inventory.container.sync;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import mekanism.api.fluid.IExtendedFluidTank;
-import mekanism.common.fluid.NeoFluidStack;
+import mekanism.api.fluid.IFluidStack;
 import mekanism.common.network.to_client.container.property.FluidStackPropertyData;
 import mekanism.common.network.to_client.container.property.IntPropertyData;
 import mekanism.common.network.to_client.container.property.PropertyData;
 import net.minecraft.core.RegistryAccess;
-import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -26,35 +25,34 @@ public class SyncableFluidStack implements ISyncableData {
         // that we need to use unchecked setters on the client is that if a recipe got removed so there is a substance
         // in a tank that was valid but no longer is valid, we want to ensure that the client is able to properly render
         // it instead of printing an error due to the client thinking that it is invalid
-        return create(() -> NeoFluidStack.unwrap(handler.getFluid()),
-              isClient ? stack -> handler.setStackUnchecked(NeoFluidStack.wrap(stack)) : stack -> handler.setStack(NeoFluidStack.wrap(stack)));
+        return create(handler::getFluid, isClient ? handler::setStackUnchecked : handler::setStack);
     }
 
-    public static SyncableFluidStack create(Supplier<@NotNull FluidStack> getter, Consumer<@NotNull FluidStack> setter) {
+    public static SyncableFluidStack create(Supplier<@NotNull IFluidStack> getter, Consumer<@NotNull IFluidStack> setter) {
         return new SyncableFluidStack(getter, setter);
     }
 
     @NotNull
-    private FluidStack lastKnownValue = FluidStack.EMPTY;
-    private final Supplier<@NotNull FluidStack> getter;
-    private final Consumer<@NotNull FluidStack> setter;
+    private IFluidStack lastKnownValue = IFluidStack.empty();
+    private final Supplier<@NotNull IFluidStack> getter;
+    private final Consumer<@NotNull IFluidStack> setter;
 
-    private SyncableFluidStack(Supplier<@NotNull FluidStack> getter, Consumer<@NotNull FluidStack> setter) {
+    private SyncableFluidStack(Supplier<@NotNull IFluidStack> getter, Consumer<@NotNull IFluidStack> setter) {
         this.getter = getter;
         this.setter = setter;
     }
 
     @NotNull
-    public FluidStack get() {
+    public IFluidStack get() {
         return getter.get();
     }
 
-    public void set(@NotNull FluidStack value) {
+    public void set(@NotNull IFluidStack value) {
         setter.accept(value);
     }
 
     public void set(int amount) {
-        FluidStack fluid = get();
+        IFluidStack fluid = get();
         if (!fluid.isEmpty()) {
             //Double check it is not empty
             set(fluid.copyWithAmount(amount));
@@ -63,9 +61,9 @@ public class SyncableFluidStack implements ISyncableData {
 
     @Override
     public DirtyType isDirty() {
-        FluidStack value = get();
-        boolean sameFluid = FluidStack.isSameFluidSameComponents(value, this.lastKnownValue);
-        if (!sameFluid || value.amount() != this.lastKnownValue.amount()) {
+        IFluidStack value = get();
+        boolean sameFluid = IFluidStack.isSameFluidSameComponents(value, this.lastKnownValue);
+        if (!sameFluid || value.getAmount() != this.lastKnownValue.getAmount()) {
             //Make sure to copy it in case our fluid stack object is the same object so would be getting modified
             // only do so though if it is dirty, as we don't need to spam object creation
             this.lastKnownValue = value.copy();
@@ -78,7 +76,7 @@ public class SyncableFluidStack implements ISyncableData {
     public PropertyData getPropertyData(RegistryAccess registryAccess, short property, DirtyType dirtyType) {
         if (dirtyType == DirtyType.SIZE) {
             //If only the size changed, don't bother re-syncing the type
-            return new IntPropertyData(property, get().amount());
+            return new IntPropertyData(property, (int) get().getAmount());
         }
         //Note: While this copy operation isn't strictly necessary, it allows for simplifying the logic and ensuring we don't have the actual stack object
         // leak from one side to another when in single player. Given copying is rather cheap, and we only need to do this on change/when the data is dirty

@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.UUID;
 import mekanism.api.Action;
 import mekanism.api.chemical.ChemicalStack;
+import mekanism.api.fluid.IFluidStack;
 import mekanism.common.Mekanism;
 import mekanism.common.inventory.container.slot.ArmorSlot;
 import mekanism.common.inventory.container.slot.HotBarSlot;
@@ -57,7 +58,6 @@ import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -600,7 +600,7 @@ public abstract class MekanismContainer extends AbstractContainerMenu implements
         }
     }
 
-    public void handleWindowProperty(short property, @NotNull FluidStack value) {
+    public void handleWindowProperty(short property, @NotNull IFluidStack value) {
         ISyncableData data = getTrackedData(property);
         if (data instanceof SyncableFluidStack syncable) {
             syncable.set(value);

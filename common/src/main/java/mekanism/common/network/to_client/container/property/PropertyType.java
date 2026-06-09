@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import mekanism.api.chemical.ChemicalStack;
+import mekanism.api.fluid.IFluidStack;
 import mekanism.common.inventory.container.sync.ISyncableData;
 import mekanism.common.inventory.container.sync.SyncableBlockPos;
 import mekanism.common.inventory.container.sync.SyncableBoolean;
@@ -28,7 +29,6 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.Nullable;
 
 public enum PropertyType {
@@ -41,7 +41,7 @@ public enum PropertyType {
     SHORT(Short.TYPE, (short) 0, (getter, setter) -> SyncableShort.create(() -> (short) getter.get(), setter::accept), () -> ShortPropertyData.STREAM_CODEC),
     BYTE_ARRAY(byte[].class, new byte[0], (getter, setter) -> SyncableByteArray.create(() -> (byte[]) getter.get(), setter::accept), () -> ByteArrayPropertyData.STREAM_CODEC),
     ITEM_STACK(ItemStack.class, ItemStack.EMPTY, (getter, setter) -> SyncableItemStack.create(() -> (ItemStack) getter.get(), setter::accept), () -> ItemStackPropertyData.STREAM_CODEC),
-    FLUID_STACK(FluidStack.class, FluidStack.EMPTY, (getter, setter) -> SyncableFluidStack.create(() -> (FluidStack) getter.get(), setter::accept), () -> FluidStackPropertyData.STREAM_CODEC),
+    FLUID_STACK(IFluidStack.class, IFluidStack.empty(), (getter, setter) -> SyncableFluidStack.create(() -> (IFluidStack) getter.get(), setter::accept), () -> FluidStackPropertyData.STREAM_CODEC),
     CHEMICAL_STACK(ChemicalStack.class, ChemicalStack.EMPTY, (getter, setter) -> SyncableChemicalStack.create(() -> (ChemicalStack) getter.get(), setter::accept), () -> ChemicalStackPropertyData.STREAM_CODEC),
     BLOCK_POS(BlockPos.class, null, (getter, setter) -> SyncableBlockPos.create(() -> (BlockPos) getter.get(), setter::accept), () -> BlockPosPropertyData.STREAM_CODEC);
 

@@ -1,6 +1,7 @@
 package mekanism.common.inventory.container;
 
 import mekanism.api.chemical.ChemicalStack;
+import mekanism.api.fluid.IFluidStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -32,6 +33,8 @@ public interface IPropertyDataReceiver {
     void handleWindowProperty(short property, @Nullable BlockPos value);
 
     void handleWindowProperty(short property, @NotNull ChemicalStack value);
+
+    void handleWindowProperty(short property, @NotNull IFluidStack value);
 
     void handleWindowProperty(short property, byte[] value);
 }

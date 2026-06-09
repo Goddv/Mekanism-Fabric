@@ -40,5 +40,12 @@ public interface IFluidStackProvider {
 
     StreamCodec<RegistryFriendlyByteBuf, IFluidStack> streamCodec();
 
+    /**
+     * Stream codec that supports empty stacks (writes a leading presence marker). On NeoForge this is
+     * {@code FluidStack.OPTIONAL_STREAM_CODEC} adapted to {@link IFluidStack}; used by the container-sync framework where a
+     * tank may be empty. The wire format MUST stay byte-identical to NeoForge's optional fluid stream codec.
+     */
+    StreamCodec<RegistryFriendlyByteBuf, IFluidStack> optionalStreamCodec();
+
     Codec<IFluidStack> fixedAmountCodec(long amount);
 }
