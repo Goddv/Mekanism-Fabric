@@ -19,7 +19,7 @@ public class MekanismConfigHelper {
     /**
      * Creates and register a mod config, and track it so that we can properly clear cached values.
      */
-    public static void registerConfig(Map<IConfigSpec, IMekanismConfig> knownConfigs, ModContainer modContainer, IMekanismConfig config) {
+    public static void registerConfig(Map<IConfigSpec, IMekanismConfig> knownConfigs, ModContainer modContainer, INeoMekanismConfig config) {
         modContainer.registerConfig(config.getConfigType(), config.getConfigSpec(), Mekanism.MOD_NAME + "/" + config.getFileName() + ".toml");
         knownConfigs.put(config.getConfigSpec(), config);
     }

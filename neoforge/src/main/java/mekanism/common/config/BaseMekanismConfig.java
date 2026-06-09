@@ -8,7 +8,7 @@ import mekanism.common.Mekanism;
 import mekanism.common.config.value.CachedValue;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
-public abstract class BaseMekanismConfig implements IMekanismConfig {
+public abstract class BaseMekanismConfig implements INeoMekanismConfig {
 
     private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
 

@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.function.BiPredicate;
-import mekanism.common.Mekanism;
+import mekanism.api.MekanismAPIBase;
 import mekanism.common.config.IMekanismConfig;
 
 public abstract class CachedValue<T> {
@@ -28,15 +28,15 @@ public abstract class CachedValue<T> {
             invalidationListeners = new HashSet<>();
         }
         if (!invalidationListeners.add(listener)) {
-            Mekanism.logger.warn("Duplicate invalidation listener added");
+            MekanismAPIBase.logger.warn("Duplicate invalidation listener added");
         }
     }
 
     public void removeInvalidationListener(IConfigValueInvalidationListener listener) {
         if (invalidationListeners == null) {
-            Mekanism.logger.warn("Unable to remove specified invalidation listener, no invalidation listeners have been added.");
+            MekanismAPIBase.logger.warn("Unable to remove specified invalidation listener, no invalidation listeners have been added.");
         } else if (!invalidationListeners.remove(listener)) {
-            Mekanism.logger.warn("Unable to remove specified invalidation listener.");
+            MekanismAPIBase.logger.warn("Unable to remove specified invalidation listener.");
         }
     }
 
