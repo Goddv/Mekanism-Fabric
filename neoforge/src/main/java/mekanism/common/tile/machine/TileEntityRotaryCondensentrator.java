@@ -168,8 +168,8 @@ public class TileEntityRotaryCondensentrator extends TileEntityRecipeMachine<Rot
         return builder.build();
     }
 
-    private boolean isValidFluid(@NotNull FluidStack fluidStack) {
-        return getRecipeType().getInputCache().containsInputFluid(level, fluidStack);
+    private boolean isValidFluid(@NotNull mekanism.api.fluid.IFluidStack fluidStack) {
+        return getRecipeType().getInputCache().containsInputFluid(level, mekanism.common.fluid.NeoFluidStack.unwrap(fluidStack));
     }
 
     @NotNull

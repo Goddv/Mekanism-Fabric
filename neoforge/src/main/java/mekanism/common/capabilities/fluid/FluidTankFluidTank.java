@@ -8,11 +8,9 @@ import mekanism.api.IContentsListener;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.fluid.IFluidStack;
 import mekanism.api.functions.ConstantPredicates;
-import mekanism.common.fluid.NeoFluidStack;
 import mekanism.common.tier.FluidTankTier;
 import mekanism.common.tile.TileEntityFluidTank;
 import mekanism.common.util.WorldUtils;
-import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.Nullable;
 
 @NothingNullByDefault
@@ -61,7 +59,7 @@ public class FluidTankFluidTank extends BasicFluidTank {
             remainder = super.insert(stack, action.combine(!isCreative), automationType);
         }
         //Ensure we have the same type of fluid stored as we failed to insert, in which case we want to try to insert to the one above
-        if (!remainder.isEmpty() && FluidStack.isSameFluidSameComponents(stored, NeoFluidStack.unwrap(remainder))) {
+        if (!remainder.isEmpty() && IFluidStack.isSameFluidSameComponents(stored, remainder)) {
             //If we have any leftover check if we can send it to the tank that is above
             TileEntityFluidTank tileAbove = WorldUtils.getTileEntity(TileEntityFluidTank.class, this.tile.getLevel(), this.tile.getBlockPos().above());
             if (tileAbove != null) {
@@ -83,7 +81,7 @@ public class FluidTankFluidTank extends BasicFluidTank {
                 if (tileAbove != null) {
                     long leftOverToInsert = amount - grownAmount;
                     //Note: We do external so that it is not limited by the internal rate limits
-                    IFluidStack remainder = tileAbove.fluidTank.insert(NeoFluidStack.wrap(stored.copyWithAmount((int) leftOverToInsert)), action, AutomationType.EXTERNAL);
+                    IFluidStack remainder = tileAbove.fluidTank.insert(stored.copyWithAmount(leftOverToInsert), action, AutomationType.EXTERNAL);
                     grownAmount += leftOverToInsert - remainder.getAmount();
                 }
             }

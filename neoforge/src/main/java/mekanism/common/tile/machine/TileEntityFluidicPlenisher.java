@@ -116,8 +116,9 @@ public class TileEntityFluidicPlenisher extends TileEntityMekanism implements IC
         return builder.build();
     }
 
-    private boolean isValidFluid(@NotNull FluidStack stack) {
-        return stack.getFluidType().canBePlacedInLevel(getLevel(), worldPosition.below(), stack);
+    private boolean isValidFluid(@NotNull mekanism.api.fluid.IFluidStack stack) {
+        FluidStack unwrapped = mekanism.common.fluid.NeoFluidStack.unwrap(stack);
+        return unwrapped.getFluidType().canBePlacedInLevel(getLevel(), worldPosition.below(), unwrapped);
     }
 
     @Override

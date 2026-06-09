@@ -10,17 +10,18 @@ import mekanism.api.SerializationConstants;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.fluid.IExtendedFluidTank;
 import mekanism.api.fluid.IFluidStack;
-import mekanism.api.functions.ConstantPredicates;
-import mekanism.common.fluid.NeoFluidStack;
+import mekanism.api.fluid.IFluidStackProvider;
+import mekanism.api.functions.ConstantPredicatesBase;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Stores its contents as a NeoForge {@link FluidStack} internally (behavior-identical to before the {@link IFluidStack}
- * gate) and bridges to the loader-neutral {@link IExtendedFluidTank} contract via {@link NeoFluidStack}. Validators stay
- * NeoForge {@code Predicate<FluidStack>}-typed so existing call sites are unchanged; they receive the unwrapped stack.
+ * Loader-neutral implementation of {@link IExtendedFluidTank}: stores its contents directly as an {@link IFluidStack}
+ * (the fluid analog of {@code BasicChemicalTank}). Validators are {@code Predicate<IFluidStack>}/
+ * {@code BiPredicate<IFluidStack, AutomationType>}. Behavior is identical to the previous NeoForge-{@code FluidStack}
+ * backed version; on NeoForge the underlying {@link IFluidStack} wraps a {@code FluidStack}, so insert/extract math,
+ * validator semantics, and serialization (the provider codec adapts {@code FluidStack.CODEC}) are unchanged.
  */
 @NothingNullByDefault
 public class BasicFluidTank implements IExtendedFluidTank {
@@ -29,48 +30,48 @@ public class BasicFluidTank implements IExtendedFluidTank {
         if (capacity < 0) {
             throw new IllegalArgumentException("Capacity must be at least zero");
         }
-        return new BasicFluidTank(capacity, ConstantPredicates.alwaysTrueBi(), ConstantPredicates.alwaysTrueBi(), ConstantPredicates.alwaysTrue(), listener);
+        return new BasicFluidTank(capacity, ConstantPredicatesBase.alwaysTrueBi(), ConstantPredicatesBase.alwaysTrueBi(), ConstantPredicatesBase.alwaysTrue(), listener);
     }
 
-    public static BasicFluidTank create(int capacity, Predicate<@NotNull FluidStack> validator, @Nullable IContentsListener listener) {
+    public static BasicFluidTank create(int capacity, Predicate<@NotNull IFluidStack> validator, @Nullable IContentsListener listener) {
         if (capacity < 0) {
             throw new IllegalArgumentException("Capacity must be at least zero");
         }
         Objects.requireNonNull(validator, "Fluid validity check cannot be null");
-        return new BasicFluidTank(capacity, ConstantPredicates.alwaysTrueBi(), ConstantPredicates.alwaysTrueBi(), validator, listener);
+        return new BasicFluidTank(capacity, ConstantPredicatesBase.alwaysTrueBi(), ConstantPredicatesBase.alwaysTrueBi(), validator, listener);
     }
 
-    public static BasicFluidTank create(int capacity, Predicate<@NotNull FluidStack> canExtract, Predicate<@NotNull FluidStack> canInsert,
+    public static BasicFluidTank create(int capacity, Predicate<@NotNull IFluidStack> canExtract, Predicate<@NotNull IFluidStack> canInsert,
           @Nullable IContentsListener listener) {
-        return create(capacity, canExtract, canInsert, ConstantPredicates.alwaysTrue(), listener);
+        return create(capacity, canExtract, canInsert, ConstantPredicatesBase.alwaysTrue(), listener);
     }
 
-    public static BasicFluidTank input(int capacity, Predicate<@NotNull FluidStack> validator, @Nullable IContentsListener listener) {
+    public static BasicFluidTank input(int capacity, Predicate<@NotNull IFluidStack> validator, @Nullable IContentsListener listener) {
         if (capacity < 0) {
             throw new IllegalArgumentException("Capacity must be at least zero");
         }
         Objects.requireNonNull(validator, "Fluid validity check cannot be null");
-        return new BasicFluidTank(capacity, ConstantPredicates.notExternal(), ConstantPredicates.alwaysTrueBi(), validator, listener);
+        return new BasicFluidTank(capacity, ConstantPredicatesBase.notExternal(), ConstantPredicatesBase.alwaysTrueBi(), validator, listener);
     }
 
-    public static BasicFluidTank input(int capacity, Predicate<@NotNull FluidStack> canInsert, Predicate<@NotNull FluidStack> validator, @Nullable IContentsListener listener) {
+    public static BasicFluidTank input(int capacity, Predicate<@NotNull IFluidStack> canInsert, Predicate<@NotNull IFluidStack> validator, @Nullable IContentsListener listener) {
         if (capacity < 0) {
             throw new IllegalArgumentException("Capacity must be at least zero");
         }
         Objects.requireNonNull(canInsert, "Insertion validity check cannot be null");
         Objects.requireNonNull(validator, "Fluid validity check cannot be null");
-        return new BasicFluidTank(capacity, ConstantPredicates.notExternal(), (stack, automationType) -> canInsert.test(stack), validator, listener);
+        return new BasicFluidTank(capacity, ConstantPredicatesBase.notExternal(), (stack, automationType) -> canInsert.test(stack), validator, listener);
     }
 
     public static BasicFluidTank output(int capacity, @Nullable IContentsListener listener) {
         if (capacity < 0) {
             throw new IllegalArgumentException("Capacity must be at least zero");
         }
-        return new BasicFluidTank(capacity, ConstantPredicates.alwaysTrueBi(), ConstantPredicates.internalOnly(), ConstantPredicates.alwaysTrue(), listener);
+        return new BasicFluidTank(capacity, ConstantPredicatesBase.alwaysTrueBi(), ConstantPredicatesBase.internalOnly(), ConstantPredicatesBase.alwaysTrue(), listener);
     }
 
-    public static BasicFluidTank create(int capacity, Predicate<@NotNull FluidStack> canExtract, Predicate<@NotNull FluidStack> canInsert,
-          Predicate<@NotNull FluidStack> validator, @Nullable IContentsListener listener) {
+    public static BasicFluidTank create(int capacity, Predicate<@NotNull IFluidStack> canExtract, Predicate<@NotNull IFluidStack> canInsert,
+          Predicate<@NotNull IFluidStack> validator, @Nullable IContentsListener listener) {
         if (capacity < 0) {
             throw new IllegalArgumentException("Capacity must be at least zero");
         }
@@ -80,8 +81,8 @@ public class BasicFluidTank implements IExtendedFluidTank {
         return new BasicFluidTank(capacity, canExtract, canInsert, validator, listener);
     }
 
-    public static BasicFluidTank create(int capacity, BiPredicate<@NotNull FluidStack, @NotNull AutomationType> canExtract,
-          BiPredicate<@NotNull FluidStack, @NotNull AutomationType> canInsert, Predicate<@NotNull FluidStack> validator, @Nullable IContentsListener listener) {
+    public static BasicFluidTank create(int capacity, BiPredicate<@NotNull IFluidStack, @NotNull AutomationType> canExtract,
+          BiPredicate<@NotNull IFluidStack, @NotNull AutomationType> canInsert, Predicate<@NotNull IFluidStack> validator, @Nullable IContentsListener listener) {
         if (capacity < 0) {
             throw new IllegalArgumentException("Capacity must be at least zero");
         }
@@ -95,22 +96,22 @@ public class BasicFluidTank implements IExtendedFluidTank {
      * @apiNote This is only protected for direct querying access. To modify this stack the external methods or {@link #setStackUnchecked(IFluidStack)} should be used
      * instead.
      */
-    protected FluidStack stored = FluidStack.EMPTY;
-    private final Predicate<@NotNull FluidStack> validator;
-    protected final BiPredicate<@NotNull FluidStack, @NotNull AutomationType> canExtract;
-    protected final BiPredicate<@NotNull FluidStack, @NotNull AutomationType> canInsert;
+    protected IFluidStack stored = IFluidStack.empty();
+    private final Predicate<@NotNull IFluidStack> validator;
+    protected final BiPredicate<@NotNull IFluidStack, @NotNull AutomationType> canExtract;
+    protected final BiPredicate<@NotNull IFluidStack, @NotNull AutomationType> canInsert;
     private final int capacity;
     @Nullable
     private final IContentsListener listener;
 
-    protected BasicFluidTank(int capacity, Predicate<@NotNull FluidStack> canExtract, Predicate<@NotNull FluidStack> canInsert, Predicate<@NotNull FluidStack> validator,
+    protected BasicFluidTank(int capacity, Predicate<@NotNull IFluidStack> canExtract, Predicate<@NotNull IFluidStack> canInsert, Predicate<@NotNull IFluidStack> validator,
           @Nullable IContentsListener listener) {
         this(capacity, (stack, automationType) -> automationType == AutomationType.MANUAL || canExtract.test(stack), (stack, automationType) -> canInsert.test(stack),
               validator, listener);
     }
 
-    protected BasicFluidTank(int capacity, BiPredicate<@NotNull FluidStack, @NotNull AutomationType> canExtract,
-          BiPredicate<@NotNull FluidStack, @NotNull AutomationType> canInsert, Predicate<@NotNull FluidStack> validator, @Nullable IContentsListener listener) {
+    protected BasicFluidTank(int capacity, BiPredicate<@NotNull IFluidStack, @NotNull AutomationType> canExtract,
+          BiPredicate<@NotNull IFluidStack, @NotNull AutomationType> canInsert, Predicate<@NotNull IFluidStack> validator, @Nullable IContentsListener listener) {
         this.capacity = capacity;
         this.canExtract = canExtract;
         this.canInsert = canInsert;
@@ -128,12 +129,12 @@ public class BasicFluidTank implements IExtendedFluidTank {
     @NotNull
     @Override
     public IFluidStack getFluid() {
-        return NeoFluidStack.wrap(stored);
+        return stored;
     }
 
     @Override
     public void setStack(IFluidStack stack) {
-        setStack(NeoFluidStack.unwrap(stack), true);
+        setStack(stack, true);
     }
 
     /**
@@ -160,16 +161,16 @@ public class BasicFluidTank implements IExtendedFluidTank {
 
     @Override
     public void setStackUnchecked(IFluidStack stack) {
-        setStack(NeoFluidStack.unwrap(stack), false);
+        setStack(stack, false);
     }
 
-    private void setStack(FluidStack stack, boolean validateStack) {
+    private void setStack(IFluidStack stack, boolean validateStack) {
         if (stack.isEmpty()) {
             if (stored.isEmpty()) {
                 //If we are already empty just exit, to not fire onContentsChanged
                 return;
             }
-            stored = FluidStack.EMPTY;
+            stored = IFluidStack.empty();
         } else if (!validateStack || validator.test(stack)) {
             stored = stack.copy();
         } else {
@@ -182,8 +183,7 @@ public class BasicFluidTank implements IExtendedFluidTank {
 
     @Override
     public IFluidStack insert(@NotNull IFluidStack stack, Action action, AutomationType automationType) {
-        FluidStack toInsert = NeoFluidStack.unwrap(stack);
-        if (toInsert.isEmpty() || !validator.test(toInsert) || !canInsert.test(toInsert, automationType)) {
+        if (stack.isEmpty() || !validator.test(stack) || !canInsert.test(stack, automationType)) {
             //"Fail quick" if the given stack is empty, or we can never insert the fluid or currently are unable to insert it
             return stack;
         }
@@ -193,8 +193,8 @@ public class BasicFluidTank implements IExtendedFluidTank {
             return stack;
         }
         boolean sameType = false;
-        if (isEmpty() || (sameType = FluidStack.isSameFluidSameComponents(stored, toInsert))) {
-            int toAdd = (int) Math.min(toInsert.amount(), needed);
+        if (isEmpty() || (sameType = IFluidStack.isSameFluidSameComponents(stored, stack))) {
+            long toAdd = Math.min(stack.getAmount(), needed);
             if (action.execute()) {
                 //If we want to actually insert the fluid, then update the current fluid
                 if (sameType) {
@@ -205,10 +205,10 @@ public class BasicFluidTank implements IExtendedFluidTank {
                     //If we are not the same type then we have to copy the stack and set it
                     // Just set it unchecked as we have already validated it
                     // Note: this also will mark that the contents changed
-                    setStack(toInsert.copyWithAmount(toAdd), false);
+                    setStack(stack.copyWithAmount(toAdd), false);
                 }
             }
-            return stack.copyWithAmount(toInsert.amount() - toAdd);
+            return stack.copyWithAmount(stack.getAmount() - toAdd);
         }
         //If we didn't accept this fluid, then just return the given stack
         return stack;
@@ -222,19 +222,19 @@ public class BasicFluidTank implements IExtendedFluidTank {
         }
         //Note: While we technically could just return the stack itself if we are removing all that we have, it would require a lot more checks
         // We also are limiting it by the rate this tank has
-        int size = (int) Math.min(Math.min(getExtractRate(automationType), getFluidAmount()), amount);
-        FluidStack ret = stored.copyWithAmount(size);
+        long size = Math.min(Math.min(getExtractRate(automationType), getFluidAmount()), amount);
+        IFluidStack ret = stored.copyWithAmount(size);
         if (!ret.isEmpty() && action.execute()) {
             //If shrink gets the size to zero it will update the empty state so that isEmpty() returns true.
-            stored.shrink(ret.amount());
+            stored.shrink(ret.getAmount());
             onContentsChanged();
         }
-        return NeoFluidStack.wrap(ret);
+        return ret;
     }
 
     @Override
     public boolean isFluidValid(IFluidStack stack) {
-        return validator.test(NeoFluidStack.unwrap(stack));
+        return validator.test(stack);
     }
 
     /**
@@ -259,7 +259,7 @@ public class BasicFluidTank implements IExtendedFluidTank {
             //If our size is not changing, or we are only simulating the change, don't do anything
             return amount;
         }
-        stored.setAmount((int) amount);
+        stored.setAmount(amount);
         onContentsChanged();
         return amount;
     }
@@ -298,7 +298,7 @@ public class BasicFluidTank implements IExtendedFluidTank {
      */
     @Override
     public boolean isFluidEqual(IFluidStack other) {
-        return FluidStack.isSameFluidSameComponents(stored, NeoFluidStack.unwrap(other));
+        return IFluidStack.isSameFluidSameComponents(stored, other);
     }
 
     /**
@@ -306,7 +306,7 @@ public class BasicFluidTank implements IExtendedFluidTank {
      */
     @Override
     public long getFluidAmount() {
-        return stored.amount();
+        return stored.getAmount();
     }
 
     @Override
@@ -320,7 +320,7 @@ public class BasicFluidTank implements IExtendedFluidTank {
     @Override
     public void serialize(ValueOutput output) {
         if (!isEmpty()) {
-            output.store(SerializationConstants.STORED, FluidStack.CODEC, stored);
+            output.store(SerializationConstants.STORED, IFluidStackProvider.INSTANCE.codec(), stored);
         }
     }
 }
