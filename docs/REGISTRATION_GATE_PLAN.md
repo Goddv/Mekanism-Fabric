@@ -1,0 +1,30 @@
+# Registration Keystone Plan (loader-neutral content registration)
+
+From the `registration-keystone-plan` workflow (5 agents, adversarially verified). The documented endgame (`REAL_FRAMEWORK_PORT_PLAN.md`, the 381-file core closure): make Mekanism's registration loader-neutral so the content layer registers on both loaders.
+
+## Two parallel stacks (cannot be one FQN)
+- **NeoForge base pair (inheritance):** `MekanismDeferredHolder extends net.neoforged DeferredHolder`; `MekanismDeferredRegister extends net.neoforged DeferredRegister` + overrides the NeoForge-internal `createHolder` hook (this hook = why typed holders like `DeferredChemical`/`BlockRegistryObject`/`TileEntityTypeRegistryObject` work on the inheritance stack; Architectury has no equivalent).
+- **`:common` Architectury framework (composition):** `MekanismRegister<T>` (wraps Architectury `DeferredRegister`), `MekanismRegistryObject<T>` (wraps `RegistrySupplier`, implements `Holder<T>`+`Supplier<T>`+`INamedEntry`), + `MekanismBlockRegister`/`MekanismItemRegister`/`DataComponentDeferredRegister` + impl/* (Sound/GameEvent/ParticleType/DamageType) + `ITileHolder`.
+- **Unified only through shared INTERFACES** — `INamedEntry`, `Holder<T>`, `Supplier<T>`, `IHasTextComponent`, `IHasTranslationKey`. Per-registry migration is the path (Sounds/GameEvents/ParticleTypes/DamageTypes done).
+- **`MekanismBlockRegister`/`ItemRegister`/`DataComponentDeferredRegister` are battle-tested on Fabric** (FabricRealMachines registers 5 real machine blocks+items + BE-type + caps + creative tab; FabricBringUpContent/etc.).
+
+## 🛑 CRITICAL RULE — Architectury no-arg `register()` is NeoForge-safe ONLY for VANILLA registries
+**Bytecode-verified:** Architectury's `DeferredRegister.register()` resolves the registrar **eagerly** at call time via `BuiltInRegistries.REGISTRY` (then Architectury's `CUSTOM_REGS`), throwing `IllegalArgumentException` if the registry isn't present. NeoForge **custom** registries (chemical, …) created via raw `RegistryBuilder` enter the registry-of-registries only at `NewRegistryEvent.fill()` — AFTER all mod constructors. So calling `XDeferredRegister.register()` (no-arg) for a custom registry from the mod ctor **crashes NeoForge at launch** (compiles green). Sounds/GameEvents/ParticleTypes work only because they target vanilla registries (present from the start). **Fix for custom-registry content registries: either create the registry via Architectury's `RegistrarBuilder` (populates `CUSTOM_REGS`), or flush via a NeoForge `RegisterEvent` listener keyed to the registry — NOT the no-arg ctor-time register().**
+
+## Migratability (post-seams)
+- **Vanilla-registry content** (blocks/items/tile-types/containers/data-components/sounds…): Architectury register works on NeoForge (vanilla registry present from start). Blocked instead by the **content classes / BlockType cluster** (cycle).
+- **Custom-registry content** (chemicals): needs the timing fix above; the type (`Chemical`) is in `:common`.
+- **Fluids:** need a NEW fluid-REGISTRATION seam (`FluidType`/`BaseFlowingFluid`/`LiquidBlock`/`BucketItem` assembly — NeoForge-only, no vanilla/Architectury analogue; the IFluidStack gate covers only stacks/handlers, NOT registration).
+
+## Ordered sequence (each green; NeoForge byte-identical)
+- **S-CHEM** — migrate `MekanismChemicals`(+`GeneratorsChemicals`) to a `:common` `ChemicalDeferredRegister`/`DeferredChemical`/`SlurryRegistryObject` over `MekanismRegister`. ⚠️ The no-arg register() crashes NeoForge (custom registry, see RULE) — must use the RegisterEvent-flush or Architectury-RegistrarBuilder registry creation. Also: drop `MekanismChemicals.EMPTY` (double-registered), `getData`→`MekanismAPI.CHEMICAL_REGISTRY.wrapAsHolder(get()).getData`, `EnumUtils.COLORS`→`EnumUtilsBase.COLORS`, `Mekanism.rl/MODID`→`MekanismAPIBase`, hoist `PrimaryResource` (TagKey seam) for the slurry loop, `SlurryRegistryObject<DIRTY,CLEAN>` keeps 2-type-param + implements `Holder<Chemical>`. Compile the **datagen/generators/tools** source sets (slurry consumers live there). **Custom-registry timing makes this UNTESTABLE-NeoForge-risky → do with user in-game testing.**
+- **S-BLOCKMEK-SEAM** — `ISecurityPacketSender` seam (NeoForge wraps `PacketDistributor.sendToAllPlayers(new PacketSyncSecurity)`; Fabric impl) — neutralizes `BlockMekanism.setPlacedBy`'s last `net.neoforged` line. Safe (proven service-seam pattern).
+- **S-RESOURCE** — move `BlockMekanism`+`BlockResource` to `:common`; register the 6 resource storage blocks + resource items via the proven `MekanismBlockRegister` (vanilla block registry → NeoForge-safe). No BlockType/tile, skips SECURITY/REDSTONE/UPGRADES branches → sidesteps the cycle.
+- **S-DATACOMP** — migrate `MekanismDataComponents` to the `:common` `DataComponentDeferredRegister` (proven on Fabric) → unblocks the SECURITY/REDSTONE/UPGRADES branch in `BlockDeferredRegister`.
+- **S-FLUID-SEAM** — build the fluid-registration seam, then migrate `MekanismFluids`.
+- **S-TILE/CONTAINER → S-BLOCKS/ITEMS (last, the cycle core)** — via `ITileHolder` (built) + narrowing `ContainerTypeRegistryObject`/sound refs to shared interfaces; then `MekanismTileEntityTypes`+`MekanismContainerTypes`, then `MekanismBlocks`/`MekanismItems` wholesale. Circular via `TileEntityMekanism`↔`BlockType`↔`MekanismBlockTypes` until here.
+
+Rationale: drain the dependency graph from the leaves inward; the `BlockType`↔tile↔registration core is cut LAST, after its deps are on shared interfaces.
+
+## Autonomy note
+The registry MIGRATIONS (S-CHEM custom-registry timing, S-FLUID seam, and the cycle-core S-BLOCKS/ITEMS) carry **NeoForge runtime risk that cannot be validated in this env** — they should land with the user's in-game NeoForge testing. The SAFE autonomous work is the byte-identical seams (`ISecurityPacketSender`) + leaf/utility hoists.
