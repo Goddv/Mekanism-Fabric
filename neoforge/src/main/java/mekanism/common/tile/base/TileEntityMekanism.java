@@ -32,7 +32,6 @@ import mekanism.api.radiation.IRadiationManager;
 import mekanism.api.security.IBlockSecurityUtils;
 import mekanism.api.security.SecurityMode;
 import mekanism.api.text.TextComponentUtil;
-import mekanism.client.sound.SoundHandler;
 import mekanism.common.Mekanism;
 import mekanism.common.attachments.FilterAware;
 import mekanism.common.attachments.containers.ContainerType;
@@ -115,8 +114,6 @@ import mekanism.common.util.WorldUtils;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.HolderLookup.Provider;
 import net.minecraft.util.Util;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -251,7 +248,8 @@ public abstract class TileEntityMekanism extends CapabilityTileEntity implements
     /**
      * Only used on the client
      */
-    private SoundInstance activeSound;
+    /** Opaque token for the active machine sound (a {@code SoundInstance} on NeoForge); driven via {@link ITileSoundService}. */
+    private Object activeSound;
     private int playSoundCooldown = 0;
     //End variables ITileSound
 
@@ -1510,7 +1508,7 @@ public abstract class TileEntityMekanism extends CapabilityTileEntity implements
             if (sound != lastSoundEvent) {
                 if (activeSound != null) {
                     //The sound changed, stop it so that we can start it back up again
-                    SoundHandler.stopTileSound(getSoundPos());
+                    ITileSoundService.INSTANCE.stopTileSound(getSoundPos());
                     activeSound = null;
                 }
                 lastSoundEvent = sound;
@@ -1518,14 +1516,14 @@ public abstract class TileEntityMekanism extends CapabilityTileEntity implements
 
             // If this machine isn't fully muffled, and we don't seem to be playing a sound for it, go ahead and
             // play it
-            if (!isFullyMuffled() && (activeSound == null || !Minecraft.getInstance().getSoundManager().isActive(activeSound))) {
-                activeSound = SoundHandler.startTileSound(lastSoundEvent, getSoundCategory(), getInitialVolume(), level.getRandom(), getSoundPos());
+            if (!isFullyMuffled() && (activeSound == null || !ITileSoundService.INSTANCE.isActiveSound(activeSound))) {
+                activeSound = ITileSoundService.INSTANCE.startTileSound(lastSoundEvent, getSoundCategory(), getInitialVolume(), level.getRandom(), getSoundPos());
             }
             // Always reset the cooldown; either we just attempted to play a sound or we're fully muffled; either way
             // we don't want to try again
             playSoundCooldown = SharedConstants.TICKS_PER_SECOND;
         } else if (activeSound != null) {
-            SoundHandler.stopTileSound(getSoundPos());
+            ITileSoundService.INSTANCE.stopTileSound(getSoundPos());
             activeSound = null;
             playSoundCooldown = 0;
         }
