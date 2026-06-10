@@ -1,11 +1,14 @@
 package mekanism.fabric.registration;
 
 import com.mojang.logging.LogUtils;
+import mekanism.common.block.basic.BlockResource;
 import mekanism.common.registries.MekanismGameEvents;
 import mekanism.common.registries.MekanismParticleTypes;
 import mekanism.common.registries.MekanismSounds;
+import mekanism.common.resource.BlockResourceInfo;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.level.block.Block;
 import org.slf4j.Logger;
 
 /**
@@ -43,13 +46,29 @@ public final class FabricRegistrationSelfTest {
             boolean tabOk = check("creative_tab", BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(mekTab), true, mekTab);
             var machineMenu = net.minecraft.resources.Identifier.fromNamespaceAndPath("mekanism", "machine");
             boolean menuOk = check("menu", BuiltInRegistries.MENU.containsKey(machineMenu), BuiltInRegistries.MENU.getValue(machineMenu) != null, machineMenu);
+            //Real resource blocks (S-RESOURCE): block_refined_obsidian must be a BlockResource with the right info + hardness.
+            //getDestroySpeed(null, null) is a null-safe pure field read in 26.1 (returns the strength() hardness, 50 for
+            //refined obsidian) — verified by decompile; the getResourceInfo() check alone is also sufficient.
+            var blockRefinedObsidian = net.minecraft.resources.Identifier.fromNamespaceAndPath("mekanism", "block_refined_obsidian");
+            Block obsidian = BuiltInRegistries.BLOCK.getValue(blockRefinedObsidian);
+            boolean resourceOk = check("resource_block",
+                  BuiltInRegistries.BLOCK.containsKey(blockRefinedObsidian)
+                        && obsidian instanceof BlockResource resource
+                        && resource.getResourceInfo() == BlockResourceInfo.REFINED_OBSIDIAN
+                        && obsidian.defaultBlockState().getDestroySpeed(null, null) == 50.0F,
+                  BuiltInRegistries.ITEM.containsKey(blockRefinedObsidian), blockRefinedObsidian);
+            var blockRefinedGlowstone = net.minecraft.resources.Identifier.fromNamespaceAndPath("mekanism", "block_refined_glowstone");
+            boolean glowOk = check("resource_block_light",
+                  BuiltInRegistries.BLOCK.containsKey(blockRefinedGlowstone)
+                        && BuiltInRegistries.BLOCK.getValue(blockRefinedGlowstone).defaultBlockState().getLightEmission() == 15,
+                  true, blockRefinedGlowstone);
             long mekSounds = BuiltInRegistries.SOUND_EVENT.keySet().stream().filter(k -> k.getNamespace().equals("mekanism")).count();
             long mekGameEvents = BuiltInRegistries.GAME_EVENT.keySet().stream().filter(k -> k.getNamespace().equals("mekanism")).count();
             long mekParticles = BuiltInRegistries.PARTICLE_TYPE.keySet().stream().filter(k -> k.getNamespace().equals("mekanism")).count();
             long mekItems = BuiltInRegistries.ITEM.keySet().stream().filter(k -> k.getNamespace().equals("mekanism")).count();
             long mekBlocks = BuiltInRegistries.BLOCK.keySet().stream().filter(k -> k.getNamespace().equals("mekanism")).count();
             long mekMenus = BuiltInRegistries.MENU.keySet().stream().filter(k -> k.getNamespace().equals("mekanism")).count();
-            ok = soundOk && gameEventOk && particleOk && itemOk && blockOk && tabOk && menuOk;
+            ok = soundOk && gameEventOk && particleOk && itemOk && blockOk && tabOk && menuOk && resourceOk && glowOk;
             LOGGER.info("{} {} Architectury registration: sounds={} gameEvents={} particles={} items={} blocks={} tabs={} menus={}",
                   TAG, ok ? "OK  " : "FAIL", mekSounds, mekGameEvents, mekParticles, mekItems, mekBlocks,
                   BuiltInRegistries.CREATIVE_MODE_TAB.keySet().stream().filter(k -> k.getNamespace().equals("mekanism")).count(), mekMenus);

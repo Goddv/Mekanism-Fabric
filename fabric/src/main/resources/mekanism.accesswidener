@@ -9,3 +9,7 @@ accessWidener	v2	official
 # HeatAPI.getAmbientTemp(LevelReader, BlockPos) calls Biome#getTemperature(BlockPos, int) (position-adjusted),
 # which is private in vanilla but public under NeoForge.
 accessible	method	net/minecraft/world/level/biome/Biome	getTemperature	(Lnet/minecraft/core/BlockPos;I)F
+
+# BlockStateHelper.applyLightLevelAdjustments reads the existing light function off Properties; private in vanilla,
+# public under NeoForge's accesstransformer.cfg:82.
+accessible	field	net/minecraft/world/level/block/state/BlockBehaviour$Properties	lightEmission	Ljava/util/function/ToIntFunction;

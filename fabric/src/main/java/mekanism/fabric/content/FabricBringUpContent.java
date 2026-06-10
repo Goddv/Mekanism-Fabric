@@ -5,28 +5,29 @@ import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import java.util.ArrayList;
 import java.util.List;
+import mekanism.common.block.basic.BlockResource;
+import mekanism.common.item.block.ItemBlockMekanism;
 import mekanism.common.registration.MekanismBlockHolder;
 import mekanism.common.registration.MekanismBlockRegister;
 import mekanism.common.registration.MekanismItemHolder;
 import mekanism.common.registration.MekanismItemRegister;
+import mekanism.common.resource.BlockResourceInfo;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.SoundType;
 
 /**
  * Transitional Fabric bring-up content: registers a slice of Mekanism's simple resource items (plain {@link Item}s) and
- * simple storage blocks (plain {@link Block}s + {@link BlockItem}s) — real ids whose models/blockstates/textures/lang are
- * already bundled — plus a "Mekanism" creative tab. Now registered through the loader-neutral {@code :common}
- * {@link MekanismItemRegister}/{@link MekanismBlockRegister} framework (the real item/block registration shapes), rather
- * than hand-rolled Architectury DeferredRegisters. Deliberate stop-gap: simple content sidesteps the full
- * MekanismItems/MekanismBlocks declarations (welded to the attachment/container/capability + block-type/tile systems);
- * once those move to {@code :common} this list is replaced by the real registries (which would use the same framework).
+ * the real resource-storage blocks ({@link BlockResource} + {@link ItemBlockMekanism} block-items, now in {@code :common})
+ * — real ids whose models/blockstates/textures/lang are already bundled — plus a "Mekanism" creative tab. Registered
+ * through the loader-neutral {@code :common} {@link MekanismItemRegister}/{@link MekanismBlockRegister} framework (the real
+ * item/block registration shapes), rather than hand-rolled Architectury DeferredRegisters. Deliberate stop-gap: the
+ * remaining content (machines/multiblocks) still sidesteps the full MekanismItems/MekanismBlocks declarations (welded to
+ * the attachment/container/capability + block-type/tile systems); once those move to {@code :common} this list is replaced
+ * by the real registries (which would use the same framework).
  */
 public final class FabricBringUpContent {
 
@@ -44,21 +45,38 @@ public final class FabricBringUpContent {
           "yellow_cake_uranium", "reprocessed_fissile_fragment", "pellet_antimatter", "pellet_plutonium", "pellet_polonium"
     };
 
-    /** Simple storage blocks (plain Blocks, no block-entity) with full bundled asset chains. */
-    private static final String[] STORAGE_BLOCK_NAMES = {
-          "block_osmium", "block_tin", "block_lead", "block_uranium",
-          "block_raw_osmium", "block_raw_tin", "block_raw_lead", "block_raw_uranium"
+    /**
+     * Real resource-storage blocks ({@link BlockResource}) in NeoForge {@code MekanismBlocks} registration order; ids are
+     * {@code block_<suffix>}. Explicit list (not {@code values()}) so future NeoForge-only constants do not auto-register
+     * here and so {@code PrimaryResource} (which imports NeoForge Tags) never needs porting.
+     */
+    private static final BlockResourceInfo[] RESOURCE_BLOCKS = {
+          //PrimaryResource-loop parity — replaces the former placeholder Blocks under IDENTICAL ids
+          BlockResourceInfo.OSMIUM, BlockResourceInfo.RAW_OSMIUM,
+          BlockResourceInfo.TIN, BlockResourceInfo.RAW_TIN,
+          BlockResourceInfo.LEAD, BlockResourceInfo.RAW_LEAD,
+          BlockResourceInfo.URANIUM, BlockResourceInfo.RAW_URANIUM,
+          //MekanismBlocks named-constant parity — net-new on Fabric
+          BlockResourceInfo.BRONZE, BlockResourceInfo.REFINED_OBSIDIAN, BlockResourceInfo.CHARCOAL,
+          BlockResourceInfo.REFINED_GLOWSTONE, BlockResourceInfo.STEEL, BlockResourceInfo.FLUORITE
     };
 
     static {
         for (String name : SIMPLE_ITEM_NAMES) {
             TAB_ENTRIES.add(ITEMS.registerItem(name));
         }
-        for (String name : STORAGE_BLOCK_NAMES) {
-            MekanismBlockHolder<Block, BlockItem> block = BLOCKS.registerSimple(name, properties -> properties
-                  .strength(5.0F, 6.0F)
-                  .requiresCorrectToolForDrops()
-                  .sound(SoundType.METAL));
+        for (BlockResourceInfo resource : RESOURCE_BLOCKS) {
+            //Mirrors NeoForge MekanismBlocks.registerResourceBlock: the BlockResource ctor applies
+            //requiresCorrectToolForDrops + resource.modifyProperties; only non-burning resources get fire-resistant items.
+            MekanismBlockHolder<BlockResource, ItemBlockMekanism<BlockResource>> block = BLOCKS.register(
+                  "block_" + resource.getRegistrySuffix(),
+                  properties -> new BlockResource(properties, resource),
+                  (b, itemProperties) -> {
+                      if (!b.getResourceInfo().burnsInFire()) {
+                          itemProperties = itemProperties.fireResistant();
+                      }
+                      return new ItemBlockMekanism<>(b, itemProperties);
+                  });
             TAB_ENTRIES.add(block.item());
         }
     }

@@ -7,9 +7,6 @@ import mekanism.common.block.attribute.AttributeHasBounding;
 import mekanism.common.block.attribute.AttributeMultiblock;
 import mekanism.common.block.attribute.AttributeStateFacing;
 import mekanism.common.block.attribute.Attributes.AttributeComparator;
-import mekanism.common.block.interfaces.IHasTileEntity;
-import mekanism.common.block.states.BlockStateHelper;
-import mekanism.common.block.states.IStateFluidLoggable;
 import mekanism.common.config.MekanismConfig;
 import mekanism.common.lib.multiblock.MultiblockData;
 import mekanism.common.lib.radiation.Meltdown.MeltdownExplosion;
@@ -25,37 +22,34 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.ScheduledTickAccess;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.redstone.Redstone;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class BlockMekanism extends Block {
+/**
+ * NeoForge layer over {@link BlockMekanismBase}: re-adds the {@code IBlockExtension}-shaped overrides (which have no
+ * vanilla signature) and the members whose bodies need NeoForge-only types (config, radiation, security, multiblock).
+ * The loader-neutral core (ctor light/state setup, fluid-state, placement, rotate/mirror, neighbor-removal scaffolding)
+ * lives in the base. See {@code BlockMekanismBase}'s hoist gate before extending the base directly.
+ */
+public abstract class BlockMekanism extends BlockMekanismBase {
 
     protected BlockMekanism(BlockBehaviour.Properties properties) {
-        super(BlockStateHelper.applyLightLevelAdjustments(properties));
-        registerDefaultState(BlockStateHelper.getDefaultState(stateDefinition.any()));
+        super(properties);
     }
 
     @Nullable
@@ -68,11 +62,6 @@ public abstract class BlockMekanism extends Block {
             return PushReaction.BLOCK;
         }
         return super.getPistonPushReaction(state);
-    }
-
-    @Override
-    protected boolean canBeReplaced(@NotNull BlockState state, @NotNull Fluid fluid) {
-        return false;
     }
 
     @NotNull
@@ -90,54 +79,11 @@ public abstract class BlockMekanism extends Block {
     }
 
     @Override
-    protected boolean triggerEvent(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, int id, int param) {
-        boolean triggered = super.triggerEvent(state, level, pos, id, param);
-        if (this instanceof IHasTileEntity<?> hasTileEntity) {
-            return hasTileEntity.triggerBlockEntityEvent(state, level, pos, id, param);
-        }
-        return triggered;
-    }
-
-    @Override
-    protected void createBlockStateDefinition(@NotNull StateDefinition.Builder<Block, BlockState> builder) {
-        super.createBlockStateDefinition(builder);
-        BlockStateHelper.fillBlockStateContainer(this, builder);
-    }
-
-    @Nullable
-    @Override
-    public BlockState getStateForPlacement(@NotNull BlockPlaceContext context) {
-        return BlockStateHelper.getStateForPlacement(super.getStateForPlacement(context), context);
-    }
-
-    @NotNull
-    @Override
-    protected FluidState getFluidState(BlockState state) {
-        if (state.getBlock() instanceof IStateFluidLoggable fluidLoggable) {
-            return fluidLoggable.getFluid(state);
-        }
-        return super.getFluidState(state);
-    }
-
-    @NotNull
-    @Override
-    protected BlockState updateShape(@NotNull BlockState state, @NotNull LevelReader level, @NotNull ScheduledTickAccess scheduledTickAccess, @NotNull BlockPos currentPos,
-          @NotNull Direction facing, @NotNull BlockPos facingPos, @NotNull BlockState facingState, @NotNull RandomSource random) {
-        if (state.getBlock() instanceof IStateFluidLoggable fluidLoggable) {
-            fluidLoggable.updateFluids(level, currentPos, state, scheduledTickAccess);
-        }
-        return super.updateShape(state, level, scheduledTickAccess, currentPos, facing, facingPos, facingState, random);
-    }
-
-    @Override
-    protected void affectNeighborsAfterRemoval(@NotNull BlockState state, @NotNull ServerLevel level, @NotNull BlockPos pos, boolean movedByPiston) {
-        super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
+    protected void handleBoundingBlockRemoval(@NotNull BlockState state, @NotNull ServerLevel level, @NotNull BlockPos pos) {
         AttributeHasBounding hasBounding = Attribute.get(state, AttributeHasBounding.class);
         if (hasBounding != null) {
             hasBounding.removeBoundingBlocks(level, pos, state);
         }
-        Containers.updateNeighboursAfterDestroy(state, level, pos);
-
     }
 
     @Override
@@ -179,18 +125,6 @@ public abstract class BlockMekanism extends Block {
     @Override
     public BlockState rotate(@NotNull BlockState state, @NotNull LevelAccessor world, @NotNull BlockPos pos, @NotNull Rotation rotation) {
         return AttributeStateFacing.rotate(state, world, pos, rotation);
-    }
-
-    @NotNull
-    @Override
-    protected BlockState rotate(@NotNull BlockState state, @NotNull Rotation rotation) {
-        return AttributeStateFacing.rotate(state, rotation);
-    }
-
-    @NotNull
-    @Override
-    protected BlockState mirror(@NotNull BlockState state, @NotNull Mirror mirror) {
-        return AttributeStateFacing.mirror(state, mirror);
     }
 
     @Override

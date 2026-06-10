@@ -1,8 +1,5 @@
 package mekanism.common.content.blocktype;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import mekanism.api.text.ILangEntry;
 import mekanism.api.tier.ITier;
 import mekanism.common.block.attribute.Attribute;
@@ -19,27 +16,11 @@ import mekanism.common.block.interfaces.ITypeBlock;
 import mekanism.common.lib.transmitter.TransmissionType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-public class BlockType {
-
-    private final ILangEntry description;
-
-    private final Map<Class<? extends Attribute>, Attribute> attributeMap = new HashMap<>();
+public class BlockType extends BlockTypeBase {
 
     public BlockType(ILangEntry description) {
-        this.description = description;
-    }
-
-    public boolean has(Class<? extends Attribute> type) {
-        return attributeMap.containsKey(type);
-    }
-
-    @Nullable
-    @SuppressWarnings("unchecked")
-    public <ATTRIBUTE extends Attribute> ATTRIBUTE get(Class<ATTRIBUTE> type) {
-        return (ATTRIBUTE) attributeMap.get(type);
+        super(description);
     }
 
     @SafeVarargs
@@ -47,28 +28,6 @@ public class BlockType {
         for (Class<? extends Attribute> type : types) {
             attributeMap.put(type, tile.get(type));
         }
-    }
-
-    public void add(Attribute... attrs) {
-        for (Attribute attr : attrs) {
-            attributeMap.put(attr.getClass(), attr);
-        }
-    }
-
-    @SafeVarargs
-    public final void remove(Class<? extends Attribute>... attrs) {
-        for (Class<? extends Attribute> attr : attrs) {
-            attributeMap.remove(attr);
-        }
-    }
-
-    public Collection<Attribute> getAll() {
-        return attributeMap.values();
-    }
-
-    @NotNull
-    public ILangEntry getDescription() {
-        return description;
     }
 
     public static boolean is(Block block, BlockType... types) {
@@ -83,7 +42,7 @@ public class BlockType {
     }
 
     public static BlockType get(Block block) {
-        return block instanceof ITypeBlock typeBlock ? typeBlock.getType() : null;
+        return block instanceof ITypeBlock typeBlock ? (BlockType) typeBlock.getType() : null;
     }
 
     public static class BlockTypeBuilder<BLOCK extends BlockType, T extends BlockTypeBuilder<BLOCK, T>> {

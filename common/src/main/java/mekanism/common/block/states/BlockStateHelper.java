@@ -44,7 +44,7 @@ public class BlockStateHelper {
             }
         }
         Block block = state.getBlock();
-        if (block instanceof IStateFluidLoggable fluidLoggable) {
+        if (block instanceof IStateFluidLoggableBase fluidLoggable) {
             //Default the blocks to not being waterlogged, they have code to force waterlogging to true if being placed in water
             state = fluidLoggable.setState(state, Fluids.EMPTY);
         }
@@ -64,7 +64,7 @@ public class BlockStateHelper {
         if (block instanceof IStateStorage) {
             properties.add(storageProperty);
         }
-        if (block instanceof IStateFluidLoggable fluidLoggable) {
+        if (block instanceof IStateFluidLoggableBase fluidLoggable) {
             properties.add(fluidLoggable.getFluidLoggedProperty());
         }
         if (!properties.isEmpty()) {
@@ -77,7 +77,7 @@ public class BlockStateHelper {
      * fluid a block may be fluid logged with and then use that light level instead if it is higher.
      */
     public static BlockBehaviour.Properties applyLightLevelAdjustments(BlockBehaviour.Properties properties) {
-        return applyLightLevelAdjustments(properties, state -> state.getBlock() instanceof IStateFluidLoggable fluidLoggable ? fluidLoggable.getFluidLightLevel(state) : 0);
+        return applyLightLevelAdjustments(properties, state -> state.getBlock() instanceof IStateFluidLoggableBase fluidLoggable ? fluidLoggable.getFluidLightLevel(state) : 0);
     }
 
     /**
@@ -106,7 +106,7 @@ public class BlockStateHelper {
                 state = atr.getStateForPlacement(state, world, pos, player, face);
             }
         }
-        if (state.getBlock() instanceof IStateFluidLoggable fluidLoggable) {
+        if (state.getBlock() instanceof IStateFluidLoggableBase fluidLoggable) {
             FluidState fluidState = world.getFluidState(pos);
             state = fluidLoggable.setState(state, fluidState.getType());
         }
@@ -131,7 +131,7 @@ public class BlockStateHelper {
         if (oldBlock instanceof IStateStorage && newBlock instanceof IStateStorage) {
             newState = newState.setValue(storageProperty, oldState.getValue(storageProperty));
         }
-        if (newBlock instanceof IStateFluidLoggable newFluidLoggable) {
+        if (newBlock instanceof IStateFluidLoggableBase newFluidLoggable) {
             FluidState oldFluidState = oldState.getFluidState();
             if (!oldFluidState.isEmpty()) {
                 //Try to set the new state to the same as the old one had if the old one was not empty

@@ -5,7 +5,7 @@ import mekanism.api.text.EnumColor;
 import mekanism.common.advancements.MekanismCriteriaTriggers;
 import mekanism.common.block.BlockBounding;
 import mekanism.common.block.BlockCardboardBox;
-import mekanism.common.block.BlockMekanism;
+import mekanism.common.block.BlockMekanismBase;
 import mekanism.common.config.MekanismConfig;
 import mekanism.common.lib.radiation.PlayerExposure;
 import mekanism.common.network.to_client.player_data.PacketPlayerData;
@@ -88,7 +88,7 @@ public class CommonPlayerTracker {
         if (itemInHand.is(Items.CONFIGURATORS) && !itemInHand.is(MekanismItems.CONFIGURATOR)) {
             //it's a wrench, see if it's our block. Not the configurator, as it handles bypass correctly
             Block block = event.getLevel().getBlockState(event.getPos()).getBlock();
-            if (block instanceof BlockMekanism || block instanceof BlockBounding) {
+            if (block instanceof BlockMekanismBase || block instanceof BlockBounding) {
                 event.setUseBlock(TriState.TRUE);//force it to use the item on the block
             }
         } else if (event.getEntity().isShiftKeyDown() && event.getLevel().getBlockState(event.getPos()).getBlock() instanceof BlockCardboardBox) {

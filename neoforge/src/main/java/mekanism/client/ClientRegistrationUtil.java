@@ -7,7 +7,7 @@ import mekanism.client.gui.machine.GuiAdvancedElectricMachine;
 import mekanism.client.gui.machine.GuiElectricMachine;
 import mekanism.client.render.MekanismRenderer;
 import mekanism.client.render.RenderPropertiesProvider;
-import mekanism.common.block.BlockMekanism;
+import mekanism.common.block.BlockMekanismBase;
 import mekanism.common.block.interfaces.IColoredBlock;
 import mekanism.common.inventory.container.tile.MekanismTileContainer;
 import mekanism.common.registration.impl.BlockDeferredRegister;
@@ -174,7 +174,7 @@ public class ClientRegistrationUtil {
 
     public static void registerBlockExtensions(RegisterClientExtensionsEvent event, BlockDeferredRegister allBlocks) {
         for (Holder<Block> primaryEntry : allBlocks.getPrimaryEntries()) {
-            if (primaryEntry.value() instanceof BlockMekanism) {
+            if (primaryEntry.value() instanceof BlockMekanismBase) {
                 event.registerBlock(RenderPropertiesProvider.PARTICLE_HANDLER, primaryEntry);
             }
         }
