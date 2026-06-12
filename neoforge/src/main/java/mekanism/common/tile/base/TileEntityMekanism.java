@@ -1134,6 +1134,27 @@ public abstract class TileEntityMekanism extends CapabilityTileEntity implements
     }
 
     @Override
+    public long getUpgradedMaxEnergy(long base) {
+        //MachineEnergyContainer (now :common) calls this only on the ENERGY-upgrade path; getMaxEnergy itself also
+        //no-ops when upgrades are unsupported, so this is the verbatim relocation of the former inline call.
+        return MekanismUtils.getMaxEnergy(this, base);
+    }
+
+    @Override
+    public long getUpgradedEnergyPerTick(long base) {
+        //Verbatim relocation of MachineEnergyContainer.updateEnergyPerTick()'s former body: only adjust when the tile
+        //supports upgrades AND an ENERGY/SPEED upgrade; otherwise return base unchanged (== the per-tick that was already
+        //set, since currentEnergyPerTick is only ever the base or this adjusted value).
+        if (supportsUpgrades()) {
+            TileComponentUpgrade upgradeComponent = getComponent();
+            if (upgradeComponent.supports(Upgrade.ENERGY) || upgradeComponent.supports(Upgrade.SPEED)) {
+                return MekanismUtils.getEnergyPerTick(this, base);
+            }
+        }
+        return base;
+    }
+
+    @Override
     public void recalculateUpgrades(Upgrade upgrade) {
         if (upgrade == Upgrade.SPEED) {
             for (IEnergyContainer energyContainer : getEnergyContainers(null)) {

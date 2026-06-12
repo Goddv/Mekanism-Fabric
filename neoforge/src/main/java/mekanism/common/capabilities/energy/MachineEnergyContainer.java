@@ -10,8 +10,6 @@ import mekanism.api.functions.ConstantPredicates;
 import mekanism.common.block.attribute.Attribute;
 import mekanism.common.block.attribute.AttributeEnergy;
 import mekanism.common.tile.base.TileEntityMekanism;
-import mekanism.common.tile.component.TileComponentUpgrade;
-import mekanism.common.util.MekanismUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -94,16 +92,15 @@ public class MachineEnergyContainer<TILE extends TileEntityMekanism> extends Bas
             int bufferMultipler = tile.getEnergyBufferMultiplier(4);
             setMaxEnergy(getEnergyPerTick() * bufferMultipler);
         } else if (tile.supportsUpgrade(Upgrade.ENERGY)) {
-            setMaxEnergy(MekanismUtils.getMaxEnergy(tile, getBaseMaxEnergy()));
+            //tile-driven upgrade math (see IEnergyBufferMultiplier) — keeps the MekanismUtils/MekanismConfig/
+            //TileComponentUpgrade(->ContainerType) closure off the :common energy container.
+            setMaxEnergy(tile.getUpgradedMaxEnergy(getBaseMaxEnergy()));
         }
     }
 
     public void updateEnergyPerTick() {
-        if (tile.supportsUpgrades()) {
-            TileComponentUpgrade upgradeComponent = tile.getComponent();
-            if (upgradeComponent.supports(Upgrade.ENERGY) || upgradeComponent.supports(Upgrade.SPEED)) {
-                setEnergyPerTick(MekanismUtils.getEnergyPerTick(tile, getBaseEnergyPerTick()));
-            }
-        }
+        //Verbatim: getUpgradedEnergyPerTick returns base unchanged when upgrades/ENERGY/SPEED are unsupported, which equals
+        //the per-tick already in effect, so the unconditional set reproduces the former conditional set exactly.
+        setEnergyPerTick(tile.getUpgradedEnergyPerTick(getBaseEnergyPerTick()));
     }
 }
