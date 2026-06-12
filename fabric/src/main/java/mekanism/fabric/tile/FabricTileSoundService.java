@@ -30,4 +30,9 @@ public class FabricTileSoundService implements ITileSoundService {
     public boolean isActiveSound(@Nullable Object activeSound) {
         return false;
     }
+
+    @Override
+    public boolean machineSoundsEnabled() {
+        return false;
+    }
 }

@@ -38,4 +38,7 @@ public interface ITileSoundService {
 
     /** Whether {@code activeSound} (a token previously returned by {@link #startTileSound}) is still actively playing. */
     boolean isActiveSound(@Nullable Object activeSound);
+
+    /** Whether machine sounds are enabled (NeoForge: the client config toggle; Fabric: false until tile-sound is ported). */
+    boolean machineSoundsEnabled();
 }

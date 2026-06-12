@@ -33,4 +33,9 @@ public class NeoTileSoundService implements ITileSoundService {
     public boolean isActiveSound(@Nullable Object activeSound) {
         return activeSound instanceof SoundInstance soundInstance && Minecraft.getInstance().getSoundManager().isActive(soundInstance);
     }
+
+    @Override
+    public boolean machineSoundsEnabled() {
+        return mekanism.common.config.MekanismConfig.client.enableMachineSounds.get();
+    }
 }
