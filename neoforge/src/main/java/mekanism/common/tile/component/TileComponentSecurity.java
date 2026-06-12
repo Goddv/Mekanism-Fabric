@@ -23,7 +23,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.NotNull;
 
-public class TileComponentSecurity implements ITileComponent {
+public class TileComponentSecurity implements IGuiTileComponent {
 
     /**
      * TileEntity implementing this component.

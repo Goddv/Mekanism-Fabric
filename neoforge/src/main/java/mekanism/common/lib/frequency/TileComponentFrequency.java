@@ -25,7 +25,7 @@ import mekanism.common.lib.security.SecurityFrequency;
 import mekanism.common.lib.security.SecurityUtils;
 import mekanism.common.registries.MekanismDataComponents;
 import mekanism.common.tile.base.TileEntityMekanism;
-import mekanism.common.tile.component.ITileComponent;
+import mekanism.common.tile.component.IGuiTileComponent;
 import mekanism.common.util.WorldUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentGetter;
@@ -38,7 +38,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class TileComponentFrequency implements ITileComponent {
+public class TileComponentFrequency implements IGuiTileComponent {
 
     private static final AtomicInteger OFFSET = new AtomicInteger(0);
 

@@ -93,6 +93,7 @@ import mekanism.common.lib.security.BlockSecurityUtils;
 import mekanism.common.lib.security.ISecurityTile;
 import mekanism.common.registries.MekanismDataComponents;
 import mekanism.common.tags.MekanismTags;
+import mekanism.common.tile.component.IGuiTileComponent;
 import mekanism.common.tile.component.ITileComponent;
 import mekanism.common.tile.component.TileComponentConfig;
 import mekanism.common.tile.component.TileComponentSecurity;
@@ -873,7 +874,9 @@ public abstract class TileEntityMekanism extends CapabilityTileEntity implements
         SyncMapper.INSTANCE.setup(container, getClass(), () -> this);
 
         for (ITileComponent component : components) {
-            component.trackForMainContainer(container);
+            if (component instanceof IGuiTileComponent guiComponent) {
+                guiComponent.trackForMainContainer(container);
+            }
         }
         if (supportsRedstone()) {
             container.track(SyncableEnum.create(RedstoneControl.BY_ID, RedstoneControl.DISABLED, () -> controlType, value -> controlType = value));

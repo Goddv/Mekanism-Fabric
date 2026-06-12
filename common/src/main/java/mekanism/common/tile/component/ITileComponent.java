@@ -1,7 +1,6 @@
 package mekanism.common.tile.component;
 
 import java.util.List;
-import mekanism.common.inventory.container.MekanismContainer;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentType;
@@ -47,9 +46,6 @@ public interface ITileComponent extends IValueIOSerializable {
      * Called when the tile is permanently removed
      */
     default void removed() {
-    }
-
-    default void trackForMainContainer(MekanismContainer container) {
     }
 
     default void addToUpdateTag(@NotNull ValueOutput output) {
