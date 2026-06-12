@@ -88,7 +88,6 @@ import mekanism.common.lib.LastEnergyTracker;
 import mekanism.common.lib.chunkloading.IChunkLoader;
 import mekanism.common.lib.frequency.IFrequencyHandler;
 import mekanism.common.lib.frequency.TileComponentFrequency;
-import mekanism.common.lib.radiation.RadiationManager;
 import mekanism.common.lib.security.BlockSecurityUtils;
 import mekanism.common.lib.security.ISecurityTile;
 import mekanism.common.registries.MekanismDataComponents;
@@ -482,7 +481,7 @@ public abstract class TileEntityMekanism extends CapabilityTileEntity implements
 
     protected WrenchResult tryWrenchDismantle(BlockState state, Player player, ItemStack stack) {
         if (player.isShiftKeyDown()) {
-            if (RadiationManager.isGlobalRadiationEnabled() && getRadiationScale() > 0) {
+            if (IRadiationManager.INSTANCE.isRadiationEnabled() && getRadiationScale() > 0) {
                 //Don't allow dismantling radioactive blocks
                 return WrenchResult.RADIOACTIVE;
             }
@@ -657,7 +656,7 @@ public abstract class TileEntityMekanism extends CapabilityTileEntity implements
         for (ITileComponent component : components) {
             component.removed();
         }
-        if (!isRemote() && RadiationManager.isGlobalRadiationEnabled() && shouldDumpRadiation()) {
+        if (!isRemote() && IRadiationManager.INSTANCE.isRadiationEnabled() && shouldDumpRadiation()) {
             //If we are on a server and radiation is enabled dump all gas tanks with radioactive materials
             // Note: we handle clearing radioactive contents later in drop calculation due to when things are written to NBT
             IRadiationManager.INSTANCE.dumpRadiation(getWorldNN(), worldPosition, getChemicalTanks(null), false);
@@ -1245,7 +1244,7 @@ public abstract class TileEntityMekanism extends CapabilityTileEntity implements
 
     @Override
     public float getRadiationScale() {
-        return RadiationManager.isGlobalRadiationEnabled() ? radiationScale : 0;
+        return IRadiationManager.INSTANCE.isRadiationEnabled() ? radiationScale : 0;
     }
 
     @Nullable
@@ -1274,7 +1273,7 @@ public abstract class TileEntityMekanism extends CapabilityTileEntity implements
         //Skip tiles that have no gas tanks and skip the creative chemical tank
         boolean hasNonEmpty = false;
         List<ChemicalStack> stacks = new ArrayList<>(tanks.size());
-        boolean skipRadioactive = RadiationManager.isGlobalRadiationEnabled() && shouldDumpRadiation();
+        boolean skipRadioactive = IRadiationManager.INSTANCE.isRadiationEnabled() && shouldDumpRadiation();
         for (IChemicalTank tank : tanks) {
             if (tank.isEmpty() || skipRadioactive && tank.getStack().isRadioactive()) {
                 //If the tank is empty or has a radioactive gas, treat it as empty
