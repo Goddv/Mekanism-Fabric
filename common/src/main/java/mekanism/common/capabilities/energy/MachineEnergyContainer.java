@@ -6,27 +6,27 @@ import mekanism.api.AutomationType;
 import mekanism.api.IContentsListener;
 import mekanism.api.Upgrade;
 import mekanism.api.annotations.NothingNullByDefault;
-import mekanism.api.functions.ConstantPredicates;
+import mekanism.api.functions.ConstantPredicatesBase;
 import mekanism.common.block.attribute.Attribute;
 import mekanism.common.block.attribute.AttributeEnergy;
-import mekanism.common.tile.base.TileEntityMekanism;
+import mekanism.common.tile.base.TileEntityMekanismBase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @NothingNullByDefault
-public class MachineEnergyContainer<TILE extends TileEntityMekanism> extends BasicEnergyContainer {
+public class MachineEnergyContainer<TILE extends TileEntityMekanismBase> extends BasicEnergyContainer {
 
-    public static <TILE extends TileEntityMekanism> MachineEnergyContainer<TILE> input(TILE tile, @Nullable IContentsListener listener) {
+    public static <TILE extends TileEntityMekanismBase> MachineEnergyContainer<TILE> input(TILE tile, @Nullable IContentsListener listener) {
         AttributeEnergy electricBlock = validateBlock(tile);
-        return new MachineEnergyContainer<>(electricBlock.getUsage() * 4, electricBlock.getUsage(), notExternal, ConstantPredicates.alwaysTrue(), tile, listener);
+        return new MachineEnergyContainer<>(electricBlock.getUsage() * 4, electricBlock.getUsage(), notExternal, ConstantPredicatesBase.alwaysTrue(), tile, listener);
     }
 
-    public static <TILE extends TileEntityMekanism> MachineEnergyContainer<TILE> internal(TILE tile, @Nullable IContentsListener listener) {
+    public static <TILE extends TileEntityMekanismBase> MachineEnergyContainer<TILE> internal(TILE tile, @Nullable IContentsListener listener) {
         AttributeEnergy electricBlock = validateBlock(tile);
         return new MachineEnergyContainer<>(electricBlock.getUsage() * 4, electricBlock.getUsage(), internalOnly, internalOnly, tile, listener);
     }
 
-    public static AttributeEnergy validateBlock(TileEntityMekanism tile) {
+    public static AttributeEnergy validateBlock(TileEntityMekanismBase tile) {
         Objects.requireNonNull(tile, "Tile cannot be null");
         AttributeEnergy attributeEnergy = Attribute.get(tile.getBlockHolder(), AttributeEnergy.class);
         if (attributeEnergy == null) {

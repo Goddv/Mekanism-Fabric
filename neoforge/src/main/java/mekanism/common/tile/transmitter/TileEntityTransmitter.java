@@ -61,6 +61,7 @@ public abstract class TileEntityTransmitter extends CapabilityTileEntity impleme
 
     public static final ModelProperty<TransmitterModelData> TRANSMITTER_PROPERTY = new ModelProperty<>();
 
+    private final Holder<Block> blockProvider;
     private final Transmitter<?, ?, ?> transmitter;
     private boolean forceUpdate = true;
     private boolean loaded = false;
@@ -68,8 +69,14 @@ public abstract class TileEntityTransmitter extends CapabilityTileEntity impleme
 
     public TileEntityTransmitter(Holder<Block> blockProvider, BlockPos pos, BlockState state) {
         super(((IHasTileEntity<? extends TileEntityTransmitter>) blockProvider.value()).getTileType(), pos, state);
+        this.blockProvider = blockProvider;
         this.transmitter = createTransmitter(blockProvider);
         cacheCoord();
+    }
+
+    @Override
+    public Holder<Block> getBlockHolder() {
+        return blockProvider;
     }
 
     protected abstract Transmitter<?, ?, ?> createTransmitter(Holder<Block> blockProvider);
@@ -92,7 +99,8 @@ public abstract class TileEntityTransmitter extends CapabilityTileEntity impleme
 
     public abstract TransmitterType getTransmitterType();
 
-    protected void onUpdateServer() {
+    @Override
+    protected boolean onUpdateServer() {
         if (markJoined) {
             onWorldJoin(false);
             markJoined = false;
@@ -101,6 +109,8 @@ public abstract class TileEntityTransmitter extends CapabilityTileEntity impleme
             getTransmitter().refreshConnections();
             forceUpdate = false;
         }
+        //Transmitters handle their own update packets; the machine-style "needs update packet" flag is always false here.
+        return false;
     }
 
     public static void tickServer(Level level, BlockPos pos, BlockState state, TileEntityTransmitter transmitter) {

@@ -54,9 +54,9 @@ public class TileEntityUniversalCable extends TileEntityTransmitter implements I
     }
 
     @Override
-    protected void onUpdateServer() {
+    protected boolean onUpdateServer() {
         getTransmitter().pullFromAcceptors();
-        super.onUpdateServer();
+        return super.onUpdateServer();
     }
 
     @Override
@@ -87,7 +87,10 @@ public class TileEntityUniversalCable extends TileEntityTransmitter implements I
         }
     }
 
-    private List<IEnergyContainer> getEnergyContainers(@Nullable Direction side) {
+    //Made public (was private) + an override of the loader-neutral seam now that TileEntityMekanismBase declares it;
+    //body unchanged. Capability exposure still goes through the energyHandlerManager resolver, not this method.
+    @Override
+    public List<IEnergyContainer> getEnergyContainers(@Nullable Direction side) {
         return energyHandlerManager.getContainers(side);
     }
 

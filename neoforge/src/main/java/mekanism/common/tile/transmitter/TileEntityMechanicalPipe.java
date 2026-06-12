@@ -54,9 +54,9 @@ public class TileEntityMechanicalPipe extends TileEntityTransmitter implements I
     }
 
     @Override
-    protected void onUpdateServer() {
+    protected boolean onUpdateServer() {
         getTransmitter().pullFromAcceptors();
-        super.onUpdateServer();
+        return super.onUpdateServer();
     }
 
     @Override
@@ -87,7 +87,10 @@ public class TileEntityMechanicalPipe extends TileEntityTransmitter implements I
         }
     }
 
-    private List<IExtendedFluidTank> getFluidTanks(@Nullable Direction side) {
+    //Made public (was private) + an override of the loader-neutral seam now that TileEntityMekanismBase declares it;
+    //body unchanged. Capability exposure still goes through the fluidHandlerManager resolver, not this method.
+    @Override
+    public List<IExtendedFluidTank> getFluidTanks(@Nullable Direction side) {
         return fluidHandlerManager.getContainers(side);
     }
 

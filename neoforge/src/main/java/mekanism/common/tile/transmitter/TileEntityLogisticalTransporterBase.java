@@ -44,9 +44,10 @@ public abstract class TileEntityLogisticalTransporterBase extends TileEntityTran
     }
 
     @Override
-    public void onUpdateServer() {
-        super.onUpdateServer();
+    public boolean onUpdateServer() {
+        boolean sendUpdatePacket = super.onUpdateServer();
         getTransmitter().onUpdateServer();
+        return sendUpdatePacket;
     }
 
     @Override

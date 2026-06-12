@@ -2,18 +2,23 @@ package mekanism.common.tile.base;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import mekanism.api.chemical.IChemicalHandler;
+import mekanism.api.chemical.IChemicalTank;
 import mekanism.api.chemical.ISidedChemicalHandler;
+import mekanism.api.energy.IEnergyContainer;
 import mekanism.api.energy.ISidedStrictEnergyHandler;
 import mekanism.api.fluid.IExtendedFluidTank;
 import mekanism.api.fluid.ISidedFluidHandler;
 import mekanism.common.fluid.NeoFluidStack;
+import mekanism.api.heat.IHeatCapacitor;
 import mekanism.api.heat.IHeatHandler;
 import mekanism.api.heat.ISidedHeatHandler;
+import mekanism.api.inventory.IInventorySlot;
 import mekanism.api.inventory.ISidedItemHandler;
 import mekanism.common.attachments.containers.fluid.AttachedFluids;
 import mekanism.common.block.attribute.Attribute;
@@ -33,6 +38,7 @@ import mekanism.common.capabilities.resolver.manager.HeatHandlerManager;
 import mekanism.common.capabilities.resolver.manager.ICapabilityHandlerManager;
 import mekanism.common.capabilities.resolver.manager.ItemHandlerManager;
 import mekanism.common.registration.ITileHolder;
+import mekanism.common.tile.component.ITileComponent;
 import mekanism.common.tile.component.TileComponentConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -49,7 +55,7 @@ import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class CapabilityTileEntity extends TileEntityUpdateable {
+public abstract class CapabilityTileEntity extends TileEntityMekanismBase {
 
     //Note: The below providers assume that the capability if supported has been added by either addCapabilityResolver or addCapabilityResolvers
     public static final ICapabilityProvider<CapabilityTileEntity, @Nullable Direction, IChemicalHandler> CHEMICAL_HANDLER_PROVIDER = basicCapabilityProvider(Capabilities.CHEMICAL.block());
@@ -143,6 +149,72 @@ public abstract class CapabilityTileEntity extends TileEntityUpdateable {
             heatHandlerManager = null;
         }
         addCapabilityResolvers(managers);
+    }
+
+    //Capability seam: the loader-neutral TileEntityMekanismBase declares these with false/emptyList defaults; here we
+    //override them to read the 5 NeoForge handler managers (verbatim from the former TileEntityMekanism bodies, preserving
+    //each null-check polarity). This is the entire capability exposure surface the base reaches managers through.
+    @Override
+    public boolean hasInventory() {
+        return itemHandlerManager != null && itemHandlerManager.canHandle();
+    }
+
+    @Override
+    public boolean canHandleChemicals() {
+        return chemicalHandlerManager != null && chemicalHandlerManager.canHandle();
+    }
+
+    @Override
+    public boolean canHandleFluid() {
+        return fluidHandlerManager != null && fluidHandlerManager.canHandle();
+    }
+
+    @Override
+    public boolean canHandleEnergy() {
+        return energyHandlerManager != null && energyHandlerManager.canHandle();
+    }
+
+    @Override
+    public boolean canHandleHeat() {
+        return heatHandlerManager != null && heatHandlerManager.canHandle();
+    }
+
+    @NotNull
+    @Override
+    public List<IInventorySlot> getInventorySlots(@Nullable Direction side) {
+        return itemHandlerManager != null ? itemHandlerManager.getContainers(side) : Collections.emptyList();
+    }
+
+    @NotNull
+    @Override
+    public List<IChemicalTank> getChemicalTanks(@Nullable Direction side) {
+        return chemicalHandlerManager == null ? Collections.emptyList() : chemicalHandlerManager.getContainers(side);
+    }
+
+    @NotNull
+    @Override
+    public List<IExtendedFluidTank> getFluidTanks(@Nullable Direction side) {
+        return fluidHandlerManager != null ? fluidHandlerManager.getContainers(side) : Collections.emptyList();
+    }
+
+    @NotNull
+    @Override
+    public List<IEnergyContainer> getEnergyContainers(@Nullable Direction side) {
+        return energyHandlerManager != null ? energyHandlerManager.getContainers(side) : Collections.emptyList();
+    }
+
+    @NotNull
+    @Override
+    public List<IHeatCapacitor> getHeatCapacitors(@Nullable Direction side) {
+        return heatHandlerManager != null ? heatHandlerManager.getContainers(side) : Collections.emptyList();
+    }
+
+    @Override
+    protected void onComponentAdded(ITileComponent component) {
+        //The only loader-coupled branch of the former addComponent: register a config component with the capability cache.
+        if (component instanceof TileComponentConfig config) {
+            addConfigComponent(config);
+        }
     }
 
     //Fluid data-component (de)serialization helpers. Kept on the NeoForge layer because they touch NeoForge FluidStack /
