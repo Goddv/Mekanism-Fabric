@@ -11,8 +11,6 @@ import mekanism.common.block.attribute.Attribute;
 import mekanism.common.block.attribute.AttributeEnergy;
 import mekanism.common.tile.base.TileEntityMekanism;
 import mekanism.common.tile.component.TileComponentUpgrade;
-import mekanism.common.tile.factory.TileEntityFactory;
-import mekanism.common.tile.prefab.TileEntityProgressMachine;
 import mekanism.common.util.MekanismUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -91,13 +89,9 @@ public class MachineEnergyContainer<TILE extends TileEntityMekanism> extends Bas
 
     public void updateMaxEnergy() {
         if (tile.supportsUpgrade(Upgrade.SPEED)) {
-            int bufferMultipler = 4;//4 ticks by default
-            if (tile instanceof TileEntityProgressMachine<?> progressMachine) {
-                bufferMultipler = Math.max(bufferMultipler, progressMachine.ticksRequired);
-            }
-            if (tile instanceof TileEntityFactory<?> factory) {
-                bufferMultipler = factory.tier.processes * bufferMultipler;
-            }
+            //4 ticks by default; progress machines widen to the recipe duration, factories multiply by their process count
+            //(see IEnergyBufferMultiplier overrides — replaces the former instanceof downcasts to the prefab tile classes).
+            int bufferMultipler = tile.getEnergyBufferMultiplier(4);
             setMaxEnergy(getEnergyPerTick() * bufferMultipler);
         } else if (tile.supportsUpgrade(Upgrade.ENERGY)) {
             setMaxEnergy(MekanismUtils.getMaxEnergy(tile, getBaseMaxEnergy()));

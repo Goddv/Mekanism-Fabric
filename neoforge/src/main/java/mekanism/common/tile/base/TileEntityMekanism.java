@@ -98,6 +98,7 @@ import mekanism.common.tile.component.TileComponentConfig;
 import mekanism.common.tile.component.TileComponentSecurity;
 import mekanism.common.tile.component.TileComponentUpgrade;
 import mekanism.common.tile.interfaces.IComparatorSupport;
+import mekanism.common.tile.interfaces.IEnergyBufferMultiplier;
 import mekanism.common.tile.interfaces.ITierUpgradable;
 import mekanism.common.tile.interfaces.ITileActive;
 import mekanism.common.tile.interfaces.ITileDirectional;
@@ -144,7 +145,7 @@ import org.jetbrains.annotations.Nullable;
 //TODO: We need to move the "supports" methods into the source interfaces so that we make sure they get checked before being used
 public abstract class TileEntityMekanism extends CapabilityTileEntity implements IFrequencyHandler, ITileDirectional, IConfigCardAccess, ITileActive, ITileSound,
       ITileRedstone, ISecurityTile, IMekanismInventory, ITileUpgradable, ITierUpgradable, IComparatorSupport, ITrackableContainer, IMekanismFluidHandler,
-      IMekanismStrictEnergyHandler, ITileHeatHandler, IMekanismChemicalHandler, IComputerTile, ITileRadioactive, Nameable {
+      IMekanismStrictEnergyHandler, ITileHeatHandler, IMekanismChemicalHandler, IComputerTile, ITileRadioactive, IEnergyBufferMultiplier, Nameable {
 
     /**
      * The players currently using this block.

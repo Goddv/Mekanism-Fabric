@@ -169,6 +169,12 @@ public abstract class TileEntityFactory<RECIPE extends MekanismRecipe<?>> extend
     }
 
     @Override
+    public int getEnergyBufferMultiplier(int base) {
+        //A factory runs tier.processes operations in parallel, scaling its energy buffer accordingly.
+        return base * tier.processes;
+    }
+
+    @Override
     protected void presetVariables() {
         super.presetVariables();
         tier = Attribute.getTier(getBlockHolder(), FactoryTier.class);

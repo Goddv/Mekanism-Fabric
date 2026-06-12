@@ -51,6 +51,12 @@ public abstract class TileEntityProgressMachine<RECIPE extends MekanismRecipe<?>
     }
 
     @Override
+    public int getEnergyBufferMultiplier(int base) {
+        //A progress machine sizes its energy buffer to (at least) the recipe duration.
+        return Math.max(base, ticksRequired);
+    }
+
+    @Override
     public int getSavedOperatingTicks(int cacheIndex) {
         return getOperatingTicks();
     }
