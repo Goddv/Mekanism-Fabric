@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import mekanism.api.recipes.ChemicalChemicalToChemicalRecipe;
@@ -32,7 +31,6 @@ import mekanism.api.recipes.vanilla_input.SingleChemicalRecipeInput;
 import mekanism.api.recipes.vanilla_input.SingleFluidChemicalRecipeInput;
 import mekanism.api.recipes.vanilla_input.SingleFluidRecipeInput;
 import mekanism.api.recipes.vanilla_input.SingleItemChemicalRecipeInput;
-import mekanism.client.MekanismClient;
 import mekanism.common.Mekanism;
 import mekanism.common.recipe.lookup.cache.IInputRecipeCache;
 import mekanism.common.recipe.lookup.cache.InputRecipeCache.DoubleItem;
@@ -62,9 +60,7 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.level.Level;
-import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -192,35 +188,13 @@ public class MekanismRecipeType<VANILLA_INPUT extends RecipeInput, RECIPE extend
         return inputCache;
     }
 
-    @Nullable
-    private static RegistryAccess tryGetRegistryAccess() {
-        //Try to get a fallback world if we are in a context that may not have one
-        //If we are on the client get the client's world, if we are on the server get the current server's world
-        if (FMLEnvironment.getDist().isClient()) {
-            Level clientWorld = MekanismClient.tryGetClientWorld();
-            return clientWorld != null ? clientWorld.registryAccess() : null;
-        }
-        return Objects.requireNonNull(ServerLifecycleHooks.getCurrentServer(), "Server not running?").registryAccess();
-    }
-
     @NotNull
     @Override
     public List<RecipeHolder<RECIPE>> getRecipes(@Nullable Level world) {
-        RecipeMap recipeMap = null;
-        if (!(world instanceof ServerLevel serverLevel)) {
-            //Try to get a fallback world if we are in a context that may not have one
-            //If we are on the client get the client's world, if we are on the server get the current server's world
-            if (FMLEnvironment.getDist().isClient()) {
-                recipeMap = MekanismClient.clientRecipes();
-            } else {
-                MinecraftServer currentServer = ServerLifecycleHooks.getCurrentServer();
-                if (currentServer != null) {
-                    recipeMap = currentServer.getRecipeManager().recipeMap();
-                }
-            }
-        } else {
-            recipeMap = serverLevel.recipeAccess().recipeMap();
-        }
+        //Loader-neutral fallback-RecipeMap acquisition (the FMLEnvironment/MekanismClient/ServerLifecycleHooks +
+        //ServerLevel.recipeAccess().recipeMap() logic relocated verbatim into NeoRecipeWorldAccess); recipeMap() is a
+        //NeoForge addition absent on Fabric, so it lives behind the seam.
+        RecipeMap recipeMap = IRecipeWorldAccess.INSTANCE.activeRecipeMap(world);
         if (recipeMap == null) {
             //If we failed, then return no recipes
             return Collections.emptyList();

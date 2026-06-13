@@ -121,7 +121,7 @@ public final class ChemicalStack implements ChemicalInstance, IHasTextComponent,
     /**
      * A standard codec for chemical stacks that always deserializes with a fixed amount, and does not accept empty stacks.
      * <p>
-     * Chemical equivalent of {@link ItemStack#SINGLE_ITEM_CODEC}. and {@link net.neoforged.neoforge.fluids.FluidStack#fixedAmountCodec(int)}
+     * Chemical equivalent of {@link ItemStack#SINGLE_ITEM_CODEC} and the fluid-stack fixed-amount codec.
      *
      * @since 10.6.0
      */
