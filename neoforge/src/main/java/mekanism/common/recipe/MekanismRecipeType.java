@@ -2,8 +2,6 @@ package mekanism.common.recipe;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import mekanism.api.recipes.ChemicalChemicalToChemicalRecipe;
@@ -61,11 +59,9 @@ import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.registries.DeferredHolder;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class MekanismRecipeType<VANILLA_INPUT extends RecipeInput, RECIPE extends MekanismRecipe<VANILLA_INPUT>, INPUT_CACHE extends IInputRecipeCache>
-      implements RecipeType<RECIPE>, IMekanismRecipeTypeProvider<VANILLA_INPUT, RECIPE, INPUT_CACHE> {
+      extends MekanismRecipeTypeBase<VANILLA_INPUT, RECIPE, INPUT_CACHE> {
 
     public static final RecipeTypeDeferredRegister RECIPE_TYPES = new RecipeTypeDeferredRegister(Mekanism.MODID);
 
@@ -124,7 +120,7 @@ public class MekanismRecipeType<VANILLA_INPUT extends RecipeInput, RECIPE extend
     private static <VANILLA_INPUT extends RecipeInput, RECIPE extends MekanismRecipe<VANILLA_INPUT>, INPUT_CACHE extends IInputRecipeCache>
     RecipeTypeRegistryObject<VANILLA_INPUT, RECIPE, INPUT_CACHE> register(
           Identifier name,
-          Function<MekanismRecipeType<VANILLA_INPUT, RECIPE, INPUT_CACHE>, INPUT_CACHE> inputCacheCreator
+          Function<MekanismRecipeTypeBase<VANILLA_INPUT, RECIPE, INPUT_CACHE>, INPUT_CACHE> inputCacheCreator
     ) {
         if (!Mekanism.MODID.equals(name.getNamespace())) {
             throw new IllegalStateException("Name must be in " + Mekanism.MODID + " namespace");
@@ -149,83 +145,17 @@ public class MekanismRecipeType<VANILLA_INPUT extends RecipeInput, RECIPE extend
         boolean foundIncompleteRecipes = false;
         for (DeferredHolder<RecipeType<?>, ? extends RecipeType<?>> holder : RECIPE_TYPES.getEntries()) {
             MekanismRecipeType<?, ?, ?> recipeType = (MekanismRecipeType<?, ?, ?>) holder.value();
-            foundIncompleteRecipes |= recipeType.checkMyIncompleteRecipes(recipeManager);
+            foundIncompleteRecipes |= recipeType.checkMyIncompleteRecipes(recipeManager.recipeMap());
         }
         return foundIncompleteRecipes;
     }
 
-    private List<RecipeHolder<RECIPE>> cachedRecipes = Collections.emptyList();
-    private final Identifier registryName;
-    private final INPUT_CACHE inputCache;
-
-    private MekanismRecipeType(Identifier name, Function<MekanismRecipeType<VANILLA_INPUT, RECIPE, INPUT_CACHE>, INPUT_CACHE> inputCacheCreator) {
-        this.registryName = name;
-        this.inputCache = inputCacheCreator.apply(this);
+    private MekanismRecipeType(Identifier name, Function<MekanismRecipeTypeBase<VANILLA_INPUT, RECIPE, INPUT_CACHE>, INPUT_CACHE> inputCacheCreator) {
+        super(name, inputCacheCreator);
     }
 
     @Override
-    public String toString() {
-        return registryName.toString();
-    }
-
-    @Override
-    public Identifier getRegistryName() {
-        return registryName;
-    }
-
-    @Override
-    public MekanismRecipeType<VANILLA_INPUT, RECIPE, INPUT_CACHE> getRecipeType() {
-        return this;
-    }
-
-    private void clearCaches() {
-        cachedRecipes = Collections.emptyList();
-        inputCache.clear();
-    }
-
-    @Override
-    public INPUT_CACHE getInputCache() {
-        return inputCache;
-    }
-
-    @NotNull
-    @Override
-    public List<RecipeHolder<RECIPE>> getRecipes(@Nullable Level world) {
-        //Loader-neutral fallback-RecipeMap acquisition (the FMLEnvironment/MekanismClient/ServerLifecycleHooks +
-        //ServerLevel.recipeAccess().recipeMap() logic relocated verbatim into NeoRecipeWorldAccess); recipeMap() is a
-        //NeoForge addition absent on Fabric, so it lives behind the seam.
-        RecipeMap recipeMap = IRecipeWorldAccess.INSTANCE.activeRecipeMap(world);
-        if (recipeMap == null) {
-            //If we failed, then return no recipes
-            return Collections.emptyList();
-        }
-        return getRecipes(recipeMap);
-    }
-
-    @NotNull
-    @Override
-    public List<RecipeHolder<RECIPE>> getRecipes(RecipeMap recipeMap) {
-        if (cachedRecipes.isEmpty()) {
-            //Note: This is a fresh immutable list that gets returned
-            Collection<RecipeHolder<RECIPE>> recipes = getRecipesUncached(recipeMap);
-            //Make the list of cached recipes immutable and filter out any incomplete recipes
-            // as there is no reason to potentially look the partial complete piece up if
-            // the other portion of the recipe is incomplete
-            cachedRecipes = recipes.stream()
-                  .filter(recipe -> !recipe.value().isIncomplete())
-                  .toList();
-        }
-        return cachedRecipes;
-    }
-
-    /**
-     * Get a list of recipes directly from the manager
-     *
-     * @param recipeMap The recipes map
-     */
-    @NotNull
-    private Collection<RecipeHolder<RECIPE>> getRecipesUncached(RecipeMap recipeMap) {
-        Collection<RecipeHolder<RECIPE>> recipes = recipeMap.byType(this);
+    protected Collection<RecipeHolder<RECIPE>> mergeGeneratedRecipes(RecipeMap recipeMap, Collection<RecipeHolder<RECIPE>> recipes) {
         if (this == SMELTING.get()) {
             //Ensure the recipes can be modified
             recipes = new ArrayList<>(recipes);
@@ -241,27 +171,6 @@ public class MekanismRecipeType<VANILLA_INPUT extends RecipeInput, RECIPE extend
             }
         }
         return recipes;
-    }
-
-    @SuppressWarnings("unchecked")
-    private RECIPE castRecipe(MekanismRecipe<?> o) {
-        if (o.getType() != this) {
-            throw new IllegalArgumentException("Wrong recipe type");
-        }
-        return (RECIPE) o;
-    }
-
-    private boolean checkMyIncompleteRecipes(RecipeManager recipeManager) {
-        boolean incomplete = false;
-        for (RecipeHolder<RECIPE> holder : getRecipesUncached(recipeManager.recipeMap())) {
-            if (!holder.value().isIncomplete()) {
-                continue;
-            }
-            Mekanism.logger.error("Incomplete recipe detected: {}", holder.id());
-            incomplete = true;
-            holder.value().logMissingTags();
-        }
-        return incomplete;
     }
 
     /**

@@ -8,7 +8,7 @@ import java.util.function.Predicate;
 import mekanism.api.functions.ConstantPredicates;
 import mekanism.api.recipes.MekanismRecipe;
 import mekanism.api.recipes.ingredients.InputIngredient;
-import mekanism.common.recipe.MekanismRecipeType;
+import mekanism.common.recipe.MekanismRecipeTypeBase;
 import mekanism.common.recipe.lookup.cache.type.IInputCache;
 import net.minecraft.core.TypedInstance;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -26,7 +26,7 @@ public abstract class SingleInputRecipeCache<TYPE, STACK extends TypedInstance<T
     private final Function<RECIPE, INGREDIENT> inputExtractor;
     private final CACHE cache;
 
-    protected SingleInputRecipeCache(MekanismRecipeType<?, RECIPE, ?> recipeType, Function<RECIPE, INGREDIENT> inputExtractor, CACHE cache) {
+    protected SingleInputRecipeCache(MekanismRecipeTypeBase<?, RECIPE, ?> recipeType, Function<RECIPE, INGREDIENT> inputExtractor, CACHE cache) {
         super(recipeType);
         this.inputExtractor = inputExtractor;
         this.cache = cache;

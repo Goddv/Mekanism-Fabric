@@ -6,7 +6,7 @@ import java.util.Set;
 import java.util.function.Function;
 import mekanism.api.recipes.MekanismRecipe;
 import mekanism.api.recipes.ingredients.InputIngredient;
-import mekanism.common.recipe.MekanismRecipeType;
+import mekanism.common.recipe.MekanismRecipeTypeBase;
 import mekanism.common.recipe.lookup.cache.type.IInputCache;
 import net.minecraft.core.TypedInstance;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -33,7 +33,7 @@ public abstract class TripleInputRecipeCache<HOLDER_A, INPUT_A extends TypedInst
     private final CACHE_B cacheB;
     private final CACHE_C cacheC;
 
-    protected TripleInputRecipeCache(MekanismRecipeType<?, RECIPE, ?> recipeType, Function<RECIPE, INGREDIENT_A> inputAExtractor, CACHE_A cacheA,
+    protected TripleInputRecipeCache(MekanismRecipeTypeBase<?, RECIPE, ?> recipeType, Function<RECIPE, INGREDIENT_A> inputAExtractor, CACHE_A cacheA,
           Function<RECIPE, INGREDIENT_B> inputBExtractor, CACHE_B cacheB, Function<RECIPE, INGREDIENT_C> inputCExtractor, CACHE_C cacheC) {
         super(recipeType);
         this.inputAExtractor = inputAExtractor;

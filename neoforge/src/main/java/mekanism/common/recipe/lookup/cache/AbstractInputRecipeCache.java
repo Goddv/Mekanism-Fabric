@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.function.Function;
 import mekanism.api.recipes.MekanismRecipe;
 import mekanism.api.recipes.ingredients.InputIngredient;
-import mekanism.common.recipe.MekanismRecipeType;
+import mekanism.common.recipe.MekanismRecipeTypeBase;
 import mekanism.common.recipe.lookup.cache.type.IInputCache;
 import net.minecraft.core.TypedInstance;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -17,10 +17,10 @@ import org.jetbrains.annotations.Nullable;
  */
 public abstract class AbstractInputRecipeCache<RECIPE extends MekanismRecipe<?>> implements IInputRecipeCache {
 
-    protected final MekanismRecipeType<?, RECIPE, ?> recipeType;
+    protected final MekanismRecipeTypeBase<?, RECIPE, ?> recipeType;
     protected boolean initialized;
 
-    protected AbstractInputRecipeCache(MekanismRecipeType<?, RECIPE, ?> recipeType) {
+    protected AbstractInputRecipeCache(MekanismRecipeTypeBase<?, RECIPE, ?> recipeType) {
         this.recipeType = recipeType;
     }
 

@@ -7,7 +7,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import mekanism.api.recipes.MekanismRecipe;
 import mekanism.api.recipes.ingredients.InputIngredient;
-import mekanism.common.recipe.MekanismRecipeType;
+import mekanism.common.recipe.MekanismRecipeTypeBase;
 import mekanism.common.recipe.lookup.cache.type.IInputCache;
 import net.minecraft.core.TypedInstance;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -25,7 +25,7 @@ public abstract class EitherSideInputRecipeCache<TYPE, STACK extends TypedInstan
     private final Function<RECIPE, INGREDIENT> inputBExtractor;
     private final CACHE cache;
 
-    protected EitherSideInputRecipeCache(MekanismRecipeType<?, RECIPE, ?> recipeType, Function<RECIPE, INGREDIENT> inputAExtractor,
+    protected EitherSideInputRecipeCache(MekanismRecipeTypeBase<?, RECIPE, ?> recipeType, Function<RECIPE, INGREDIENT> inputAExtractor,
           Function<RECIPE, INGREDIENT> inputBExtractor, CACHE cache) {
         super(recipeType);
         this.inputAExtractor = inputAExtractor;

@@ -6,7 +6,7 @@ import java.util.Set;
 import mekanism.api.chemical.Chemical;
 import mekanism.api.chemical.ChemicalStack;
 import mekanism.api.recipes.RotaryRecipe;
-import mekanism.common.recipe.MekanismRecipeType;
+import mekanism.common.recipe.MekanismRecipeTypeBase;
 import mekanism.common.recipe.lookup.cache.type.ChemicalInputCache;
 import mekanism.common.recipe.lookup.cache.type.FluidInputCache;
 import net.minecraft.core.TypedInstance;
@@ -27,7 +27,7 @@ public class RotaryInputRecipeCache extends AbstractInputRecipeCache<RotaryRecip
     private final Set<RotaryRecipe> complexChemicalInputRecipes = new HashSet<>();
     private final Set<RotaryRecipe> complexFluidInputRecipes = new HashSet<>();
 
-    public RotaryInputRecipeCache(MekanismRecipeType<?, RotaryRecipe, ?> recipeType) {
+    public RotaryInputRecipeCache(MekanismRecipeTypeBase<?, RotaryRecipe, ?> recipeType) {
         super(recipeType);
     }
 

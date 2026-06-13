@@ -6,7 +6,7 @@ import mekanism.api.recipes.MekanismRecipe;
 import mekanism.api.text.IHasTranslationKey;
 import mekanism.api.text.TextComponentUtil;
 import mekanism.common.recipe.IMekanismRecipeTypeProvider;
-import mekanism.common.recipe.MekanismRecipeType;
+import mekanism.common.recipe.MekanismRecipeTypeBase;
 import mekanism.common.recipe.lookup.cache.IInputRecipeCache;
 import mekanism.common.registration.impl.RecipeTypeRegistryObject;
 import net.minecraft.network.chat.Component;
@@ -43,7 +43,7 @@ public record SimpleRVRecipeType<VANILLA_INPUT extends RecipeInput, RECIPE exten
     }
 
     @Override
-    public MekanismRecipeType<VANILLA_INPUT, RECIPE, INPUT_CACHE> getRecipeType() {
+    public MekanismRecipeTypeBase<VANILLA_INPUT, RECIPE, INPUT_CACHE> getRecipeType() {
         return vanillaProvider.getRecipeType();
     }
 }

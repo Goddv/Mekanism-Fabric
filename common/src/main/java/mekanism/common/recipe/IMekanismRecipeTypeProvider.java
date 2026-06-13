@@ -24,7 +24,7 @@ public interface IMekanismRecipeTypeProvider<VANILLA_INPUT extends RecipeInput, 
         return getRecipeType().getRegistryName();
     }
 
-    MekanismRecipeType<VANILLA_INPUT, RECIPE, INPUT_CACHE> getRecipeType();
+    MekanismRecipeTypeBase<VANILLA_INPUT, RECIPE, INPUT_CACHE> getRecipeType();
 
     default INPUT_CACHE getInputCache() {
         return getRecipeType().getInputCache();

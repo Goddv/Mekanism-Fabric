@@ -8,7 +8,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import mekanism.api.recipes.MekanismRecipe;
 import mekanism.api.recipes.ingredients.InputIngredient;
-import mekanism.common.recipe.MekanismRecipeType;
+import mekanism.common.recipe.MekanismRecipeTypeBase;
 import mekanism.common.recipe.lookup.cache.type.IInputCache;
 import net.minecraft.core.TypedInstance;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -30,7 +30,7 @@ public abstract class DoubleInputRecipeCache<HOLDER_A, INPUT_A extends TypedInst
     private final CACHE_A cacheA;
     private final CACHE_B cacheB;
 
-    protected DoubleInputRecipeCache(MekanismRecipeType<?, RECIPE, ?> recipeType, Function<RECIPE, INGREDIENT_A> inputAExtractor, CACHE_A cacheA,
+    protected DoubleInputRecipeCache(MekanismRecipeTypeBase<?, RECIPE, ?> recipeType, Function<RECIPE, INGREDIENT_A> inputAExtractor, CACHE_A cacheA,
           Function<RECIPE, INGREDIENT_B> inputBExtractor, CACHE_B cacheB) {
         super(recipeType);
         this.inputAExtractor = inputAExtractor;
@@ -237,7 +237,7 @@ public abstract class DoubleInputRecipeCache<HOLDER_A, INPUT_A extends TypedInst
     public abstract static class DoubleSameInputRecipeCache<TYPE, STACK extends TypedInstance<TYPE>, INGREDIENT extends InputIngredient<TYPE, STACK>, RECIPE extends MekanismRecipe<?> & BiPredicate<STACK, STACK>,
           CACHE extends IInputCache<TYPE, STACK, INGREDIENT, RECIPE>> extends DoubleInputRecipeCache<TYPE, STACK, INGREDIENT, TYPE, STACK, INGREDIENT, RECIPE, CACHE, CACHE> {
 
-        protected DoubleSameInputRecipeCache(MekanismRecipeType<?, RECIPE, ?> recipeType, Function<RECIPE, INGREDIENT> inputAExtractor,
+        protected DoubleSameInputRecipeCache(MekanismRecipeTypeBase<?, RECIPE, ?> recipeType, Function<RECIPE, INGREDIENT> inputAExtractor,
               Function<RECIPE, INGREDIENT> inputBExtractor, Supplier<CACHE> cacheSupplier) {
             super(recipeType, inputAExtractor, cacheSupplier.get(), inputBExtractor, cacheSupplier.get());
         }
