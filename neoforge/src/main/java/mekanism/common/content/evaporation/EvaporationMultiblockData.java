@@ -12,7 +12,7 @@ import mekanism.api.heat.HeatAPI;
 import mekanism.api.recipes.FluidToFluidRecipe;
 import mekanism.api.recipes.cache.CachedRecipe;
 import mekanism.api.recipes.cache.CachedRecipe.OperationTracker.RecipeError;
-import mekanism.api.recipes.cache.OneInputCachedRecipe;
+import mekanism.api.recipes.cache.OneInputCachedRecipeFactory;
 import mekanism.api.recipes.inputs.IInputHandler;
 import mekanism.api.recipes.inputs.InputHelper;
 import mekanism.api.recipes.outputs.IOutputHandler;
@@ -254,7 +254,7 @@ public class EvaporationMultiblockData extends MultiblockData implements IValveH
     @NotNull
     @Override
     public CachedRecipe<FluidToFluidRecipe> createNewCachedRecipe(@NotNull FluidToFluidRecipe recipe, int cacheIndex) {
-        return OneInputCachedRecipe.fluidToFluid(recipe, recheckAllRecipeErrors, inputHandler, outputHandler)
+        return OneInputCachedRecipeFactory.fluidToFluid(recipe, recheckAllRecipeErrors, inputHandler, outputHandler)
               .setErrorsChanged(errors -> {
                   for (int i = 0; i < trackedErrors.length; i++) {
                       trackedErrors[i] = errors.contains(TRACKED_ERROR_TYPES.get(i));

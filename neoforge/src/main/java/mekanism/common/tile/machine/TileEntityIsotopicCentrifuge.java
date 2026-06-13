@@ -13,7 +13,7 @@ import mekanism.api.functions.ConstantPredicates;
 import mekanism.api.recipes.ChemicalToChemicalRecipe;
 import mekanism.api.recipes.cache.CachedRecipe;
 import mekanism.api.recipes.cache.CachedRecipe.OperationTracker.RecipeError;
-import mekanism.api.recipes.cache.OneInputCachedRecipe;
+import mekanism.api.recipes.cache.OneInputCachedRecipeFactory;
 import mekanism.api.recipes.inputs.IInputHandler;
 import mekanism.api.recipes.inputs.InputHelper;
 import mekanism.api.recipes.outputs.IOutputHandler;
@@ -171,7 +171,7 @@ public class TileEntityIsotopicCentrifuge extends TileEntityRecipeMachine<Chemic
     @NotNull
     @Override
     public CachedRecipe<ChemicalToChemicalRecipe> createNewCachedRecipe(@NotNull ChemicalToChemicalRecipe recipe, int cacheIndex) {
-        return OneInputCachedRecipe.chemicalToChemical(recipe, recheckAllRecipeErrors, inputHandler, outputHandler)
+        return OneInputCachedRecipeFactory.chemicalToChemical(recipe, recheckAllRecipeErrors, inputHandler, outputHandler)
               .setErrorsChanged(this::onErrorsChanged)
               .setCanHolderFunction(this::canFunction)
               .setActive(this::setActive)

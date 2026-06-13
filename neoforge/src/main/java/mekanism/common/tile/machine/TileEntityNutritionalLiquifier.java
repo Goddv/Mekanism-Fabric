@@ -9,7 +9,7 @@ import mekanism.api.recipes.ItemStackToFluidOptionalItemRecipe.FluidOptionalItem
 import mekanism.api.recipes.basic.BasicItemStackToFluidOptionalItemRecipe;
 import mekanism.api.recipes.cache.CachedRecipe;
 import mekanism.api.recipes.cache.CachedRecipe.OperationTracker.RecipeError;
-import mekanism.api.recipes.cache.OneInputCachedRecipe;
+import mekanism.api.recipes.cache.OneInputCachedRecipeFactory;
 import mekanism.api.recipes.ingredients.creator.IngredientCreatorAccess;
 import mekanism.api.recipes.inputs.IInputHandler;
 import mekanism.api.recipes.inputs.InputHelper;
@@ -213,7 +213,7 @@ public class TileEntityNutritionalLiquifier extends TileEntityProgressMachine<Ba
     @NotNull
     @Override
     public CachedRecipe<BasicItemStackToFluidOptionalItemRecipe> createNewCachedRecipe(@NotNull BasicItemStackToFluidOptionalItemRecipe recipe, int cacheIndex) {
-        return OneInputCachedRecipe.itemToFluidOptionalItem(recipe, recheckAllRecipeErrors, inputHandler, outputHandler)
+        return OneInputCachedRecipeFactory.itemToFluidOptionalItem(recipe, recheckAllRecipeErrors, inputHandler, outputHandler)
               .setErrorsChanged(this::onErrorsChanged)
               .setCanHolderFunction(this::canFunction)
               .setActive(this::setActive)

@@ -7,7 +7,7 @@ import mekanism.api.recipes.SawmillRecipe;
 import mekanism.api.recipes.SawmillRecipe.ChanceOutput;
 import mekanism.api.recipes.cache.CachedRecipe;
 import mekanism.api.recipes.cache.CachedRecipe.OperationTracker.RecipeError;
-import mekanism.api.recipes.cache.OneInputCachedRecipe;
+import mekanism.api.recipes.cache.OneInputCachedRecipeFactory;
 import mekanism.api.recipes.inputs.IInputHandler;
 import mekanism.api.recipes.inputs.InputHelper;
 import mekanism.api.recipes.outputs.IOutputHandler;
@@ -133,7 +133,7 @@ public class TileEntityPrecisionSawmill extends TileEntityProgressMachine<Sawmil
     @NotNull
     @Override
     public CachedRecipe<SawmillRecipe> createNewCachedRecipe(@NotNull SawmillRecipe recipe, int cacheIndex) {
-        return OneInputCachedRecipe.sawing(recipe, recheckAllRecipeErrors, inputHandler, outputHandler)
+        return OneInputCachedRecipeFactory.sawing(recipe, recheckAllRecipeErrors, inputHandler, outputHandler)
               .setErrorsChanged(this::onErrorsChanged)
               .setCanHolderFunction(this::canFunction)
               .setActive(this::setActive)

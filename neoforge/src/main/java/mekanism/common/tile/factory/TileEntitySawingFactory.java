@@ -9,7 +9,7 @@ import mekanism.api.recipes.SawmillRecipe;
 import mekanism.api.recipes.SawmillRecipe.ChanceOutput;
 import mekanism.api.recipes.cache.CachedRecipe;
 import mekanism.api.recipes.cache.CachedRecipe.OperationTracker.RecipeError;
-import mekanism.api.recipes.cache.OneInputCachedRecipe;
+import mekanism.api.recipes.cache.OneInputCachedRecipeFactory;
 import mekanism.api.recipes.inputs.IInputHandler;
 import mekanism.api.recipes.inputs.InputHelper;
 import mekanism.api.recipes.outputs.IOutputHandler;
@@ -155,7 +155,7 @@ public class TileEntitySawingFactory extends TileEntityFactory<SawmillRecipe> im
     @NotNull
     @Override
     public CachedRecipe<SawmillRecipe> createNewCachedRecipe(@NotNull SawmillRecipe recipe, int cacheIndex) {
-        return OneInputCachedRecipe.sawing(recipe, recheckAllRecipeErrors[cacheIndex], inputHandlers[cacheIndex], outputHandlers[cacheIndex])
+        return OneInputCachedRecipeFactory.sawing(recipe, recheckAllRecipeErrors[cacheIndex], inputHandlers[cacheIndex], outputHandlers[cacheIndex])
               .setErrorsChanged(errors -> errorTracker.onErrorsChanged(errors, cacheIndex))
               .setCanHolderFunction(this::canFunction)
               .setActive(active -> setActiveState(active, cacheIndex))

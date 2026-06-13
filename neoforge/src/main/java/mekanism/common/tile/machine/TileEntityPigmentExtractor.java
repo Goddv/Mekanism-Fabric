@@ -10,7 +10,7 @@ import mekanism.api.inventory.IInventorySlot;
 import mekanism.api.recipes.ItemStackToChemicalRecipe;
 import mekanism.api.recipes.cache.CachedRecipe;
 import mekanism.api.recipes.cache.CachedRecipe.OperationTracker.RecipeError;
-import mekanism.api.recipes.cache.OneInputCachedRecipe;
+import mekanism.api.recipes.cache.OneInputCachedRecipeFactory;
 import mekanism.api.recipes.inputs.IInputHandler;
 import mekanism.api.recipes.inputs.InputHelper;
 import mekanism.api.recipes.outputs.IOutputHandler;
@@ -153,7 +153,7 @@ public class TileEntityPigmentExtractor extends TileEntityProgressMachine<ItemSt
     @NotNull
     @Override
     public CachedRecipe<ItemStackToChemicalRecipe> createNewCachedRecipe(@NotNull ItemStackToChemicalRecipe recipe, int cacheIndex) {
-        return OneInputCachedRecipe.itemToChemical(recipe, recheckAllRecipeErrors, inputHandler, outputHandler)
+        return OneInputCachedRecipeFactory.itemToChemical(recipe, recheckAllRecipeErrors, inputHandler, outputHandler)
               .setErrorsChanged(this::onErrorsChanged)
               .setCanHolderFunction(this::canFunction)
               .setActive(this::setActive)
