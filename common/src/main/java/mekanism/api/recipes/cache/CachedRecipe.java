@@ -16,7 +16,7 @@ import mekanism.api.Action;
 import mekanism.api.AutomationType;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.energy.IEnergyContainer;
-import mekanism.api.functions.ConstantPredicates;
+import mekanism.api.functions.ConstantPredicatesBase;
 import mekanism.api.recipes.MekanismRecipe;
 import mekanism.api.recipes.cache.CachedRecipe.OperationTracker.RecipeError;
 
@@ -50,7 +50,7 @@ public abstract class CachedRecipe<RECIPE extends MekanismRecipe<?>> {
      *
      * @implNote Defaults to returning {@code true}.
      */
-    private BooleanSupplier canHolderFunction = ConstantPredicates.ALWAYS_TRUE;
+    private BooleanSupplier canHolderFunction = ConstantPredicatesBase.ALWAYS_TRUE;
     /**
      * Called to set the active state of the holder.
      *
@@ -78,13 +78,13 @@ public abstract class CachedRecipe<RECIPE extends MekanismRecipe<?>> {
      *
      * @implNote Defaults to not requiring any energy.
      */
-    private LongSupplier perTickEnergy = ConstantPredicates.ZERO_LONG;
+    private LongSupplier perTickEnergy = ConstantPredicatesBase.ZERO_LONG;
     /**
      * Gets the energy currently stored in the machine/object executing this {@link CachedRecipe}.
      *
      * @implNote Defaults to returning no energy stored.
      */
-    private LongSupplier storedEnergy = ConstantPredicates.ZERO_LONG;
+    private LongSupplier storedEnergy = ConstantPredicatesBase.ZERO_LONG;
     /**
      * Called to consume energy.
      *
