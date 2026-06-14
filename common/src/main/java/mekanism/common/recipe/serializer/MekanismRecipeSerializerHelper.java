@@ -5,8 +5,10 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.function.BiFunction;
 import mekanism.api.SerializationConstants;
 import mekanism.api.chemical.ChemicalStack;
+import mekanism.api.recipes.basic.BasicChemicalCrystallizerRecipe;
 import mekanism.api.recipes.basic.BasicItemStackToChemicalRecipe;
 import mekanism.api.recipes.basic.BasicItemStackToItemStackRecipe;
+import mekanism.api.recipes.ingredients.ChemicalStackIngredient;
 import mekanism.api.recipes.ingredients.ItemStackIngredient;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStackTemplate;
@@ -54,6 +56,26 @@ public final class MekanismRecipeSerializerHelper {
         ).apply(instance, factory)), StreamCodec.composite(
               ItemStackIngredient.STREAM_CODEC, BasicItemStackToChemicalRecipe::getInput,
               ChemicalStack.STREAM_CODEC, BasicItemStackToChemicalRecipe::getOutputRaw,
+              factory
+        ));
+    }
+
+    /**
+     * Loader-neutral chemical&rarr;item serializer factory for the Chemical Crystallizer ({@code crystallizing}). Mirrors
+     * NeoForge's {@code MekanismRecipeSerializer.crystallizing} EXACTLY (input via {@link ChemicalStackIngredient#CODEC}
+     * under {@link SerializationConstants#INPUT}, output via {@link ItemStackTemplate#CODEC} under
+     * {@link SerializationConstants#OUTPUT}). NeoForge uses {@code IngredientCreatorAccess.chemicalStack().codec()}, which
+     * returns exactly {@link ChemicalStackIngredient#CODEC} (and {@code .streamCodec()} returns
+     * {@link ChemicalStackIngredient#STREAM_CODEC}), so the produced (de)serialization is byte-identical and the shared
+     * {@code crystallizing} recipe JSON loads identically on both loaders. Used by {@link BasicChemicalCrystallizerRecipe}.
+     */
+    public static RecipeSerializer<BasicChemicalCrystallizerRecipe> crystallizing(BiFunction<ChemicalStackIngredient, ItemStackTemplate, BasicChemicalCrystallizerRecipe> factory) {
+        return new RecipeSerializer<>(RecordCodecBuilder.mapCodec(instance -> instance.group(
+              ChemicalStackIngredient.CODEC.fieldOf(SerializationConstants.INPUT).forGetter(BasicChemicalCrystallizerRecipe::getInput),
+              ItemStackTemplate.CODEC.fieldOf(SerializationConstants.OUTPUT).forGetter(BasicChemicalCrystallizerRecipe::getOutputRaw)
+        ).apply(instance, factory)), StreamCodec.composite(
+              ChemicalStackIngredient.STREAM_CODEC, BasicChemicalCrystallizerRecipe::getInput,
+              ItemStackTemplate.STREAM_CODEC, BasicChemicalCrystallizerRecipe::getOutputRaw,
               factory
         ));
     }

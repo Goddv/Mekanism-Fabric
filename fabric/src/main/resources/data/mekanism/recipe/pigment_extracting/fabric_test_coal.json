@@ -1,0 +1,11 @@
+{
+  "type": "mekanism:pigment_extracting",
+  "input": {
+    "count": 1,
+    "ingredient": "minecraft:coal"
+  },
+  "output": {
+    "amount": 100,
+    "id": "mekanism:fabric_demo_chemical"
+  }
+}

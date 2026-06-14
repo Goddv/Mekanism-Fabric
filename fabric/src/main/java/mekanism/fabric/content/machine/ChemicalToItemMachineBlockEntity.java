@@ -11,7 +11,8 @@ import mekanism.api.chemical.IChemicalHandler;
 import mekanism.api.chemical.IChemicalTank;
 import mekanism.api.energy.IEnergyContainer;
 import mekanism.api.energy.IMekanismStrictEnergyHandler;
-import mekanism.api.recipes.ItemStackToChemicalRecipe;
+import mekanism.api.recipes.ChemicalCrystallizerRecipe;
+import mekanism.api.recipes.vanilla_input.SingleChemicalRecipeInput;
 import mekanism.common.capabilities.energy.BasicEnergyContainer;
 import mekanism.fabric.content.power.EnergyTransferHelper;
 import net.minecraft.core.BlockPos;
@@ -21,7 +22,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.MenuProvider;
@@ -32,7 +32,6 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
@@ -40,40 +39,40 @@ import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Transitional Fabric bring-up: the block-entity for the Chemical Oxidizer (item input &rarr; chemical output). The
- * chemical-output sibling of {@link MachineBlockEntity}: stores energy + a single item-input slot, and each server tick
- * looks up the {@code mekanism:oxidizing} {@link ItemStackToChemicalRecipe} for the input via the vanilla recipe
- * manager. When it matches and there is energy + tank room, it advances progress; on completion ({@link #MAX_PROGRESS}
- * ticks) it consumes one input + energy and inserts the recipe's {@link ChemicalStack} output into the internal chemical
- * tank. Exposes the energy capability (delegating to its energy container), the chemical capability (the output tank),
- * and item I/O (input slot only). The chemical output is extract-only externally (no external insert).
+ * Transitional Fabric bring-up: the block-entity for the Chemical Crystallizer (chemical input &rarr; item output) — the
+ * REVERSED-topology sibling of {@link ChemicalMachineBlockEntity}. Stores energy + a single chemical INPUT tank + a
+ * single item OUTPUT slot, and each server tick looks up the {@code mekanism:crystallizing}
+ * {@link ChemicalCrystallizerRecipe} for the input tank's chemical via the vanilla recipe manager. When it matches, there
+ * is energy, and the output slot has room for the recipe's item output, it advances progress; on completion
+ * ({@link #MAX_PROGRESS} ticks) it consumes the recipe's chemical amount from the input tank + energy and places the
+ * output {@link ItemStack} into the output slot.
  *
- * <p>Generalized over its recipe type: the host {@link ChemicalMachineBlock} carries the {@link Identifier} of the
- * {@code RecipeType} to run (e.g. {@code mekanism:oxidizing}, {@code mekanism:pigment_extracting},
- * {@code mekanism:chemical_conversion}); this BE reads it back via {@link ChemicalMachineBlock#recipeTypeId()} and
- * resolves the type by id, exactly as {@link MachineBlockEntity} serves enrichment/crusher/smelter via its block's
- * {@code recipeType()}.
+ * <p>Capabilities: energy (machine is an energy sink), chemical (the INPUT tank — unlike the oxidizer's output tank, this
+ * one ALLOWS external insertion + extraction so pipes/the self-test can fill it), and item I/O (the OUTPUT slot only —
+ * extract-only externally; no item input).
  */
-public class ChemicalMachineBlockEntity extends BlockEntity implements WorldlyContainer, IMekanismStrictEnergyHandler,
+public class ChemicalToItemMachineBlockEntity extends BlockEntity implements WorldlyContainer, IMekanismStrictEnergyHandler,
       IChemicalHandler, MenuProvider {
 
-    private static final int[] INPUT_SLOTS = {0};
+    private static final int[] OUTPUT_SLOTS = {0};
 
     private static final long ENERGY_PER_TICK = 100L;
     private static final long ENERGY_PULL_RATE = 5_000L;
     /** Ticks to complete one operation. */
     public static final int MAX_PROGRESS = 60;
-    /** Output chemical tank capacity. */
+    /** Input chemical tank capacity. */
     private static final long TANK_CAPACITY = 10_000L;
+
+    private static final Identifier CRYSTALLIZING_ID = Identifier.fromNamespaceAndPath("mekanism", "crystallizing");
 
     private final BasicEnergyContainer energy = BasicEnergyContainer.create(2_000_000L, this);
     private final List<IEnergyContainer> energyContainers = List.of(energy);
     private final NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
-    private final IChemicalTank outputTank = BasicChemicalTank.create(TANK_CAPACITY, (IContentsListener) this);
+    private final IChemicalTank inputTank = BasicChemicalTank.create(TANK_CAPACITY, (IContentsListener) this);
     private int progress;
 
-    public ChemicalMachineBlockEntity(BlockPos pos, BlockState state) {
-        super(FabricChemicalMachines.BE_TYPE.get(), pos, state);
+    public ChemicalToItemMachineBlockEntity(BlockPos pos, BlockState state) {
+        super(FabricChemicalMachines.CRYSTALLIZER_BE_TYPE.get(), pos, state);
     }
 
     public void serverTick() {
@@ -81,61 +80,47 @@ public class ChemicalMachineBlockEntity extends BlockEntity implements WorldlyCo
         if (level instanceof ServerLevel serverLevel) {
             EnergyTransferHelper.pull(serverLevel, worldPosition, energy, ENERGY_PULL_RATE, false);
         }
-        boolean active = process();
-        updateActiveState(active);
-    }
-
-    /** Reflects whether the machine is currently processing in the {@code active} blockstate, when the block has one. */
-    private void updateActiveState(boolean active) {
-        BlockState state = getBlockState();
-        if (state.getBlock() instanceof ChemicalMachineBlock machine && machine.hasActive()
-              && state.getValue(ChemicalMachineBlock.ACTIVE) != active && level != null) {
-            level.setBlock(worldPosition, state.setValue(ChemicalMachineBlock.ACTIVE, active), Block.UPDATE_ALL);
-        }
+        process();
     }
 
     @SuppressWarnings("unchecked")
     @Nullable
-    private RecipeType<ItemStackToChemicalRecipe> recipeType() {
-        if (!(getBlockState().getBlock() instanceof ChemicalMachineBlock machine)) {
-            return null;
-        }
-        RecipeType<?> type = BuiltInRegistries.RECIPE_TYPE.getValue(machine.recipeTypeId());
-        return (RecipeType<ItemStackToChemicalRecipe>) type;
+    private static RecipeType<ChemicalCrystallizerRecipe> crystallizingType() {
+        RecipeType<?> type = BuiltInRegistries.RECIPE_TYPE.getValue(CRYSTALLIZING_ID);
+        return (RecipeType<ChemicalCrystallizerRecipe>) type;
     }
 
     /**
-     * Looks up this machine's recipe type (from the host block's id) for the input slot. If it matches and there is room
-     * in the output tank + enough energy, advances progress (consuming energy each tick) and, on completion
-     * ({@link #MAX_PROGRESS} ticks), consumes the recipe's input count and inserts its chemical output into the tank.
-     * Progress resets if the recipe/input/room is lost, but is held when merely out of energy.
+     * Looks up the {@code mekanism:crystallizing} recipe for the input tank's chemical. If it matches, there is room for
+     * the item output + enough energy, advances progress (consuming energy each tick) and, on completion
+     * ({@link #MAX_PROGRESS} ticks), consumes the recipe's chemical amount from the input tank and inserts its item output
+     * into the output slot. Progress resets if the recipe/input/room is lost, but is held when merely out of energy.
      */
     private boolean process() {
         if (!(level instanceof ServerLevel serverLevel)) {
             return false;
         }
-        RecipeType<ItemStackToChemicalRecipe> recipeType = recipeType();
+        RecipeType<ChemicalCrystallizerRecipe> recipeType = crystallizingType();
         if (recipeType == null) {
             return false;
         }
-        ItemStack input = items.get(0);
-        if (input.isEmpty()) {
+        ChemicalStack chemical = inputTank.getStack();
+        if (chemical.isEmpty()) {
             return resetProgress();
         }
-        SingleRecipeInput recipeInput = new SingleRecipeInput(input);
-        Optional<RecipeHolder<ItemStackToChemicalRecipe>> match = serverLevel.recipeAccess().getRecipeFor(recipeType, recipeInput, serverLevel);
+        SingleChemicalRecipeInput recipeInput = new SingleChemicalRecipeInput(chemical);
+        Optional<RecipeHolder<ChemicalCrystallizerRecipe>> match = serverLevel.recipeAccess().getRecipeFor(recipeType, recipeInput, serverLevel);
         if (match.isEmpty()) {
             return resetProgress();
         }
-        ItemStackToChemicalRecipe recipe = match.get().value();
-        int needed = recipe.getInput().count();
-        ChemicalStack result = recipe.getOutput(input);
-        if (result.isEmpty() || input.getCount() < needed) {
+        ChemicalCrystallizerRecipe recipe = match.get().value();
+        long needed = recipe.getInput().amount();
+        ItemStack result = recipe.getOutput(chemical).create();
+        if (result.isEmpty() || chemical.amount() < needed) {
             return resetProgress();
         }
-        // Room check: the tank must be able to accept the entire output stack this operation.
-        ChemicalStack remainder = outputTank.insert(result, Action.SIMULATE, AutomationType.INTERNAL);
-        if (!remainder.isEmpty()) {
+        // Room check: the output slot must be able to accept the entire item output this operation.
+        if (!canInsertOutput(result)) {
             return resetProgress();
         }
         if (energy.extract(ENERGY_PER_TICK, Action.SIMULATE, AutomationType.INTERNAL) < ENERGY_PER_TICK) {
@@ -145,11 +130,30 @@ public class ChemicalMachineBlockEntity extends BlockEntity implements WorldlyCo
         progress++;
         if (progress >= MAX_PROGRESS) {
             progress = 0;
-            outputTank.insert(result, Action.EXECUTE, AutomationType.INTERNAL);
-            input.shrink(needed);
+            inputTank.extract(needed, Action.EXECUTE, AutomationType.INTERNAL);
+            insertOutput(result);
         }
         setChanged();
         return true;
+    }
+
+    /** Whether the single output slot can fully accept the given result (empty, or same item with headroom). */
+    private boolean canInsertOutput(ItemStack result) {
+        ItemStack current = items.get(0);
+        if (current.isEmpty()) {
+            return true;
+        }
+        return ItemStack.isSameItemSameComponents(current, result)
+              && current.getCount() + result.getCount() <= current.getMaxStackSize();
+    }
+
+    private void insertOutput(ItemStack result) {
+        ItemStack current = items.get(0);
+        if (current.isEmpty()) {
+            items.set(0, result.copy());
+        } else {
+            current.grow(result.getCount());
+        }
     }
 
     private boolean resetProgress() {
@@ -171,9 +175,9 @@ public class ChemicalMachineBlockEntity extends BlockEntity implements WorldlyCo
         return progress * 1000 / MAX_PROGRESS;
     }
 
-    /** Direct access to the output tank for the self-test. */
-    public IChemicalTank getOutputTank() {
-        return outputTank;
+    /** Direct access to the input tank for the self-test. */
+    public IChemicalTank getInputTank() {
+        return inputTank;
     }
 
     // ---- energy capability ----
@@ -199,7 +203,7 @@ public class ChemicalMachineBlockEntity extends BlockEntity implements WorldlyCo
         return 0L;
     }
 
-    // ---- chemical capability (output tank; extract-only externally) ----
+    // ---- chemical capability (INPUT tank; external insert AND extract allowed) ----
     @Override
     public int getChemicalTanks() {
         return 1;
@@ -207,48 +211,48 @@ public class ChemicalMachineBlockEntity extends BlockEntity implements WorldlyCo
 
     @Override
     public ChemicalStack getChemicalInTank(int tank) {
-        return tank == 0 ? outputTank.getStack() : ChemicalStack.EMPTY;
+        return tank == 0 ? inputTank.getStack() : ChemicalStack.EMPTY;
     }
 
     @Override
     public void setChemicalInTank(int tank, ChemicalStack stack) {
         if (tank == 0) {
-            outputTank.setStack(stack);
+            inputTank.setStack(stack);
         }
     }
 
     @Override
     public long getChemicalTankCapacity(int tank) {
-        return tank == 0 ? outputTank.getCapacity() : 0L;
+        return tank == 0 ? inputTank.getCapacity() : 0L;
     }
 
     @Override
     public boolean isValid(int tank, ChemicalStack stack) {
-        return tank == 0 && outputTank.isValid(stack);
+        return tank == 0 && inputTank.isValid(stack);
     }
 
     @Override
     public ChemicalStack insertChemical(int tank, ChemicalStack stack, Action action) {
-        // Output tank: disallow external insertion (only this BE's processing inserts, internally on the tank).
-        return stack;
+        // Input tank: allow external insertion (pipes feed the chemical to be crystallized).
+        return tank == 0 ? inputTank.insert(stack, action, AutomationType.EXTERNAL) : stack;
     }
 
     @Override
     public ChemicalStack insertChemical(ChemicalStack stack, Action action) {
-        return stack;
+        return inputTank.insert(stack, action, AutomationType.EXTERNAL);
     }
 
     @Override
     public ChemicalStack extractChemical(int tank, long amount, Action action) {
-        return tank == 0 ? outputTank.extract(amount, action, AutomationType.EXTERNAL) : ChemicalStack.EMPTY;
+        return tank == 0 ? inputTank.extract(amount, action, AutomationType.EXTERNAL) : ChemicalStack.EMPTY;
     }
 
     @Override
     public ChemicalStack extractChemical(long amount, Action action) {
-        return outputTank.extract(amount, action, AutomationType.EXTERNAL);
+        return inputTank.extract(amount, action, AutomationType.EXTERNAL);
     }
 
-    // ---- item inventory (Container) ----
+    // ---- item inventory (Container): single OUTPUT slot ----
     @Override
     public int getContainerSize() {
         return items.size();
@@ -294,25 +298,25 @@ public class ChemicalMachineBlockEntity extends BlockEntity implements WorldlyCo
         items.clear();
     }
 
-    // ---- sided item I/O (hoppers / pipes): insert only into the input slot (0); no item output (chemical is fluid-like) ----
+    // ---- sided item I/O (hoppers / pipes): the output slot (0) is extract-only; no item input (chemical is the input) ----
     @Override
     public int[] getSlotsForFace(Direction side) {
-        return INPUT_SLOTS;
+        return OUTPUT_SLOTS;
     }
 
     @Override
     public boolean canPlaceItem(int slot, ItemStack stack) {
-        return slot == 0;
+        return false;
     }
 
     @Override
     public boolean canPlaceItemThroughFace(int slot, ItemStack stack, @Nullable Direction direction) {
-        return slot == 0;
+        return false;
     }
 
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction direction) {
-        return false;
+        return slot == 0;
     }
 
     // ---- menu (GUI) ----
@@ -336,7 +340,7 @@ public class ChemicalMachineBlockEntity extends BlockEntity implements WorldlyCo
         energy.serialize(output);
         output.putInt("progress", progress);
         ContainerHelper.saveAllItems(output, items);
-        outputTank.serialize(output.child("outputTank"));
+        inputTank.serialize(output.child("inputTank"));
     }
 
     @Override
@@ -345,6 +349,6 @@ public class ChemicalMachineBlockEntity extends BlockEntity implements WorldlyCo
         energy.deserialize(input);
         progress = input.getInt("progress").orElse(0);
         ContainerHelper.loadAllItems(input, items);
-        input.child("outputTank").ifPresent(outputTank::deserialize);
+        input.child("inputTank").ifPresent(inputTank::deserialize);
     }
 }

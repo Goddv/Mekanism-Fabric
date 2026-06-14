@@ -1,0 +1,11 @@
+{
+  "type": "mekanism:crystallizing",
+  "input": {
+    "chemical": "mekanism:fabric_demo_chemical",
+    "amount": 100
+  },
+  "output": {
+    "count": 1,
+    "id": "minecraft:diamond"
+  }
+}
