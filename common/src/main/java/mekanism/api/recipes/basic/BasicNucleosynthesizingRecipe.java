@@ -4,12 +4,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import mekanism.api.ItemStackTemplateHelper;
+import mekanism.api.MekanismAPIBase;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.chemical.ChemicalStack;
-import mekanism.api.recipes.MekanismRecipeSerializers;
 import mekanism.api.recipes.NucleosynthesizingRecipe;
 import mekanism.api.recipes.ingredients.ChemicalStackIngredient;
 import mekanism.api.recipes.ingredients.ItemStackIngredient;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -17,6 +19,8 @@ import org.jetbrains.annotations.Contract;
 
 @NothingNullByDefault
 public class BasicNucleosynthesizingRecipe extends NucleosynthesizingRecipe implements IBasicItemStackOutput {
+
+    private static final Identifier NUCLEOSYNTHESIZING_ID = Identifier.fromNamespaceAndPath(MekanismAPIBase.MEKANISM_MODID, "nucleosynthesizing");
 
     protected final ItemStackIngredient itemInput;
     protected final ChemicalStackIngredient chemicalInput;
@@ -84,9 +88,10 @@ public class BasicNucleosynthesizingRecipe extends NucleosynthesizingRecipe impl
         return output;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public RecipeSerializer<BasicNucleosynthesizingRecipe> getSerializer() {
-        return MekanismRecipeSerializers.NUCLEOSYNTHESIZING.get();
+        return (RecipeSerializer<BasicNucleosynthesizingRecipe>) (RecipeSerializer<?>) BuiltInRegistries.RECIPE_SERIALIZER.getValue(NUCLEOSYNTHESIZING_ID);
     }
 
     @Override

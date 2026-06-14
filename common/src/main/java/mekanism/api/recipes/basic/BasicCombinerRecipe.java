@@ -4,12 +4,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import mekanism.api.ItemStackTemplateHelper;
+import mekanism.api.MekanismAPIBase;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.recipes.CombinerRecipe;
-import mekanism.api.recipes.MekanismRecipeSerializers;
 import mekanism.api.recipes.ingredients.ItemStackIngredient;
 import net.minecraft.core.TypedInstance;
 import net.minecraft.core.component.DataComponentHolder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
@@ -19,6 +21,8 @@ import org.jetbrains.annotations.NotNull;
 
 @NothingNullByDefault
 public class BasicCombinerRecipe extends CombinerRecipe {
+
+    private static final Identifier COMBINING_ID = Identifier.fromNamespaceAndPath(MekanismAPIBase.MEKANISM_MODID, "combining");
 
     protected final ItemStackIngredient mainInput;
     protected final ItemStackIngredient extraInput;
@@ -66,9 +70,10 @@ public class BasicCombinerRecipe extends CombinerRecipe {
         return output;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public RecipeSerializer<BasicCombinerRecipe> getSerializer() {
-        return MekanismRecipeSerializers.COMBINING.get();
+        return (RecipeSerializer<BasicCombinerRecipe>) (RecipeSerializer<?>) BuiltInRegistries.RECIPE_SERIALIZER.getValue(COMBINING_ID);
     }
 
     @Override

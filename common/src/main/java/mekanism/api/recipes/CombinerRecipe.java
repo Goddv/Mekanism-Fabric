@@ -2,13 +2,12 @@ package mekanism.api.recipes;
 
 import java.util.List;
 import java.util.function.BiPredicate;
-import mekanism.api.MekanismAPI;
+import mekanism.api.MekanismAPIBase;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.recipes.ingredients.ItemStackIngredient;
-import net.minecraft.core.Holder;
 import net.minecraft.core.TypedInstance;
 import net.minecraft.core.component.DataComponentHolder;
-import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -16,7 +15,6 @@ import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,7 +30,8 @@ import org.jetbrains.annotations.NotNull;
 @NothingNullByDefault
 public abstract class CombinerRecipe extends MekanismRecipe<RecipeInput> implements BiPredicate<@NotNull ItemStack, @NotNull ItemStack> {
 
-    private static final Holder<Item> COMBINER = DeferredHolder.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MekanismAPI.MEKANISM_MODID, "combiner"));
+    private static final Identifier COMBINING_ID = Identifier.fromNamespaceAndPath(MekanismAPIBase.MEKANISM_MODID, "combining");
+    private static final Identifier COMBINER_ID = Identifier.fromNamespaceAndPath(MekanismAPIBase.MEKANISM_MODID, "combiner");
 
     @Override
     public abstract boolean test(ItemStack input, ItemStack extra);
@@ -99,13 +98,14 @@ public abstract class CombinerRecipe extends MekanismRecipe<RecipeInput> impleme
         getExtraInput().logMissingTags();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public final RecipeType<CombinerRecipe> getType() {
-        return MekanismRecipeTypes.TYPE_COMBINING.value();
+        return (RecipeType<CombinerRecipe>) (RecipeType<?>) BuiltInRegistries.RECIPE_TYPE.getValue(COMBINING_ID);
     }
 
     @Override
     public ItemStack getToastSymbol() {
-        return new ItemStack(COMBINER);
+        return new ItemStack(BuiltInRegistries.ITEM.getValue(COMBINER_ID));
     }
 }

@@ -6,10 +6,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import mekanism.api.ItemStackTemplateHelper;
+import mekanism.api.MekanismAPIBase;
 import mekanism.api.annotations.NothingNullByDefault;
-import mekanism.api.recipes.MekanismRecipeSerializers;
 import mekanism.api.recipes.SawmillRecipe;
 import mekanism.api.recipes.ingredients.ItemStackIngredient;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -18,6 +20,8 @@ import org.jetbrains.annotations.Nullable;
 
 @NothingNullByDefault
 public class BasicSawmillRecipe extends SawmillRecipe {
+
+    private static final Identifier SAWING_ID = Identifier.fromNamespaceAndPath(MekanismAPIBase.MEKANISM_MODID, "sawing");
 
     protected final ItemStackIngredient input;
     @Nullable
@@ -101,9 +105,10 @@ public class BasicSawmillRecipe extends SawmillRecipe {
         return Optional.ofNullable(this.secondaryOutput);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public RecipeSerializer<BasicSawmillRecipe> getSerializer() {
-        return MekanismRecipeSerializers.SAWING.get();
+        return (RecipeSerializer<BasicSawmillRecipe>) (RecipeSerializer<?>) BuiltInRegistries.RECIPE_SERIALIZER.getValue(SAWING_ID);
     }
 
     @Override

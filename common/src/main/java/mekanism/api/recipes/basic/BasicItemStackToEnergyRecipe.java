@@ -1,10 +1,12 @@
 package mekanism.api.recipes.basic;
 
 import java.util.Objects;
+import mekanism.api.MekanismAPIBase;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.recipes.ItemStackToEnergyRecipe;
-import mekanism.api.recipes.MekanismRecipeSerializers;
 import mekanism.api.recipes.ingredients.ItemStackIngredient;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.PlacementInfo;
 import net.minecraft.world.item.crafting.RecipeBookCategory;
@@ -12,6 +14,8 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 
 @NothingNullByDefault
 public class BasicItemStackToEnergyRecipe extends ItemStackToEnergyRecipe {
+
+    private static final Identifier ENERGY_CONVERSION_ID = Identifier.fromNamespaceAndPath(MekanismAPIBase.MEKANISM_MODID, "energy_conversion");
 
     protected final ItemStackIngredient input;
     protected final long output;
@@ -59,9 +63,10 @@ public class BasicItemStackToEnergyRecipe extends ItemStackToEnergyRecipe {
         return new long[]{output};
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public RecipeSerializer<BasicItemStackToEnergyRecipe> getSerializer() {
-        return MekanismRecipeSerializers.ENERGY_CONVERSION.get();
+        return (RecipeSerializer<BasicItemStackToEnergyRecipe>) (RecipeSerializer<?>) BuiltInRegistries.RECIPE_SERIALIZER.getValue(ENERGY_CONVERSION_ID);
     }
 
     @Override

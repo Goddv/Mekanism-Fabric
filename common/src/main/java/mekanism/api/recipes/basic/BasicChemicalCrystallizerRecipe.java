@@ -4,11 +4,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import mekanism.api.ItemStackTemplateHelper;
+import mekanism.api.MekanismAPIBase;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.chemical.ChemicalStack;
 import mekanism.api.recipes.ChemicalCrystallizerRecipe;
-import mekanism.api.recipes.MekanismRecipeSerializers;
 import mekanism.api.recipes.ingredients.ChemicalStackIngredient;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -17,6 +19,8 @@ import org.jetbrains.annotations.Contract;
 
 @NothingNullByDefault
 public class BasicChemicalCrystallizerRecipe extends ChemicalCrystallizerRecipe {
+
+    private static final Identifier CRYSTALLIZING_ID = Identifier.fromNamespaceAndPath(MekanismAPIBase.MEKANISM_MODID, "crystallizing");
 
     protected final ChemicalStackIngredient input;
     protected final ItemStackTemplate output;
@@ -66,9 +70,10 @@ public class BasicChemicalCrystallizerRecipe extends ChemicalCrystallizerRecipe 
         return this.output;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public RecipeSerializer<BasicChemicalCrystallizerRecipe> getSerializer() {
-        return MekanismRecipeSerializers.CRYSTALLIZING.get();
+        return (RecipeSerializer<BasicChemicalCrystallizerRecipe>) (RecipeSerializer<?>) BuiltInRegistries.RECIPE_SERIALIZER.getValue(CRYSTALLIZING_ID);
     }
 
     @Override

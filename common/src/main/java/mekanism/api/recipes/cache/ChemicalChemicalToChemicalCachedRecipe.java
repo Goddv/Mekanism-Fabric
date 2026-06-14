@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.chemical.Chemical;
 import mekanism.api.chemical.ChemicalStack;
-import mekanism.api.functions.ConstantPredicates;
+import mekanism.api.functions.ConstantPredicatesBase;
 import mekanism.api.recipes.ChemicalChemicalToChemicalRecipe;
 import mekanism.api.recipes.ingredients.ChemicalStackIngredient;
 import mekanism.api.recipes.inputs.IInputHandler;
@@ -90,7 +90,7 @@ public class ChemicalChemicalToChemicalCachedRecipe<RECIPE extends ChemicalChemi
                         rightIngredient = rightInput;
                     }
                     CachedRecipeHelper.twoInputCalculateOperationsThisTick(tracker, leftInputHandler, leftIngredient, rightInputHandler, rightIngredient, inputsSetter,
-                          outputHandler, outputGetter, outputSetter, ConstantPredicates.CHEMICAL_EMPTY, ConstantPredicates.CHEMICAL_EMPTY);
+                          outputHandler, outputGetter, outputSetter, ConstantPredicatesBase.CHEMICAL_EMPTY, ConstantPredicatesBase.CHEMICAL_EMPTY);
                 }
             }
         }

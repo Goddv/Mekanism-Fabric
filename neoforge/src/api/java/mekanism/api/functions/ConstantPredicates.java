@@ -2,7 +2,6 @@ package mekanism.api.functions;
 
 import java.util.Objects;
 import java.util.function.Predicate;
-import mekanism.api.chemical.ChemicalStack;
 import net.neoforged.neoforge.common.util.TriPredicate;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidStackTemplate;
@@ -36,12 +35,6 @@ public class ConstantPredicates extends ConstantPredicatesBase {
      * @since 10.8.0
      */
     public static final Predicate<@Nullable FluidStackTemplate> INVALID_FLUID_TEMPLATE = Objects::isNull;
-    /**
-     * Represents a predicate that checks if a chemical stack is empty.
-     *
-     * @since 10.7.0
-     */
-    public static final Predicate<ChemicalStack> CHEMICAL_EMPTY = ChemicalStack::isEmpty;
 
     /**
      * Returns a tri predicate that returns {@code true} for any input.

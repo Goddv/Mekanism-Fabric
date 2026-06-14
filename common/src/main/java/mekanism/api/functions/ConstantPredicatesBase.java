@@ -6,6 +6,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Predicate;
 import mekanism.api.AutomationType;
+import mekanism.api.chemical.ChemicalStack;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import org.jetbrains.annotations.ApiStatus.Internal;
@@ -54,6 +55,12 @@ public class ConstantPredicatesBase {
      * @since 10.8.0
      */
     public static final Predicate<ItemStackTemplate> INVALID_ITEM_TEMPLATE = Objects::isNull;
+    /**
+     * Represents a predicate that checks if a chemical stack is empty.
+     *
+     * @since 10.7.0
+     */
+    public static final Predicate<ChemicalStack> CHEMICAL_EMPTY = ChemicalStack::isEmpty;
 
     private static final Predicate<Object> alwaysFalse = t -> false;
     private static final BiPredicate<Object, Object> alwaysFalseBi = (t, u) -> false;

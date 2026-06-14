@@ -9,7 +9,7 @@ import java.util.function.Predicate;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.chemical.Chemical;
 import mekanism.api.chemical.ChemicalStack;
-import mekanism.api.functions.ConstantPredicates;
+import mekanism.api.functions.ConstantPredicatesBase;
 import mekanism.api.math.MathUtils;
 import mekanism.api.recipes.ChemicalDissolutionRecipe;
 import mekanism.api.recipes.ItemStackChemicalToItemStackRecipe;
@@ -209,7 +209,7 @@ public class ItemStackConstantChemicalToObjectCachedRecipe<OUTPUT, RECIPE extend
           BooleanSupplier recheckAllErrors, IInputHandler<Item, @NotNull ItemStack> itemInputHandler, ILongInputHandler<Chemical, ChemicalStack> chemicalInputHandler,
           ChemicalUsageMultiplier chemicalUsage, LongConsumer chemicalUsedSoFarChanged, IOutputHandler<@NotNull ItemStackTemplate> outputHandler) {
         return new ItemStackConstantChemicalToObjectCachedRecipe<>(recipe, recheckAllErrors, itemInputHandler, chemicalInputHandler, chemicalUsage,
-              chemicalUsedSoFarChanged, outputHandler, ConstantPredicates.INVALID_ITEM_TEMPLATE);
+              chemicalUsedSoFarChanged, outputHandler, ConstantPredicatesBase.INVALID_ITEM_TEMPLATE);
     }
 
     /**
@@ -226,6 +226,6 @@ public class ItemStackConstantChemicalToObjectCachedRecipe<OUTPUT, RECIPE extend
           BooleanSupplier recheckAllErrors, IInputHandler<Item, @NotNull ItemStack> itemInputHandler, ILongInputHandler<Chemical, ChemicalStack> chemicalInputHandler,
           ChemicalUsageMultiplier chemicalUsage, LongConsumer chemicalUsedSoFarChanged, IOutputHandler<@NotNull ChemicalStack> outputHandler) {
         return new ItemStackConstantChemicalToObjectCachedRecipe<>(recipe, recheckAllErrors, itemInputHandler, chemicalInputHandler, chemicalUsage,
-              chemicalUsedSoFarChanged, outputHandler, ConstantPredicates.CHEMICAL_EMPTY);
+              chemicalUsedSoFarChanged, outputHandler, ConstantPredicatesBase.CHEMICAL_EMPTY);
     }
 }

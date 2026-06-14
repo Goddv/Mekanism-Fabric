@@ -2,20 +2,17 @@ package mekanism.api.recipes;
 
 import java.util.List;
 import java.util.function.Predicate;
-import mekanism.api.MekanismAPI;
+import mekanism.api.MekanismAPIBase;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.chemical.ChemicalStack;
 import mekanism.api.recipes.ingredients.ChemicalStackIngredient;
 import mekanism.api.recipes.vanilla_input.SingleChemicalRecipeInput;
-import net.minecraft.core.Holder;
-import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,7 +26,8 @@ import org.jetbrains.annotations.NotNull;
 @NothingNullByDefault
 public abstract class ChemicalCrystallizerRecipe extends MekanismRecipe<SingleChemicalRecipeInput> implements Predicate<@NotNull ChemicalStack> {
 
-    private static final Holder<Item> CHEMICAL_CRYSTALLIZER = DeferredHolder.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MekanismAPI.MEKANISM_MODID, "chemical_crystallizer"));
+    private static final Identifier CRYSTALLIZING_ID = Identifier.fromNamespaceAndPath(MekanismAPIBase.MEKANISM_MODID, "crystallizing");
+    private static final Identifier CHEMICAL_CRYSTALLIZER_ID = Identifier.fromNamespaceAndPath(MekanismAPIBase.MEKANISM_MODID, "chemical_crystallizer");
 
     /**
      * Gets the output based on the given input.
@@ -102,13 +100,14 @@ public abstract class ChemicalCrystallizerRecipe extends MekanismRecipe<SingleCh
         getInput().logMissingTags();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public final RecipeType<ChemicalCrystallizerRecipe> getType() {
-        return MekanismRecipeTypes.TYPE_CRYSTALLIZING.value();
+        return (RecipeType<ChemicalCrystallizerRecipe>) (RecipeType<?>) BuiltInRegistries.RECIPE_TYPE.getValue(CRYSTALLIZING_ID);
     }
 
     @Override
     public ItemStack getToastSymbol() {
-        return new ItemStack(CHEMICAL_CRYSTALLIZER);
+        return new ItemStack(BuiltInRegistries.ITEM.getValue(CHEMICAL_CRYSTALLIZER_ID));
     }
 }

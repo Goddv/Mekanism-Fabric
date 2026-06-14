@@ -2,20 +2,17 @@ package mekanism.api.recipes;
 
 import java.util.List;
 import java.util.function.Predicate;
-import mekanism.api.MekanismAPI;
+import mekanism.api.MekanismAPIBase;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.recipes.ingredients.ItemStackIngredient;
-import net.minecraft.core.Holder;
-import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -33,7 +30,8 @@ import org.jetbrains.annotations.Nullable;
 public abstract class SawmillRecipe extends MekanismRecipe<SingleRecipeInput> implements Predicate<@NotNull ItemStack> {
 
     protected static final RandomSource RANDOM = RandomSource.create();
-    private static final Holder<Item> PRECISION_SAWMILL = DeferredHolder.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MekanismAPI.MEKANISM_MODID, "precision_sawmill"));
+    private static final Identifier SAWING_ID = Identifier.fromNamespaceAndPath(MekanismAPIBase.MEKANISM_MODID, "sawing");
+    private static final Identifier PRECISION_SAWMILL_ID = Identifier.fromNamespaceAndPath(MekanismAPIBase.MEKANISM_MODID, "precision_sawmill");
 
     @Override
     public abstract boolean test(ItemStack stack);
@@ -92,14 +90,15 @@ public abstract class SawmillRecipe extends MekanismRecipe<SingleRecipeInput> im
         getInput().logMissingTags();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public final RecipeType<SawmillRecipe> getType() {
-        return MekanismRecipeTypes.TYPE_SAWING.value();
+        return (RecipeType<SawmillRecipe>) (RecipeType<?>) BuiltInRegistries.RECIPE_TYPE.getValue(SAWING_ID);
     }
 
     @Override
     public ItemStack getToastSymbol() {
-        return new ItemStack(PRECISION_SAWMILL);
+        return new ItemStack(BuiltInRegistries.ITEM.getValue(PRECISION_SAWMILL_ID));
     }
 
     /**

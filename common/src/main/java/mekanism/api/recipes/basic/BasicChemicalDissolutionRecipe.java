@@ -3,17 +3,21 @@ package mekanism.api.recipes.basic;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import mekanism.api.MekanismAPIBase;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.chemical.ChemicalStack;
 import mekanism.api.recipes.ChemicalDissolutionRecipe;
-import mekanism.api.recipes.MekanismRecipeSerializers;
 import mekanism.api.recipes.ingredients.ChemicalStackIngredient;
 import mekanism.api.recipes.ingredients.ItemStackIngredient;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 
 @NothingNullByDefault
 public class BasicChemicalDissolutionRecipe extends ChemicalDissolutionRecipe {
+
+    private static final Identifier DISSOLUTION_ID = Identifier.fromNamespaceAndPath(MekanismAPIBase.MEKANISM_MODID, "dissolution");
 
     protected final ItemStackIngredient itemInput;
     protected final ChemicalStackIngredient chemicalInput;
@@ -76,9 +80,10 @@ public class BasicChemicalDissolutionRecipe extends ChemicalDissolutionRecipe {
         return output;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public RecipeSerializer<BasicChemicalDissolutionRecipe> getSerializer() {
-        return MekanismRecipeSerializers.DISSOLUTION.get();
+        return (RecipeSerializer<BasicChemicalDissolutionRecipe>) (RecipeSerializer<?>) BuiltInRegistries.RECIPE_SERIALIZER.getValue(DISSOLUTION_ID);
     }
 
     @Override
