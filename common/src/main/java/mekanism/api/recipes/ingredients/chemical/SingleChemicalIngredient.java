@@ -2,7 +2,7 @@ package mekanism.api.recipes.ingredients.chemical;
 
 import com.mojang.serialization.MapCodec;
 import java.util.stream.Stream;
-import mekanism.api.MekanismAPI;
+import mekanism.api.MekanismAPIBase;
 import mekanism.api.SerializationConstants;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.chemical.Chemical;
@@ -32,7 +32,7 @@ public non-sealed class SingleChemicalIngredient extends ChemicalIngredient {//T
      * @param chemical Holder for the chemical to match.
      */
     public SingleChemicalIngredient(Holder<Chemical> chemical) {
-        if (chemical.is(MekanismAPI.EMPTY_CHEMICAL_KEY)) {
+        if (chemical.is(MekanismAPIBase.EMPTY_CHEMICAL_KEY)) {
             throw new IllegalStateException("SingleChemicalIngredient must not be constructed with mekanism:empty, use IChemicalIngredientCreator.empty() instead!");
         }
         this.chemical = chemical;
@@ -64,7 +64,7 @@ public non-sealed class SingleChemicalIngredient extends ChemicalIngredient {//T
     @Override
     public void logMissingTags() {
         if (!chemical.isBound()) {
-            MekanismAPI.logger.error("Unbound chemical: {}", chemical.getRegisteredName());
+            MekanismAPIBase.logger.error("Unbound chemical: {}", chemical.getRegisteredName());
         }
     }
 

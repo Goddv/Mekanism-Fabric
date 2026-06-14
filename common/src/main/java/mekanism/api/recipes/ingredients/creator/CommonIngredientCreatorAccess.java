@@ -23,4 +23,18 @@ public final class CommonIngredientCreatorAccess {
     public static IItemStackIngredientCreator item() {
         return IMekanismAccessBase.INSTANCE.itemStackIngredientCreator();
     }
+
+    /**
+     * Gets the chemical ingredient creator.
+     */
+    public static IChemicalIngredientCreator chemical() {
+        return IMekanismAccessBase.INSTANCE.chemicalIngredientCreator();
+    }
+
+    /**
+     * Gets the chemical stack ingredient creator.
+     */
+    public static IChemicalStackIngredientCreator chemicalStack() {
+        return IMekanismAccessBase.INSTANCE.chemicalStackIngredientCreator();
+    }
 }

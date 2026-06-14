@@ -1,11 +1,18 @@
 package mekanism.fabric.chemical;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.MapCodec;
 import mekanism.api.Action;
 import mekanism.api.MekanismAPIBase;
+import mekanism.api.SerializationConstants;
 import mekanism.api.chemical.Chemical;
 import mekanism.api.chemical.ChemicalStack;
 import mekanism.api.chemical.IChemicalHandler;
+import mekanism.api.recipes.codec.MekanismExtraCodecs;
 import mekanism.fabric.content.energy.FabricEnergyBlockDemo;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.core.BlockPos;
@@ -67,12 +74,61 @@ public final class FabricChemicalSelfTest {
             }
             level.removeBlock(pos, false);
 
-            ok = registryOk && chemicalOk && stackOk && emptyOk && capabilityOk;
-            LOGGER.info("{} {} chemical core+capability: registry={} chemical={} stack={} empty={} capability={}",
-                  TAG, ok ? "OK  " : "FAIL", registryOk, chemicalOk, stackOk, emptyOk, capabilityOk);
+            // aliasedFieldOf shim wire-parity: the hoisted CompoundChemicalIngredient.CODEC now routes through
+            // MekanismExtraCodecs.aliasedFieldOf on BOTH loaders, so it MUST reproduce NeoForge's exact
+            // encode-first-name / decode-any-name behavior. Exercise the shim directly (NOT via the throwing stub
+            // creator) on a representative String codec keyed by the same names CompoundChemicalIngredient uses.
+            boolean aliasShimOk = validateAliasShim();
+
+            ok = registryOk && chemicalOk && stackOk && emptyOk && capabilityOk && aliasShimOk;
+            LOGGER.info("{} {} chemical core+capability: registry={} chemical={} stack={} empty={} capability={} aliasShim={}",
+                  TAG, ok ? "OK  " : "FAIL", registryOk, chemicalOk, stackOk, emptyOk, capabilityOk, aliasShimOk);
         } catch (Throwable t) {
             LOGGER.error("{} FAIL chemical test threw", TAG, t);
         }
         LOGGER.info("{} RESULT: {}", TAG, ok ? "PASS" : "FAIL");
+    }
+
+    /**
+     * Validates the {@link MekanismExtraCodecs#aliasedFieldOf} shim reproduces NeoForge's encode-first-name /
+     * decode-any-name semantics, matching {@code CompoundChemicalIngredient.CODEC}'s use of
+     * ({@link SerializationConstants#CHILDREN}, {@link SerializationConstants#INGREDIENTS}). Three assertions:
+     * (a) ENCODE writes only the FIRST name key ("children"), never the alias; (b) DECODE accepts the FIRST name key;
+     * (c) DECODE accepts the ALIAS name key ("ingredients"). Wire-format guard for recipe JSON / network sync without
+     * needing the (NeoForge-only) dispatch codec.
+     */
+    private static boolean validateAliasShim() {
+        try {
+            MapCodec<String> mapCodec = MekanismExtraCodecs.aliasedFieldOf(Codec.STRING, SerializationConstants.CHILDREN, SerializationConstants.INGREDIENTS);
+            Codec<String> codec = mapCodec.codec();
+
+            // (a) ENCODE: must write the FIRST name ("children") and NOT the alias ("ingredients").
+            JsonElement encoded = codec.encodeStart(JsonOps.INSTANCE, "foo").getOrThrow();
+            boolean encodeOk = encoded.isJsonObject();
+            if (encodeOk) {
+                JsonObject obj = encoded.getAsJsonObject();
+                encodeOk = obj.has(SerializationConstants.CHILDREN)
+                      && !obj.has(SerializationConstants.INGREDIENTS)
+                      && obj.get(SerializationConstants.CHILDREN).getAsString().equals("foo");
+            }
+
+            // (b) DECODE: must accept the FIRST name key.
+            JsonObject firstNameJson = new JsonObject();
+            firstNameJson.addProperty(SerializationConstants.CHILDREN, "bar");
+            boolean decodeFirstOk = "bar".equals(codec.parse(JsonOps.INSTANCE, firstNameJson).getOrThrow());
+
+            // (c) DECODE: must accept the ALIAS name key.
+            JsonObject aliasJson = new JsonObject();
+            aliasJson.addProperty(SerializationConstants.INGREDIENTS, "baz");
+            boolean decodeAliasOk = "baz".equals(codec.parse(JsonOps.INSTANCE, aliasJson).getOrThrow());
+
+            boolean shimOk = encodeOk && decodeFirstOk && decodeAliasOk;
+            LOGGER.info("{} {} aliasedFieldOf shim parity: encodeFirstName={} decodeFirstName={} decodeAlias={}",
+                  TAG, shimOk ? "OK  " : "FAIL", encodeOk, decodeFirstOk, decodeAliasOk);
+            return shimOk;
+        } catch (Throwable t) {
+            LOGGER.error("{} FAIL aliasedFieldOf shim parity threw", TAG, t);
+            return false;
+        }
     }
 }

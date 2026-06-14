@@ -1,5 +1,7 @@
 package mekanism.api;
 
+import mekanism.api.recipes.ingredients.creator.IChemicalIngredientCreator;
+import mekanism.api.recipes.ingredients.creator.IChemicalStackIngredientCreator;
 import mekanism.api.recipes.ingredients.creator.IItemStackIngredientCreator;
 import org.jetbrains.annotations.ApiStatus.Internal;
 
@@ -28,4 +30,18 @@ public interface IMekanismAccessBase {
      * @apiNote Use {@link mekanism.api.recipes.ingredients.creator.IngredientCreatorAccess#item()} instead.
      */
     IItemStackIngredientCreator itemStackIngredientCreator();
+
+    /**
+     * Gets the chemical ingredient creator.
+     *
+     * @apiNote Use {@link mekanism.api.recipes.ingredients.creator.IngredientCreatorAccess#chemical()} instead.
+     */
+    IChemicalIngredientCreator chemicalIngredientCreator();
+
+    /**
+     * Gets the chemical stack ingredient creator.
+     *
+     * @apiNote Use {@link mekanism.api.recipes.ingredients.creator.IngredientCreatorAccess#chemicalStack()} instead.
+     */
+    IChemicalStackIngredientCreator chemicalStackIngredientCreator();
 }

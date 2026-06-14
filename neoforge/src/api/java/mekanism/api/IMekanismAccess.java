@@ -2,8 +2,6 @@ package mekanism.api;
 
 import mekanism.api.integration.emi.IMekanismEmiHelper;
 import mekanism.api.integration.jei.IMekanismJEIHelper;
-import mekanism.api.recipes.ingredients.creator.IChemicalIngredientCreator;
-import mekanism.api.recipes.ingredients.creator.IChemicalStackIngredientCreator;
 import mekanism.api.recipes.ingredients.creator.IFluidStackIngredientCreator;
 
 /**
@@ -36,8 +34,9 @@ public interface IMekanismAccess extends IMekanismAccessBase {
      */
     IMekanismEmiHelper emiHelper();
 
-    //Note: itemStackIngredientCreator() is inherited from IMekanismAccessBase (:common) - its return type is now
-    // loader-neutral. The remaining accessors below stay here because their return types are loader-bound.
+    //Note: itemStackIngredientCreator() + chemicalIngredientCreator() + chemicalStackIngredientCreator() are inherited
+    // from IMekanismAccessBase (:common) - their return types are now loader-neutral. The remaining accessor below stays
+    // here because its return type is loader-bound.
 
     /**
      * Gets the fluid stack ingredient creator.
@@ -45,20 +44,4 @@ public interface IMekanismAccess extends IMekanismAccessBase {
      * @apiNote Use {@link mekanism.api.recipes.ingredients.creator.IngredientCreatorAccess#fluid()} instead.
      */
     IFluidStackIngredientCreator fluidStackIngredientCreator();
-
-    /**
-     * Gets the chemical stack ingredient creator.
-     *
-     * @apiNote Use {@link mekanism.api.recipes.ingredients.creator.IngredientCreatorAccess#chemicalStack()} instead.
-     * @since 10.7.0
-     */
-    IChemicalStackIngredientCreator chemicalStackIngredientCreator();
-
-    /**
-     * Gets the chemical ingredient creator.
-     *
-     * @apiNote Use {@link mekanism.api.recipes.ingredients.creator.IngredientCreatorAccess#chemical()} instead.
-     * @since 10.7.0
-     */
-    IChemicalIngredientCreator chemicalIngredientCreator();
 }

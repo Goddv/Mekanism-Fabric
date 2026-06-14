@@ -3,10 +3,11 @@ package mekanism.api.recipes.ingredients.chemical;
 import com.mojang.serialization.MapCodec;
 import java.util.Optional;
 import java.util.stream.Stream;
-import mekanism.api.MekanismAPI;
+import mekanism.api.MekanismAPIBase;
 import mekanism.api.SerializationConstants;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.chemical.Chemical;
+import mekanism.api.chemical.IChemicalRegistryProvider;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.HolderSet.Named;
@@ -24,7 +25,7 @@ import org.jetbrains.annotations.Nullable;
 @NothingNullByDefault
 public non-sealed class TagChemicalIngredient extends ChemicalIngredient {
 
-    public static final MapCodec<TagChemicalIngredient> CODEC = TagKey.codec(MekanismAPI.CHEMICAL_REGISTRY_NAME).xmap(
+    public static final MapCodec<TagChemicalIngredient> CODEC = TagKey.codec(MekanismAPIBase.CHEMICAL_REGISTRY_NAME).xmap(
           TagChemicalIngredient::new,
           TagChemicalIngredient::tag
     ).fieldOf(SerializationConstants.TAG);
@@ -45,7 +46,7 @@ public non-sealed class TagChemicalIngredient extends ChemicalIngredient {
 
     @Override
     public final Stream<Holder<Chemical>> generateChemicals() {
-        return MekanismAPI.CHEMICAL_REGISTRY.get(tag())
+        return IChemicalRegistryProvider.INSTANCE.chemicalRegistry().get(tag())
               .stream()
               .flatMap(HolderSet::stream)
               .distinct();//Ensure we don't include the same chemical multiple times. Holder overrides #equals at least within same kind of holder
@@ -53,9 +54,9 @@ public non-sealed class TagChemicalIngredient extends ChemicalIngredient {
 
     @Override
     public void logMissingTags() {
-        Optional<Named<Chemical>> registryTag = MekanismAPI.CHEMICAL_REGISTRY.get(tag());
+        Optional<Named<Chemical>> registryTag = IChemicalRegistryProvider.INSTANCE.chemicalRegistry().get(tag());
         if (registryTag.isEmpty() || registryTag.get().size() == 0) {
-            MekanismAPI.logger.error("Empty tag: {}", tag);
+            MekanismAPIBase.logger.error("Empty tag: {}", tag);
         }
     }
 

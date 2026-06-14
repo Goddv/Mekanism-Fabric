@@ -10,7 +10,7 @@ import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.chemical.Chemical;
 import mekanism.api.chemical.ChemicalStack;
 import mekanism.api.recipes.ingredients.chemical.ChemicalIngredient;
-import mekanism.api.recipes.ingredients.creator.IngredientCreatorAccess;
+import mekanism.api.recipes.ingredients.creator.CommonIngredientCreatorAccess;
 import net.minecraft.core.Holder;
 import net.minecraft.core.TypedInstance;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -25,7 +25,7 @@ import org.jetbrains.annotations.Nullable;
  * <p>{@link ChemicalIngredient}, like its item counterpart, explicitly does not perform count checks,
  * so this class is used to (a) wrap a standard ChemicalIngredient with an amount and (b) provide a standard serialization format for mods to use.
  *
- * @see net.neoforged.neoforge.common.crafting.SizedIngredient
+ * @see "{@code net.neoforged.neoforge.common.crafting.SizedIngredient}, its item equivalent"
  */
 @NothingNullByDefault
 public final class ChemicalStackIngredient implements InputIngredient<Chemical, ChemicalStack> {
@@ -58,7 +58,7 @@ public final class ChemicalStackIngredient implements InputIngredient<Chemical, 
      * @since 10.6.0
      */
     public static final Codec<ChemicalStackIngredient> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-          IngredientCreatorAccess.chemical().mapCodecNonEmpty().forGetter(ChemicalStackIngredient::ingredient),
+          CommonIngredientCreatorAccess.chemical().mapCodecNonEmpty().forGetter(ChemicalStackIngredient::ingredient),
           SerializerHelper.POSITIVE_LONG_CODEC.fieldOf(SerializationConstants.AMOUNT).forGetter(ChemicalStackIngredient::amount)
     ).apply(instance, ChemicalStackIngredient::new));
 
@@ -68,7 +68,7 @@ public final class ChemicalStackIngredient implements InputIngredient<Chemical, 
      * @since 10.6.0
      */
     public static final StreamCodec<RegistryFriendlyByteBuf, ChemicalStackIngredient> STREAM_CODEC = StreamCodec.composite(
-          IngredientCreatorAccess.chemical().streamCodec(), ChemicalStackIngredient::ingredient,
+          CommonIngredientCreatorAccess.chemical().streamCodec(), ChemicalStackIngredient::ingredient,
           ByteBufCodecs.VAR_LONG, ChemicalStackIngredient::amount,
           ChemicalStackIngredient::new
     );

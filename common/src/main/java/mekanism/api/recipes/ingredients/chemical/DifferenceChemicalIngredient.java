@@ -6,24 +6,23 @@ import java.util.stream.Stream;
 import mekanism.api.SerializationConstants;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.chemical.Chemical;
-import mekanism.api.recipes.ingredients.creator.IngredientCreatorAccess;
+import mekanism.api.recipes.ingredients.creator.CommonIngredientCreatorAccess;
 import net.minecraft.core.Holder;
-import net.neoforged.neoforge.common.crafting.DifferenceIngredient;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * Base Chemical ingredient implementation that matches the difference of two provided chemical ingredients, i.e. anything contained in {@code base} that is not in
  * {@code subtracted}.
  *
- * @see DifferenceIngredient DifferenceIngredient, its item equivalent
+ * @see "{@code net.neoforged.neoforge.common.crafting.DifferenceIngredient}, its item equivalent"
  * @since 10.6.0
  */
 @NothingNullByDefault
 public non-sealed class DifferenceChemicalIngredient extends ChemicalIngredient {
 
     public static final MapCodec<DifferenceChemicalIngredient> CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
-          IngredientCreatorAccess.chemical().codecNonEmpty().fieldOf(SerializationConstants.BASE).forGetter(DifferenceChemicalIngredient::base),
-          IngredientCreatorAccess.chemical().codecNonEmpty().fieldOf(SerializationConstants.SUBTRACTED).forGetter(DifferenceChemicalIngredient::subtracted)
+          CommonIngredientCreatorAccess.chemical().codecNonEmpty().fieldOf(SerializationConstants.BASE).forGetter(DifferenceChemicalIngredient::base),
+          CommonIngredientCreatorAccess.chemical().codecNonEmpty().fieldOf(SerializationConstants.SUBTRACTED).forGetter(DifferenceChemicalIngredient::subtracted)
     ).apply(builder, DifferenceChemicalIngredient::new));
 
     private final ChemicalIngredient base;

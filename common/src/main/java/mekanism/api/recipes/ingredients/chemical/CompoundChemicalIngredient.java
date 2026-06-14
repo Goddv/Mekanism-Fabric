@@ -6,24 +6,23 @@ import java.util.stream.Stream;
 import mekanism.api.SerializationConstants;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.chemical.Chemical;
-import mekanism.api.recipes.ingredients.creator.IngredientCreatorAccess;
+import mekanism.api.recipes.codec.MekanismExtraCodecs;
+import mekanism.api.recipes.ingredients.creator.CommonIngredientCreatorAccess;
 import net.minecraft.core.Holder;
-import net.neoforged.neoforge.common.crafting.CompoundIngredient;
-import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * Base Chemical ingredient implementation that matches if any of the child ingredients match. This type additionally represents the array notation used in
  * {@linkplain mekanism.api.recipes.ingredients.creator.IChemicalIngredientCreator#codec} internally.
  *
- * @see CompoundIngredient CompoundIngredient, its item equivalent
+ * @see "{@code net.neoforged.neoforge.common.crafting.CompoundIngredient}, its item equivalent"
  * @since 10.6.0
  */
 @NothingNullByDefault
 public non-sealed class CompoundChemicalIngredient extends ChemicalIngredient {
 
-    public static final MapCodec<CompoundChemicalIngredient> CODEC = NeoForgeExtraCodecs.aliasedFieldOf(
-          IngredientCreatorAccess.chemical().listCodecMultipleElements(), SerializationConstants.CHILDREN, SerializationConstants.INGREDIENTS
+    public static final MapCodec<CompoundChemicalIngredient> CODEC = MekanismExtraCodecs.aliasedFieldOf(
+          CommonIngredientCreatorAccess.chemical().listCodecMultipleElements(), SerializationConstants.CHILDREN, SerializationConstants.INGREDIENTS
     ).xmap(
           CompoundChemicalIngredient::new, CompoundChemicalIngredient::children
     );

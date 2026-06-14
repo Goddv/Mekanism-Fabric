@@ -2,7 +2,7 @@ package mekanism.api.recipes.ingredients.chemical;
 
 import com.mojang.serialization.MapCodec;
 import java.util.stream.Stream;
-import mekanism.api.MekanismAPI;
+import mekanism.api.MekanismAPIBase;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.chemical.Chemical;
 import net.minecraft.core.Holder;
@@ -28,7 +28,7 @@ public final class EmptyChemicalIngredient extends ChemicalIngredient {
 
     @Override
     public boolean test(Holder<Chemical> chemical) {
-        return chemical.is(MekanismAPI.EMPTY_CHEMICAL_KEY);
+        return chemical.is(MekanismAPIBase.EMPTY_CHEMICAL_KEY);
     }
 
     @Override
@@ -43,7 +43,7 @@ public final class EmptyChemicalIngredient extends ChemicalIngredient {
 
     @Override
     public void logMissingTags() {
-        MekanismAPI.logger.warn("Empty chemical ingredient used");
+        MekanismAPIBase.logger.warn("Empty chemical ingredient used");
     }
 
     @Override

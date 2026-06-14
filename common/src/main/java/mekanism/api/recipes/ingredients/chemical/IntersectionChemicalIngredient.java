@@ -7,7 +7,7 @@ import java.util.stream.Stream;
 import mekanism.api.SerializationConstants;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.chemical.Chemical;
-import mekanism.api.recipes.ingredients.creator.IngredientCreatorAccess;
+import mekanism.api.recipes.ingredients.creator.CommonIngredientCreatorAccess;
 import net.minecraft.core.Holder;
 import org.jetbrains.annotations.ApiStatus.Internal;
 import org.jetbrains.annotations.Nullable;
@@ -21,7 +21,7 @@ import org.jetbrains.annotations.Nullable;
 public non-sealed class IntersectionChemicalIngredient extends ChemicalIngredient {
 
     public static final MapCodec<IntersectionChemicalIngredient> CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
-          IngredientCreatorAccess.chemical().listCodecMultipleElements().fieldOf(SerializationConstants.CHILDREN).forGetter(IntersectionChemicalIngredient::children)
+          CommonIngredientCreatorAccess.chemical().listCodecMultipleElements().fieldOf(SerializationConstants.CHILDREN).forGetter(IntersectionChemicalIngredient::children)
     ).apply(builder, IntersectionChemicalIngredient::new));
 
     private final List<ChemicalIngredient> children;
