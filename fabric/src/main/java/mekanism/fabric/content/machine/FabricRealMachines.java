@@ -27,7 +27,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 
 /**
  * Transitional Fabric bring-up: registers REAL Mekanism machine blocks (enrichment_chamber, crusher, energized_smelter,
- * osmium_compressor, combiner) on Fabric — real ids whose facing/active blockstates + models + textures are already
+ * combiner) on Fabric — real ids whose facing/active blockstates + models + textures are already
  * bundled — sharing one {@link MachineBlock} class + {@link MachineBlockEntity}. Block+item registration now goes through
  * the loader-neutral {@code :common} {@link MekanismBlockRegister} framework; the shared block-entity type + capability
  * wiring stay loader-specific. Adds the machines to the Mekanism creative tab. The processing loop is a demo; the real
@@ -42,8 +42,11 @@ public final class FabricRealMachines {
 
     private static final List<MekanismBlockHolder<MachineBlock, BlockItem>> MACHINES = new ArrayList<>();
 
+    // NOTE: osmium_compressor is NOT here — it is an item+chemical->item machine, registered with a functional
+    // chemical-tank block-entity in FabricChemicalMachines. (combiner remains a placeholder until its dual-item
+    // recipe type is ported.)
     private static final String[] MACHINE_NAMES = {
-          "enrichment_chamber", "crusher", "energized_smelter", "osmium_compressor", "combiner"
+          "enrichment_chamber", "crusher", "energized_smelter", "combiner"
     };
 
     static {
@@ -56,8 +59,8 @@ public final class FabricRealMachines {
     }
 
     /**
-     * Maps each machine to the item&rarr;item recipe type it processes. The compressor/combiner have no item&rarr;item
-     * type (they need chemical/dual-item recipe types not yet ported) so they get {@code null} (no processing for now).
+     * Maps each machine to the item&rarr;item recipe type it processes. The combiner has no item&rarr;item
+     * type (it needs a dual-item recipe type not yet ported) so it gets {@code null} (no processing for now).
      */
     @Nullable
     private static Supplier<RecipeType<ItemStackToItemStackRecipe>> recipeTypeFor(String name) {

@@ -1,0 +1,16 @@
+{
+  "type": "mekanism:painting",
+  "item_input": {
+    "count": 1,
+    "ingredient": "minecraft:iron_ingot"
+  },
+  "chemical_input": {
+    "chemical": "mekanism:fabric_demo_chemical",
+    "amount": 100
+  },
+  "output": {
+    "count": 1,
+    "id": "minecraft:redstone"
+  },
+  "per_tick_usage": false
+}

@@ -8,6 +8,7 @@ import mekanism.api.chemical.Chemical;
 import mekanism.api.chemical.ChemicalStack;
 import mekanism.fabric.content.machine.ChemicalMachineBlockEntity;
 import mekanism.fabric.content.machine.ChemicalToItemMachineBlockEntity;
+import mekanism.fabric.content.machine.ItemChemicalToItemMachineBlockEntity;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -55,6 +56,12 @@ public final class FabricChemicalMachineSelfTest {
         all &= validateItemToChemical(level, "pigment_extracting", "pigment_extractor", Items.COAL, new BlockPos(8, 64, 33));
         // ---- chemical -> item machine ----
         all &= validateChemicalToItem(level, "crystallizing", "chemical_crystallizer", Items.DIAMOND, new BlockPos(8, 64, 39));
+        // ---- item + chemical -> item machines ----
+        all &= validateItemChemicalToItem(level, "compressing", "osmium_compressor", Items.IRON_INGOT, Items.GOLD_INGOT, new BlockPos(8, 64, 42));
+        all &= validateItemChemicalToItem(level, "purifying", "purification_chamber", Items.IRON_INGOT, Items.DIAMOND, new BlockPos(8, 64, 45));
+        all &= validateItemChemicalToItem(level, "injecting", "chemical_injection_chamber", Items.IRON_INGOT, Items.EMERALD, new BlockPos(8, 64, 48));
+        all &= validateItemChemicalToItem(level, "metallurgic_infusing", "metallurgic_infuser", Items.IRON_INGOT, Items.LAPIS_LAZULI, new BlockPos(8, 64, 51));
+        all &= validateItemChemicalToItem(level, "painting", "painting_machine", Items.IRON_INGOT, Items.REDSTONE, new BlockPos(8, 64, 54));
         LOGGER.info("{} RESULT: {}", TAG, all ? "PASS" : "FAIL");
     }
 
@@ -133,6 +140,55 @@ public final class FabricChemicalMachineSelfTest {
                   outputStack.getCount(), chemicalConsumed);
         } catch (Throwable t) {
             LOGGER.error("{} FAIL [{}] chemical->item test threw", TAG, blockId, t);
+        }
+        return ok;
+    }
+
+    /**
+     * Item+chemical&rarr;item: set the input item slot, fill the chemical input tank with {@code fabric_demo_chemical}
+     * ({@code >=} the recipe's amount), inject energy, tick past completion, then assert the OUTPUT ITEM slot holds
+     * {@code expectedItem} and BOTH the input item and the chemical were consumed.
+     */
+    private static boolean validateItemChemicalToItem(ServerLevel level, String recipeId, String blockId,
+          net.minecraft.world.item.Item inputItem, net.minecraft.world.item.Item expectedItem, BlockPos pos) {
+        boolean ok = false;
+        boolean registrationOk = false;
+        boolean itemConsumed = false;
+        boolean chemicalConsumed = false;
+        ItemStack outputStack = ItemStack.EMPTY;
+        try {
+            Identifier id = Identifier.fromNamespaceAndPath("mekanism", recipeId);
+            registrationOk = BuiltInRegistries.RECIPE_TYPE.containsKey(id) && BuiltInRegistries.RECIPE_SERIALIZER.containsKey(id);
+
+            level.getChunk(pos.getX() >> 4, pos.getZ() >> 4);
+            Block block = BuiltInRegistries.BLOCK.getValue(Identifier.fromNamespaceAndPath("mekanism", blockId));
+            level.setBlock(pos, block.defaultBlockState(), 3);
+            if (level.getBlockEntity(pos) instanceof ItemChemicalToItemMachineBlockEntity machine) {
+                machine.setItem(0, new ItemStack(inputItem, 8));
+                Holder<Chemical> demoHolder = mekanism.fabric.chemical.FabricChemicalRegistry.demo();
+                // Fill the input tank with 500 of the demo chemical (>= the recipe's 100 amount).
+                machine.getInputTank().setStack(new ChemicalStack(demoHolder, 500L));
+                machine.getEnergyContainers(null).getFirst().insert(1_000_000L, Action.EXECUTE, AutomationType.INTERNAL);
+                long startChemical = machine.getInputTank().getStored();
+                for (int i = 0; i < ItemChemicalToItemMachineBlockEntity.MAX_PROGRESS + 5 && machine.getItem(1).isEmpty(); i++) {
+                    machine.serverTick();
+                }
+                // Copy: removeBlock() below drops/clears the BE's container, mutating the live stack to empty. Capture a
+                // snapshot so the assertion sees the post-processing slot contents.
+                outputStack = machine.getItem(1).copy();
+                itemConsumed = machine.getItem(0).getCount() < 8;
+                chemicalConsumed = machine.getInputTank().getStored() < startChemical;
+            }
+            level.removeBlock(pos, false);
+
+            boolean producedOk = !outputStack.isEmpty() && outputStack.is(expectedItem) && outputStack.getCount() > 0;
+            ok = registrationOk && producedOk && itemConsumed && chemicalConsumed;
+            LOGGER.info("{} {} [{}] registration={} outputItem={} count={} itemConsumed={} chemicalConsumed={}",
+                  TAG, ok ? "OK  " : "FAIL", blockId, registrationOk,
+                  outputStack.isEmpty() ? "<empty>" : BuiltInRegistries.ITEM.getKey(outputStack.getItem()),
+                  outputStack.getCount(), itemConsumed, chemicalConsumed);
+        } catch (Throwable t) {
+            LOGGER.error("{} FAIL [{}] item+chemical->item test threw", TAG, blockId, t);
         }
         return ok;
     }

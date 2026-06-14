@@ -1,15 +1,20 @@
 package mekanism.common.recipe.serializer;
 
+import com.mojang.datafixers.util.Function4;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.function.BiFunction;
 import mekanism.api.SerializationConstants;
 import mekanism.api.chemical.ChemicalStack;
+import mekanism.api.recipes.ItemStackChemicalToItemStackRecipe;
 import mekanism.api.recipes.basic.BasicChemicalCrystallizerRecipe;
 import mekanism.api.recipes.basic.BasicItemStackToChemicalRecipe;
 import mekanism.api.recipes.basic.BasicItemStackToItemStackRecipe;
+import mekanism.api.recipes.basic.IBasicItemStackOutput;
 import mekanism.api.recipes.ingredients.ChemicalStackIngredient;
 import mekanism.api.recipes.ingredients.ItemStackIngredient;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.Recipe;
@@ -69,6 +74,34 @@ public final class MekanismRecipeSerializerHelper {
      * {@link ChemicalStackIngredient#STREAM_CODEC}), so the produced (de)serialization is byte-identical and the shared
      * {@code crystallizing} recipe JSON loads identically on both loaders. Used by {@link BasicChemicalCrystallizerRecipe}.
      */
+    /**
+     * Loader-neutral item+chemical&rarr;item serializer factory for the {@code item chemical to item} machine family
+     * (Osmium Compressor {@code compressing}, Purification Chamber {@code purifying}, Chemical Injection Chamber
+     * {@code injecting}, Metallurgic Infuser {@code metallurgic_infusing}, Painting Machine {@code painting}). Mirrors
+     * NeoForge's {@code MekanismRecipeSerializer.itemChemicalToItem} EXACTLY: item input via {@link ItemStackIngredient#CODEC}
+     * under {@link SerializationConstants#ITEM_INPUT}, chemical input via {@link ChemicalStackIngredient#CODEC} under
+     * {@link SerializationConstants#CHEMICAL_INPUT}, output via {@link ItemStackTemplate#CODEC} under
+     * {@link SerializationConstants#OUTPUT}, and a {@link SerializationConstants#PER_TICK_USAGE} boolean. NeoForge uses
+     * {@code IngredientCreatorAccess.chemicalStack().codec()} for the chemical input, which returns exactly
+     * {@link ChemicalStackIngredient#CODEC} (and {@code .streamCodec()} returns {@link ChemicalStackIngredient#STREAM_CODEC}),
+     * so the produced (de)serialization is byte-identical and the shared recipe JSON loads identically on both loaders.
+     */
+    public static <RECIPE extends ItemStackChemicalToItemStackRecipe & IBasicItemStackOutput> RecipeSerializer<RECIPE> itemChemicalToItem(
+          Function4<ItemStackIngredient, ChemicalStackIngredient, ItemStackTemplate, Boolean, RECIPE> factory) {
+        return new RecipeSerializer<>(RecordCodecBuilder.mapCodec(instance -> instance.group(
+              ItemStackIngredient.CODEC.fieldOf(SerializationConstants.ITEM_INPUT).forGetter(ItemStackChemicalToItemStackRecipe::getItemInput),
+              ChemicalStackIngredient.CODEC.fieldOf(SerializationConstants.CHEMICAL_INPUT).forGetter(ItemStackChemicalToItemStackRecipe::getChemicalInput),
+              ItemStackTemplate.CODEC.fieldOf(SerializationConstants.OUTPUT).forGetter(IBasicItemStackOutput::getOutputRaw),
+              Codec.BOOL.fieldOf(SerializationConstants.PER_TICK_USAGE).forGetter(ItemStackChemicalToItemStackRecipe::perTickUsage)
+        ).apply(instance, factory)), StreamCodec.composite(
+              ItemStackIngredient.STREAM_CODEC, ItemStackChemicalToItemStackRecipe::getItemInput,
+              ChemicalStackIngredient.STREAM_CODEC, ItemStackChemicalToItemStackRecipe::getChemicalInput,
+              ItemStackTemplate.STREAM_CODEC, IBasicItemStackOutput::getOutputRaw,
+              ByteBufCodecs.BOOL, ItemStackChemicalToItemStackRecipe::perTickUsage,
+              factory
+        ));
+    }
+
     public static RecipeSerializer<BasicChemicalCrystallizerRecipe> crystallizing(BiFunction<ChemicalStackIngredient, ItemStackTemplate, BasicChemicalCrystallizerRecipe> factory) {
         return new RecipeSerializer<>(RecordCodecBuilder.mapCodec(instance -> instance.group(
               ChemicalStackIngredient.CODEC.fieldOf(SerializationConstants.INPUT).forGetter(BasicChemicalCrystallizerRecipe::getInput),

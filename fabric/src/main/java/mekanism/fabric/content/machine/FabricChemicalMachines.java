@@ -39,6 +39,12 @@ public final class FabricChemicalMachines {
     private static final Identifier OXIDIZING_ID = Identifier.fromNamespaceAndPath(MODID, "oxidizing");
     private static final Identifier PIGMENT_EXTRACTING_ID = Identifier.fromNamespaceAndPath(MODID, "pigment_extracting");
 
+    private static final Identifier COMPRESSING_ID = Identifier.fromNamespaceAndPath(MODID, "compressing");
+    private static final Identifier PURIFYING_ID = Identifier.fromNamespaceAndPath(MODID, "purifying");
+    private static final Identifier INJECTING_ID = Identifier.fromNamespaceAndPath(MODID, "injecting");
+    private static final Identifier METALLURGIC_INFUSING_ID = Identifier.fromNamespaceAndPath(MODID, "metallurgic_infusing");
+    private static final Identifier PAINTING_ID = Identifier.fromNamespaceAndPath(MODID, "painting");
+
     // ---- item -> chemical machines (generic ChemicalMachineBlock + ChemicalMachineBlockEntity) ----
 
     /** The Chemical Oxidizer block (item -> chemical). Facing-only blockstate. */
@@ -69,6 +75,40 @@ public final class FabricChemicalMachines {
           Identifier.fromNamespaceAndPath(MODID, "chemical_crystallizer"), () ->
                 FabricBlockEntityTypeBuilder.create(ChemicalToItemMachineBlockEntity::new, CHEMICAL_CRYSTALLIZER.block()).build());
 
+    // ---- item + chemical -> item machines (generic ItemChemicalMachineBlock + ItemChemicalToItemMachineBlockEntity) ----
+
+    /** The Osmium Compressor block (item + chemical -> item). Bundled blockstate has facing+active variants. */
+    public static final MekanismBlockHolder<ItemChemicalMachineBlock, BlockItem> OSMIUM_COMPRESSOR = BLOCKS.register(
+          "osmium_compressor", properties -> new ItemChemicalMachineBlock(properties
+                .strength(3.5F, 9.0F).requiresCorrectToolForDrops().sound(SoundType.METAL), COMPRESSING_ID, true));
+
+    /** The Purification Chamber block (item + chemical -> item). Bundled blockstate has facing+active variants. */
+    public static final MekanismBlockHolder<ItemChemicalMachineBlock, BlockItem> PURIFICATION_CHAMBER = BLOCKS.register(
+          "purification_chamber", properties -> new ItemChemicalMachineBlock(properties
+                .strength(3.5F, 9.0F).requiresCorrectToolForDrops().sound(SoundType.METAL), PURIFYING_ID, true));
+
+    /** The Chemical Injection Chamber block (item + chemical -> item). Bundled blockstate has facing+active variants. */
+    public static final MekanismBlockHolder<ItemChemicalMachineBlock, BlockItem> CHEMICAL_INJECTION_CHAMBER = BLOCKS.register(
+          "chemical_injection_chamber", properties -> new ItemChemicalMachineBlock(properties
+                .strength(3.5F, 9.0F).requiresCorrectToolForDrops().sound(SoundType.METAL), INJECTING_ID, true));
+
+    /** The Metallurgic Infuser block (item + chemical -> item). Bundled blockstate is facing-only (no active). */
+    public static final MekanismBlockHolder<ItemChemicalMachineBlock, BlockItem> METALLURGIC_INFUSER = BLOCKS.register(
+          "metallurgic_infuser", properties -> new ItemChemicalMachineBlock(properties
+                .strength(3.5F, 9.0F).requiresCorrectToolForDrops().sound(SoundType.METAL), METALLURGIC_INFUSING_ID, false));
+
+    /** The Painting Machine block (item + chemical -> item). Bundled blockstate has facing+active variants. */
+    public static final MekanismBlockHolder<ItemChemicalMachineBlock, BlockItem> PAINTING_MACHINE = BLOCKS.register(
+          "painting_machine", properties -> new ItemChemicalMachineBlock(properties
+                .strength(3.5F, 9.0F).requiresCorrectToolForDrops().sound(SoundType.METAL), PAINTING_ID, true));
+
+    /** Block-entity type for the item+chemical->item machines (shared across all five). */
+    public static final RegistrySupplier<BlockEntityType<ItemChemicalToItemMachineBlockEntity>> ITEM_CHEMICAL_BE_TYPE = BE_TYPES.register(
+          Identifier.fromNamespaceAndPath(MODID, "item_chemical_machine"), () ->
+                FabricBlockEntityTypeBuilder.create(ItemChemicalToItemMachineBlockEntity::new,
+                      OSMIUM_COMPRESSOR.block(), PURIFICATION_CHAMBER.block(), CHEMICAL_INJECTION_CHAMBER.block(),
+                      METALLURGIC_INFUSER.block(), PAINTING_MACHINE.block()).build());
+
     private FabricChemicalMachines() {
     }
 
@@ -86,9 +126,19 @@ public final class FabricChemicalMachines {
         MekanismFabricChemical.SIDED.registerForBlockEntity((be, context) -> be, CRYSTALLIZER_BE_TYPE.get());
         ItemStorage.SIDED.registerForBlockEntity((be, direction) -> ContainerStorage.of(be, direction), CRYSTALLIZER_BE_TYPE.get());
 
+        // ---- item + chemical -> item machines: energy sink + chemical input tank + item input/output slots ----
+        MekanismFabricEnergy.SIDED.registerForBlockEntity((be, context) -> be, ITEM_CHEMICAL_BE_TYPE.get());
+        MekanismFabricChemical.SIDED.registerForBlockEntity((be, context) -> be, ITEM_CHEMICAL_BE_TYPE.get());
+        ItemStorage.SIDED.registerForBlockEntity((be, direction) -> ContainerStorage.of(be, direction), ITEM_CHEMICAL_BE_TYPE.get());
+
         ResourceKey<CreativeModeTab> tab = ResourceKey.create(Registries.CREATIVE_MODE_TAB, Identifier.fromNamespaceAndPath(MODID, "mekanism"));
         CreativeTabRegistry.append(tab, CHEMICAL_OXIDIZER.item().get());
         CreativeTabRegistry.append(tab, PIGMENT_EXTRACTOR.item().get());
         CreativeTabRegistry.append(tab, CHEMICAL_CRYSTALLIZER.item().get());
+        CreativeTabRegistry.append(tab, OSMIUM_COMPRESSOR.item().get());
+        CreativeTabRegistry.append(tab, PURIFICATION_CHAMBER.item().get());
+        CreativeTabRegistry.append(tab, CHEMICAL_INJECTION_CHAMBER.item().get());
+        CreativeTabRegistry.append(tab, METALLURGIC_INFUSER.item().get());
+        CreativeTabRegistry.append(tab, PAINTING_MACHINE.item().get());
     }
 }
