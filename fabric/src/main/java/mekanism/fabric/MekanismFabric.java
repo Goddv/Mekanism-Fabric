@@ -14,13 +14,16 @@ import mekanism.fabric.content.FabricDataComponentDemo;
 import mekanism.fabric.content.FabricDataComponentSelfTest;
 import mekanism.fabric.content.energy.FabricEnergyBlockDemo;
 import mekanism.fabric.content.machine.FabricAutoIoSelfTest;
+import mekanism.fabric.content.machine.FabricChemicalMachines;
 import mekanism.fabric.content.machine.FabricMachineMenus;
 import mekanism.fabric.content.machine.FabricRealMachines;
 import mekanism.fabric.content.power.FabricPowerInfrastructure;
 import mekanism.fabric.content.power.FabricPowerSelfTest;
 import mekanism.fabric.energy.FabricEnergySelfTest;
 import mekanism.fabric.heat.FabricHeatSelfTest;
+import mekanism.fabric.recipe.FabricChemicalMachineSelfTest;
 import mekanism.fabric.recipe.FabricRecipeSelfTest;
+import mekanism.fabric.recipe.MekanismChemicalRecipeTypesRegistrar;
 import mekanism.fabric.recipe.MekanismRecipeTypesRegistrar;
 import mekanism.fabric.registration.FabricRegistrationSelfTest;
 import mekanism.fabric.text.FabricTextFoundationSelfTest;
@@ -70,6 +73,12 @@ public final class MekanismFabric implements ModInitializer {
         // Transitional: the enriching RecipeType + RecipeSerializer (shared :common recipe classes), so machines run
         // REAL datapack recipes instead of the demo move-item loop.
         MekanismRecipeTypesRegistrar.init();
+        // Transitional: the oxidizing (item -> chemical) RecipeType + RecipeSerializer (shared :common recipe classes),
+        // backing the first chemical-processing machine on Fabric.
+        MekanismChemicalRecipeTypesRegistrar.init();
+        // Transitional: the FIRST chemical-processing machine — the Chemical Oxidizer (item input -> chemical output),
+        // backed by a functional chemical-output block-entity (energy + item input + chemical tank + oxidizing recipes).
+        FabricChemicalMachines.init();
         // Transitional: a fuel-burning generator + energy cables so machines can be powered in-game (generator ->
         // cable -> machine) for manual testing, until the real generators + transmitter network are ported.
         FabricPowerInfrastructure.init();
@@ -85,6 +94,7 @@ public final class MekanismFabric implements ModInitializer {
             FabricChemicalSelfTest.run();
             FabricFluidSelfTest.run();
             FabricRecipeSelfTest.run();
+            FabricChemicalMachineSelfTest.run();
             FabricPowerSelfTest.run();
             FabricAutoIoSelfTest.run();
             FabricConfigSelfTest.run();

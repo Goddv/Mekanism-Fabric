@@ -1,0 +1,11 @@
+{
+  "type": "mekanism:oxidizing",
+  "input": {
+    "count": 1,
+    "ingredient": "minecraft:redstone"
+  },
+  "output": {
+    "amount": 100,
+    "id": "mekanism:fabric_demo_chemical"
+  }
+}

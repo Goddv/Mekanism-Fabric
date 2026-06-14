@@ -4,6 +4,8 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.function.BiFunction;
 import mekanism.api.SerializationConstants;
+import mekanism.api.chemical.ChemicalStack;
+import mekanism.api.recipes.basic.BasicItemStackToChemicalRecipe;
 import mekanism.api.recipes.basic.BasicItemStackToItemStackRecipe;
 import mekanism.api.recipes.ingredients.ItemStackIngredient;
 import net.minecraft.network.codec.StreamCodec;
@@ -33,6 +35,25 @@ public final class MekanismRecipeSerializerHelper {
         ).apply(instance, factory)), StreamCodec.composite(
               ItemStackIngredient.STREAM_CODEC, BasicItemStackToItemStackRecipe::getInput,
               ItemStackTemplate.STREAM_CODEC, BasicItemStackToItemStackRecipe::getOutputRaw,
+              factory
+        ));
+    }
+
+    /**
+     * Loader-neutral item&rarr;chemical serializer factory (mirrors {@link #itemToItem(BiFunction)} but with a
+     * {@link ChemicalStack} output). Built from the same field names + codec structure as NeoForge's
+     * {@code MekanismRecipeSerializer.itemToChemical} (input via {@link ItemStackIngredient#CODEC} under
+     * {@link SerializationConstants#INPUT}, output via {@link ChemicalStack#MAP_CODEC} under
+     * {@link SerializationConstants#OUTPUT}), so the shared {@code oxidizing} recipe JSON loads identically on both
+     * loaders. Used by the Chemical Oxidizer ({@code BasicChemicalOxidizerRecipe}).
+     */
+    public static <RECIPE extends BasicItemStackToChemicalRecipe> RecipeSerializer<RECIPE> itemToChemical(BiFunction<ItemStackIngredient, ChemicalStack, RECIPE> factory) {
+        return new RecipeSerializer<>(RecordCodecBuilder.mapCodec(instance -> instance.group(
+              ItemStackIngredient.CODEC.fieldOf(SerializationConstants.INPUT).forGetter(BasicItemStackToChemicalRecipe::getInput),
+              ChemicalStack.MAP_CODEC.fieldOf(SerializationConstants.OUTPUT).forGetter(BasicItemStackToChemicalRecipe::getOutputRaw)
+        ).apply(instance, factory)), StreamCodec.composite(
+              ItemStackIngredient.STREAM_CODEC, BasicItemStackToChemicalRecipe::getInput,
+              ChemicalStack.STREAM_CODEC, BasicItemStackToChemicalRecipe::getOutputRaw,
               factory
         ));
     }
