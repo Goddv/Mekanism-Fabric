@@ -6,6 +6,7 @@ import com.mojang.serialization.JsonOps;
 import mekanism.api.Action;
 import mekanism.api.AutomationType;
 import mekanism.api.recipes.ingredients.ItemStackIngredient;
+import mekanism.api.recipes.ingredients.creator.CommonIngredientCreatorAccess;
 import mekanism.api.recipes.ingredients.creator.IItemStackIngredientCreator;
 import mekanism.fabric.content.machine.MachineBlockEntity;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -67,9 +68,11 @@ public final class FabricRecipeSelfTest {
             boolean vanillaSmeltOk = runMachine(level, new BlockPos(6, 64, 30), "energized_smelter", Items.RAW_IRON, Items.IRON_INGOT);
             boolean processOk = enrichOk && crushOk && smeltOk && vanillaSmeltOk;
 
-            // (D) The hoisted :common IItemStackIngredientCreator build path works on Fabric (vanilla Ingredient path):
-            // from(item)/from(item,amount) produce ingredients with NeoForge-identical count semantics + codec wire shape.
-            IItemStackIngredientCreator creator = FabricItemStackIngredientCreator.INSTANCE;
+            // (D) The hoisted :common IItemStackIngredientCreator build path works on Fabric, resolved through the
+            // creator-access SEAM (CommonIngredientCreatorAccess.item() -> IMekanismAccessBase service -> the Fabric impl,
+            // proving the service descriptor is wired): from(item)/from(item,amount) produce NeoForge-identical count
+            // semantics + codec wire shape.
+            IItemStackIngredientCreator creator = CommonIngredientCreatorAccess.item();
             ItemStackIngredient builtCounted = creator.from(Items.DIRT, 3);
             ItemStackIngredient builtSingle = creator.from(Items.IRON_INGOT);
             boolean creatorBuildOk = builtCounted.count() == 3

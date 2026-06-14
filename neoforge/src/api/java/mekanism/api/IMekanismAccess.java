@@ -5,14 +5,16 @@ import mekanism.api.integration.jei.IMekanismJEIHelper;
 import mekanism.api.recipes.ingredients.creator.IChemicalIngredientCreator;
 import mekanism.api.recipes.ingredients.creator.IChemicalStackIngredientCreator;
 import mekanism.api.recipes.ingredients.creator.IFluidStackIngredientCreator;
-import mekanism.api.recipes.ingredients.creator.IItemStackIngredientCreator;
 
 /**
  * Provides access to a variety of different helpers that are exposed to the API.
  *
+ * <p>The loader-neutral creator accessors live on the {@code :common} super-interface {@link IMekanismAccessBase}; this
+ * interface adds the loader-bound accessors (JEI/EMI helpers + the NeoForge fluid-ingredient creator).
+ *
  * @since 10.4.0
  */
-public interface IMekanismAccess {
+public interface IMekanismAccess extends IMekanismAccessBase {
 
     /**
      * Provides access to Mekanism's internals.
@@ -34,12 +36,8 @@ public interface IMekanismAccess {
      */
     IMekanismEmiHelper emiHelper();
 
-    /**
-     * Gets the item stack ingredient creator.
-     *
-     * @apiNote Use {@link mekanism.api.recipes.ingredients.creator.IngredientCreatorAccess#item()} instead.
-     */
-    IItemStackIngredientCreator itemStackIngredientCreator();
+    //Note: itemStackIngredientCreator() is inherited from IMekanismAccessBase (:common) - its return type is now
+    // loader-neutral. The remaining accessors below stay here because their return types are loader-bound.
 
     /**
      * Gets the fluid stack ingredient creator.
