@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import mekanism.common.registries.MekanismGameEvents;
 import mekanism.common.registries.MekanismParticleTypes;
 import mekanism.common.registries.MekanismSounds;
+import mekanism.fabric.chemical.FabricChemicalIngredientTypes;
 import mekanism.fabric.chemical.FabricChemicalRegistry;
 import mekanism.fabric.chemical.FabricChemicalSelfTest;
 import mekanism.fabric.config.FabricConfigSelfTest;
@@ -45,6 +46,11 @@ public final class MekanismFabric implements ModInitializer {
         // Create Mekanism's custom `chemical` registry FIRST (custom registries must be built during mod init, before
         // registries freeze). The hoisted :common Chemical/ChemicalStack reach it via IChemicalRegistryProvider.
         FabricChemicalRegistry.init();
+        // Create the chemical_ingredient_type serializer registry + register the six type serializers (mirrors NeoForge's
+        // MekanismChemicalIngredientTypes). Must come right after the chemical registry and before registries freeze —
+        // it backs the dispatch "type" key in the hoisted :common ChemicalIngredientCreator (via
+        // IChemicalIngredientTypeRegistry), giving Fabric a REAL chemical-ingredient creator + dispatch.
+        FabricChemicalIngredientTypes.init();
         // Real content registration (shared loader-neutral path; finalized per-loader).
         MekanismSounds.SOUND_EVENTS.register();
         MekanismGameEvents.GAME_EVENTS.register();

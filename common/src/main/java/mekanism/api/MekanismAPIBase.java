@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.ServiceLoader;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.chemical.Chemical;
+import mekanism.api.recipes.ingredients.chemical.ChemicalIngredient;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
@@ -67,6 +68,17 @@ public class MekanismAPIBase {
      * Constant location representing the name all empty chemicals will be registered under.
      */
     public static final ResourceKey<Chemical> EMPTY_CHEMICAL_KEY = ResourceKey.create(CHEMICAL_REGISTRY_NAME, rl("empty"));
+
+    /**
+     * {@link ResourceKey} for the name of the Registry for {@link ChemicalIngredient} ingredient type serializers.
+     * Loader-neutral so {@code :common} chemical-ingredient code (the dispatch codec in
+     * {@code mekanism.common.recipe.ingredients.ChemicalIngredientCreator}) can reference it; the registry instance
+     * itself is created per-loader (NeoForge {@code RegistryBuilder}, Fabric {@code FabricRegistryBuilder}) and reached
+     * through {@link mekanism.api.recipes.ingredients.chemical.IChemicalIngredientTypeRegistry}.
+     *
+     * @since 10.7.0
+     */
+    public static final ResourceKey<Registry<MapCodec<? extends ChemicalIngredient>>> CHEMICAL_INGREDIENT_TYPE_REGISTRY_NAME = codecRegistryKey(ChemicalIngredient.class, "chemical_ingredient_type");
 
     @Internal
     private static final ClassLoader SERVICE_CL = MekanismAPIBase.class.getClassLoader();

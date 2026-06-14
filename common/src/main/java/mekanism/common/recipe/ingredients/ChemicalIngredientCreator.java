@@ -8,12 +8,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
-import mekanism.api.MekanismAPI;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.chemical.Chemical;
+import mekanism.api.recipes.codec.MekanismExtraCodecs;
 import mekanism.api.recipes.ingredients.chemical.ChemicalIngredient;
 import mekanism.api.recipes.ingredients.chemical.CompoundChemicalIngredient;
 import mekanism.api.recipes.ingredients.chemical.DifferenceChemicalIngredient;
+import mekanism.api.recipes.ingredients.chemical.IChemicalIngredientTypeRegistry;
 import mekanism.api.recipes.ingredients.chemical.IntersectionChemicalIngredient;
 import mekanism.api.recipes.ingredients.chemical.SingleChemicalIngredient;
 import mekanism.api.recipes.ingredients.chemical.TagChemicalIngredient;
@@ -25,14 +26,13 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ExtraCodecs;
-import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
 
 @NothingNullByDefault
 public class ChemicalIngredientCreator implements IChemicalIngredientCreator {
 
     public static final ChemicalIngredientCreator INSTANCE = new ChemicalIngredientCreator();
 
-    private static final MapCodec<ChemicalIngredient> SINGLE_OR_TAG_CODEC = NeoForgeExtraCodecs.xor(SingleChemicalIngredient.CODEC, TagChemicalIngredient.CODEC).flatXmap(
+    private static final MapCodec<ChemicalIngredient> SINGLE_OR_TAG_CODEC = MekanismExtraCodecs.xor(SingleChemicalIngredient.CODEC, TagChemicalIngredient.CODEC).flatXmap(
           either -> DataResult.success(either.map(i -> i, ChemicalIngredient.class::cast)),
           ingredient -> {
               if (ingredient instanceof SingleChemicalIngredient singleIngredient) {
@@ -43,7 +43,7 @@ public class ChemicalIngredientCreator implements IChemicalIngredientCreator {
               return DataResult.error(() -> "Basic chemical ingredient should be either a chemical or a tag!");
           });
 
-    private static final MapCodec<ChemicalIngredient> MAP_CODEC_NONEMPTY = NeoForgeExtraCodecs.dispatchMapOrElse(MekanismAPI.CHEMICAL_INGREDIENT_TYPES.byNameCodec(), ChemicalIngredient::codec,
+    private static final MapCodec<ChemicalIngredient> MAP_CODEC_NONEMPTY = MekanismExtraCodecs.dispatchMapOrElse(IChemicalIngredientTypeRegistry.INSTANCE.chemicalIngredientTypes().byNameCodec(), ChemicalIngredient::codec,
           Function.identity(), SINGLE_OR_TAG_CODEC).xmap(
           either -> either.map(Function.identity(), Function.identity()),
           ingredient -> {

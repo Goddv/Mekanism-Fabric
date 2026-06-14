@@ -4,8 +4,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.MapCodec;
+import java.util.List;
 import mekanism.api.Action;
 import mekanism.api.MekanismAPIBase;
 import mekanism.api.SerializationConstants;
@@ -13,11 +15,20 @@ import mekanism.api.chemical.Chemical;
 import mekanism.api.chemical.ChemicalStack;
 import mekanism.api.chemical.IChemicalHandler;
 import mekanism.api.recipes.codec.MekanismExtraCodecs;
+import mekanism.api.recipes.ingredients.ChemicalStackIngredient;
+import mekanism.api.recipes.ingredients.chemical.ChemicalIngredient;
+import mekanism.api.recipes.ingredients.chemical.CompoundChemicalIngredient;
+import mekanism.api.recipes.ingredients.chemical.SingleChemicalIngredient;
+import mekanism.api.recipes.ingredients.chemical.TagChemicalIngredient;
+import mekanism.api.recipes.ingredients.creator.CommonIngredientCreatorAccess;
+import mekanism.api.recipes.ingredients.creator.IChemicalIngredientCreator;
+import mekanism.api.recipes.ingredients.creator.IChemicalStackIngredientCreator;
 import mekanism.fabric.content.energy.FabricEnergyBlockDemo;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.TagKey;
 import org.slf4j.Logger;
 
 /**
@@ -80,9 +91,14 @@ public final class FabricChemicalSelfTest {
             // creator) on a representative String codec keyed by the same names CompoundChemicalIngredient uses.
             boolean aliasShimOk = validateAliasShim();
 
-            ok = registryOk && chemicalOk && stackOk && emptyOk && capabilityOk && aliasShimOk;
-            LOGGER.info("{} {} chemical core+capability: registry={} chemical={} stack={} empty={} capability={} aliasShim={}",
-                  TAG, ok ? "OK  " : "FAIL", registryOk, chemicalOk, stackOk, emptyOk, capabilityOk, aliasShimOk);
+            // REAL Fabric chemical-ingredient creator + dispatch codec: now that the two creator impls are hoisted to
+            // :common and the chemical_ingredient_type registry is built on Fabric, exercise creation + the dispatch
+            // round-trip through CommonIngredientCreatorAccess (NOT a throwing stub).
+            boolean creatorOk = validateRealCreator(level);
+
+            ok = registryOk && chemicalOk && stackOk && emptyOk && capabilityOk && aliasShimOk && creatorOk;
+            LOGGER.info("{} {} chemical core+capability: registry={} chemical={} stack={} empty={} capability={} aliasShim={} creator={}",
+                  TAG, ok ? "OK  " : "FAIL", registryOk, chemicalOk, stackOk, emptyOk, capabilityOk, aliasShimOk, creatorOk);
         } catch (Throwable t) {
             LOGGER.error("{} FAIL chemical test threw", TAG, t);
         }
@@ -128,6 +144,66 @@ public final class FabricChemicalSelfTest {
             return shimOk;
         } catch (Throwable t) {
             LOGGER.error("{} FAIL aliasedFieldOf shim parity threw", TAG, t);
+            return false;
+        }
+    }
+
+    /**
+     * Validates the REAL Fabric chemical-ingredient creator + dispatch codec (the goal of this increment). Proves, via
+     * the loader-neutral {@link CommonIngredientCreatorAccess} routed through {@code FabricMekanismAccess} →
+     * {@link mekanism.common.recipe.ingredients.ChemicalIngredientCreator}: (a) creation works ({@code of}/{@code tag}/
+     * {@code compound}) and {@code test(demo)} behaves; (b) the {@code dispatchMapOrElse} codec round-trips a
+     * {@link SingleChemicalIngredient} (no {@code type} key → fallback branch) and a {@link CompoundChemicalIngredient}
+     * (has {@code type} key → dispatch into the Fabric {@code chemical_ingredient_type} registry) through JSON and back;
+     * (c) a {@link ChemicalStackIngredient} built via {@code chemicalStack().from(single, 1000L)} round-trips its CODEC.
+     * Encoding uses a registry-aware serialization context so the chemical Holder/Tag references resolve.
+     */
+    private static boolean validateRealCreator(ServerLevel level) {
+        try {
+            IChemicalIngredientCreator chemical = CommonIngredientCreatorAccess.chemical();
+            IChemicalStackIngredientCreator chemicalStack = CommonIngredientCreatorAccess.chemicalStack();
+            // Registry-aware ops: SingleChemicalIngredient/TagChemicalIngredient codecs reference the chemical registry.
+            DynamicOps<JsonElement> ops = level.registryAccess().createSerializationContext(JsonOps.INSTANCE);
+
+            // (a) creation: of(demo) is a SingleChemicalIngredient; tag(...); compound(List.of(two ingredients)).
+            // (demo is the only non-empty chemical on Fabric; SingleChemicalIngredient rejects the empty chemical by
+            // design, so the compound mixes the single + the tag ingredient to get two distinct children.)
+            ChemicalIngredient single = chemical.of(FabricChemicalRegistry.demo());
+            ChemicalIngredient tag = chemical.tag(TagKey.create(MekanismAPIBase.CHEMICAL_REGISTRY_NAME,
+                  Identifier.fromNamespaceAndPath(MekanismAPIBase.MEKANISM_MODID, "selftest_tag")));
+            ChemicalIngredient compound = chemical.compound(List.of(single, tag));
+            boolean buildOk = single instanceof SingleChemicalIngredient
+                  && tag instanceof TagChemicalIngredient
+                  && compound instanceof CompoundChemicalIngredient compoundIngredient
+                  && compoundIngredient.children().size() == 2
+                  // test(demo) must be true for the single matching the demo chemical.
+                  && single.test(FabricChemicalRegistry.demo());
+
+            // (b) DISPATCH round-trip: a single ingredient serializes WITHOUT a type key (fallback branch).
+            Codec<ChemicalIngredient> codec = chemical.codec();
+            JsonElement singleJson = codec.encodeStart(ops, single).getOrThrow();
+            boolean singleNoTypeKey = singleJson.isJsonObject() && !singleJson.getAsJsonObject().has("type");
+            ChemicalIngredient singleBack = codec.parse(ops, singleJson).getOrThrow();
+            boolean singleRoundTripOk = singleNoTypeKey && single.equals(singleBack);
+
+            // a compound ingredient serializes WITH a type key → dispatched through the Fabric type registry.
+            JsonElement compoundJson = codec.encodeStart(ops, compound).getOrThrow();
+            ChemicalIngredient compoundBack = codec.parse(ops, compoundJson).getOrThrow();
+            boolean compoundRoundTripOk = compound.equals(compoundBack);
+
+            // (c) ChemicalStackIngredient via chemicalStack().from(single, amount), round-trip its CODEC.
+            ChemicalStackIngredient stackIngredient = chemicalStack.from(single, 1_000L);
+            Codec<ChemicalStackIngredient> stackCodec = chemicalStack.codec();
+            JsonElement stackJson = stackCodec.encodeStart(ops, stackIngredient).getOrThrow();
+            ChemicalStackIngredient stackBack = stackCodec.parse(ops, stackJson).getOrThrow();
+            boolean stackRoundTripOk = stackIngredient.equals(stackBack) && stackBack.amount() == 1_000L;
+
+            boolean creatorOk = buildOk && singleRoundTripOk && compoundRoundTripOk && stackRoundTripOk;
+            LOGGER.info("{} {} real creator+dispatch: build={} singleRoundTrip(noType)={} compoundRoundTrip(dispatch)={} stackRoundTrip={}",
+                  TAG, creatorOk ? "OK  " : "FAIL", buildOk, singleRoundTripOk, compoundRoundTripOk, stackRoundTripOk);
+            return creatorOk;
+        } catch (Throwable t) {
+            LOGGER.error("{} FAIL real creator+dispatch threw", TAG, t);
             return false;
         }
     }

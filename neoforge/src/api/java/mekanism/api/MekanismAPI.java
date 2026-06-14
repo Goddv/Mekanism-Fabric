@@ -31,13 +31,10 @@ public class MekanismAPI extends MekanismAPIBase {
     // can reference them; inherited here, so existing MekanismAPI.CHEMICAL_REGISTRY_NAME / EMPTY_CHEMICAL_KEY call
     // sites keep working unchanged.
 
-    /**
-     * Gets the {@link ResourceKey} representing the name of the Registry for {@link ChemicalIngredient} ingredient type serializers.
-     *
-     * @apiNote When registering chemical ingredient types using {@link DeferredRegister}, use this field to get access to the {@link ResourceKey}.
-     * @since 10.7.0
-     */
-    public static final ResourceKey<Registry<MapCodec<? extends ChemicalIngredient>>> CHEMICAL_INGREDIENT_TYPE_REGISTRY_NAME = codecRegistryKey(ChemicalIngredient.class, "chemical_ingredient_type");
+    // CHEMICAL_INGREDIENT_TYPE_REGISTRY_NAME moved to MekanismAPIBase (:common) so the hoisted loader-neutral
+    // ChemicalIngredientCreator dispatch can reference it; inherited here, so existing
+    // MekanismAPI.CHEMICAL_INGREDIENT_TYPE_REGISTRY_NAME call sites (incl. the CHEMICAL_INGREDIENT_TYPES builder below)
+    // keep working unchanged.
 
     /**
      * Gets the {@link ResourceKey} representing the name of the Registry for {@link ModuleData modules}.
