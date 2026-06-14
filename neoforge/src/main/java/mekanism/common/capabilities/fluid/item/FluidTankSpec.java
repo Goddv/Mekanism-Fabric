@@ -11,7 +11,7 @@ import mekanism.common.attachments.containers.fluid.ComponentBackedFluidTank;
 import mekanism.common.attachments.containers.fluid.FluidTanksBuilder;
 import mekanism.common.capabilities.GenericTankSpec;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.util.TriPredicate;
+import mekanism.api.functions.TriPredicate;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

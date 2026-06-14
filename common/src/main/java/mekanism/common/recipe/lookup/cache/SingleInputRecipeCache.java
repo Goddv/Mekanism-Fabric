@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import mekanism.api.functions.ConstantPredicates;
+import mekanism.api.functions.ConstantPredicatesBase;
 import mekanism.api.recipes.MekanismRecipe;
 import mekanism.api.recipes.ingredients.InputIngredient;
 import mekanism.common.recipe.MekanismRecipeTypeBase;
@@ -13,7 +13,7 @@ import mekanism.common.recipe.lookup.cache.type.IInputCache;
 import net.minecraft.core.TypedInstance;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.util.TriPredicate;
+import mekanism.api.functions.TriPredicate;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -95,7 +95,7 @@ public abstract class SingleInputRecipeCache<TYPE, STACK extends TypedInstance<T
             return null;
         }
         initCacheIfNeeded(world);
-        RECIPE recipe = cache.findFirstRecipe(input, ConstantPredicates.alwaysTrue());
+        RECIPE recipe = cache.findFirstRecipe(input, ConstantPredicatesBase.alwaysTrue());
         if (recipe == null) {
             for (RECIPE complexRecipe : complexRecipes) {
                 if (inputExtractor.apply(complexRecipe).testType(input)) {

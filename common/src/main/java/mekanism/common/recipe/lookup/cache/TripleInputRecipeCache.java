@@ -11,7 +11,7 @@ import mekanism.common.recipe.lookup.cache.type.IInputCache;
 import net.minecraft.core.TypedInstance;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.util.TriPredicate;
+import mekanism.api.functions.TriPredicate;
 import org.jetbrains.annotations.Nullable;
 
 /**

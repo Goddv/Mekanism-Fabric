@@ -46,7 +46,7 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.display.SlotDisplayContext;
-import net.neoforged.neoforge.common.util.TriPredicate;
+import mekanism.api.functions.TriPredicate;
 import net.neoforged.neoforge.fluids.FluidInstance;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidStackTemplate;

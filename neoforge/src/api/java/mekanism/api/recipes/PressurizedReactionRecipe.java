@@ -18,7 +18,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.util.TriPredicate;
+import mekanism.api.functions.TriPredicate;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.Contract;

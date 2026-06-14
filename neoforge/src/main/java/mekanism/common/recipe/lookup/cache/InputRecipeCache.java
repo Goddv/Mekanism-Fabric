@@ -18,7 +18,7 @@ import mekanism.common.recipe.lookup.cache.type.ItemInputCache;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.common.util.TriPredicate;
+import mekanism.api.functions.TriPredicate;
 import net.neoforged.neoforge.fluids.FluidStack;
 
 public class InputRecipeCache {
