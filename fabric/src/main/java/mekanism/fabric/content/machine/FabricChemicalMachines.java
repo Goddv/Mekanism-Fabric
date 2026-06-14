@@ -24,10 +24,10 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
  * stay loader-specific.
  *
  * <p>Item&rarr;chemical machines (all backed by the generic {@link ChemicalMachineBlockEntity}, parameterized by their
- * recipe-type id): Chemical Oxidizer ({@code oxidizing}), Pigment Extractor ({@code pigment_extracting}), Chemical
- * Conversion ({@code chemical_conversion}). The chemical&rarr;item Chemical Crystallizer ({@code crystallizing}) is
- * backed by the reversed-topology {@link ChemicalToItemMachineBlockEntity}. Exposes the energy, chemical, and item
- * capabilities, and adds each machine to the Mekanism creative tab.
+ * recipe-type id): Chemical Oxidizer ({@code oxidizing}), Pigment Extractor ({@code pigment_extracting}). The
+ * chemical&rarr;item Chemical Crystallizer ({@code crystallizing}) is backed by the reversed-topology
+ * {@link ChemicalToItemMachineBlockEntity}. Exposes the energy, chemical, and item capabilities, and adds each machine
+ * to the Mekanism creative tab.
  */
 public final class FabricChemicalMachines {
 
@@ -38,7 +38,6 @@ public final class FabricChemicalMachines {
 
     private static final Identifier OXIDIZING_ID = Identifier.fromNamespaceAndPath(MODID, "oxidizing");
     private static final Identifier PIGMENT_EXTRACTING_ID = Identifier.fromNamespaceAndPath(MODID, "pigment_extracting");
-    private static final Identifier CHEMICAL_CONVERSION_ID = Identifier.fromNamespaceAndPath(MODID, "chemical_conversion");
 
     // ---- item -> chemical machines (generic ChemicalMachineBlock + ChemicalMachineBlockEntity) ----
 
@@ -52,17 +51,11 @@ public final class FabricChemicalMachines {
           "pigment_extractor", properties -> new ChemicalMachineBlock(properties
                 .strength(3.5F, 9.0F).requiresCorrectToolForDrops().sound(SoundType.METAL), PIGMENT_EXTRACTING_ID, true));
 
-    /** The Chemical Conversion machine block (item -> chemical). No bundled model: ships a Fabric-only blockstate/model
-     * pointing at the chemical_oxidizer model (facing-only) to avoid missing-model spam. */
-    public static final MekanismBlockHolder<ChemicalMachineBlock, BlockItem> CHEMICAL_CONVERSION = BLOCKS.register(
-          "chemical_conversion", properties -> new ChemicalMachineBlock(properties
-                .strength(3.5F, 9.0F).requiresCorrectToolForDrops().sound(SoundType.METAL), CHEMICAL_CONVERSION_ID, false));
-
-    /** Block-entity type for the item->chemical machines (shared across oxidizer/pigment-extractor/chemical-conversion). */
+    /** Block-entity type for the item->chemical machines (shared across oxidizer/pigment-extractor). */
     public static final RegistrySupplier<BlockEntityType<ChemicalMachineBlockEntity>> BE_TYPE = BE_TYPES.register(
           Identifier.fromNamespaceAndPath(MODID, "chemical_machine"), () ->
                 FabricBlockEntityTypeBuilder.create(ChemicalMachineBlockEntity::new,
-                      CHEMICAL_OXIDIZER.block(), PIGMENT_EXTRACTOR.block(), CHEMICAL_CONVERSION.block()).build());
+                      CHEMICAL_OXIDIZER.block(), PIGMENT_EXTRACTOR.block()).build());
 
     // ---- chemical -> item machine (Chemical Crystallizer) ----
 
@@ -96,7 +89,6 @@ public final class FabricChemicalMachines {
         ResourceKey<CreativeModeTab> tab = ResourceKey.create(Registries.CREATIVE_MODE_TAB, Identifier.fromNamespaceAndPath(MODID, "mekanism"));
         CreativeTabRegistry.append(tab, CHEMICAL_OXIDIZER.item().get());
         CreativeTabRegistry.append(tab, PIGMENT_EXTRACTOR.item().get());
-        CreativeTabRegistry.append(tab, CHEMICAL_CONVERSION.item().get());
         CreativeTabRegistry.append(tab, CHEMICAL_CRYSTALLIZER.item().get());
     }
 }

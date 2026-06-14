@@ -4,7 +4,6 @@ import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import mekanism.api.recipes.ChemicalCrystallizerRecipe;
 import mekanism.api.recipes.ItemStackToChemicalRecipe;
-import mekanism.api.recipes.basic.BasicChemicalConversionRecipe;
 import mekanism.api.recipes.basic.BasicChemicalCrystallizerRecipe;
 import mekanism.api.recipes.basic.BasicChemicalOxidizerRecipe;
 import mekanism.api.recipes.basic.BasicPigmentExtractingRecipe;
@@ -19,10 +18,10 @@ import net.minecraft.world.item.crafting.RecipeType;
  * through the Architectury {@link DeferredRegister} into the vanilla {@code RECIPE_TYPE}/{@code RECIPE_SERIALIZER}
  * registries, under the SAME ids NeoForge uses, so identical shared datapack recipe JSON loads on both loaders.
  *
- * <p>Item&rarr;chemical machines (Chemical Oxidizer {@code oxidizing}, Pigment Extractor {@code pigment_extracting},
- * Chemical Conversion {@code chemical_conversion}) all share the loader-neutral {@code :common}
- * {@link MekanismRecipeSerializerHelper#itemToChemical} factory (their {@code Basic*} recipes are all
- * {@code BasicItemStackToChemicalRecipe} subclasses). The chemical&rarr;item Chemical Crystallizer
+ * <p>Item&rarr;chemical machines (Chemical Oxidizer {@code oxidizing}, Pigment Extractor {@code pigment_extracting})
+ * all share the loader-neutral {@code :common} {@link MekanismRecipeSerializerHelper#itemToChemical} factory (their
+ * {@code Basic*} recipes are all {@code BasicItemStackToChemicalRecipe} subclasses). The chemical&rarr;item Chemical
+ * Crystallizer
  * ({@code crystallizing}) uses {@link MekanismRecipeSerializerHelper#crystallizing} ({@code ChemicalStackIngredient}
  * input &rarr; {@code ItemStackTemplate} output). The hoisted {@code :common} recipe classes resolve these objects back
  * by id via {@code BuiltInRegistries}. This is the chemical sibling of {@link MekanismRecipeTypesRegistrar}.
@@ -44,11 +43,6 @@ public final class MekanismChemicalRecipeTypesRegistrar {
     public static final RegistrySupplier<RecipeSerializer<BasicPigmentExtractingRecipe>> PIGMENT_EXTRACTING_SERIALIZER =
           SERIALIZERS.register(Identifier.fromNamespaceAndPath(MODID, "pigment_extracting"),
                 () -> MekanismRecipeSerializerHelper.itemToChemical(BasicPigmentExtractingRecipe::new));
-
-    public static final RegistrySupplier<RecipeType<ItemStackToChemicalRecipe>> CHEMICAL_CONVERSION_TYPE = registerItemToChemicalType("chemical_conversion");
-    public static final RegistrySupplier<RecipeSerializer<BasicChemicalConversionRecipe>> CHEMICAL_CONVERSION_SERIALIZER =
-          SERIALIZERS.register(Identifier.fromNamespaceAndPath(MODID, "chemical_conversion"),
-                () -> MekanismRecipeSerializerHelper.itemToChemical(BasicChemicalConversionRecipe::new));
 
     // ---- chemical -> item machine (Chemical Crystallizer) ----
     public static final RegistrySupplier<RecipeType<ChemicalCrystallizerRecipe>> CRYSTALLIZING_TYPE = registerCrystallizingType("crystallizing");

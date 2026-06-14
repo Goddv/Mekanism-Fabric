@@ -21,7 +21,7 @@ import org.jetbrains.annotations.Nullable;
  * Transitional Fabric bring-up: a generic item&rarr;chemical machine block (item input &rarr; chemical output), the
  * chemical-output sibling of {@link MachineBlock}. Each instance carries the {@link Identifier} of the
  * {@link net.minecraft.world.item.crafting.RecipeType} it processes (e.g. {@code mekanism:oxidizing},
- * {@code mekanism:pigment_extracting}, {@code mekanism:chemical_conversion}); the {@link ChemicalMachineBlockEntity}
+ * {@code mekanism:pigment_extracting}); the {@link ChemicalMachineBlockEntity}
  * reads it back via {@link #recipeTypeId()} and resolves the type by id. Carries the {@code facing} property always, plus
  * the {@code active} property only when the bundled model's blockstate declares it (e.g. {@code pigment_extractor.json}
  * has facing+active variants, while {@code chemical_oxidizer.json} is facing-only) so the real model renders without

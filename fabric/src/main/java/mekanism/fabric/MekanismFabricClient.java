@@ -1,6 +1,7 @@
 package mekanism.fabric;
 
 import com.mojang.logging.LogUtils;
+import mekanism.fabric.client.FabricCompositeModelFlattener;
 import mekanism.fabric.content.machine.FabricMachineMenus;
 import mekanism.fabric.content.machine.MachineScreen;
 import net.fabricmc.api.ClientModInitializer;
@@ -20,6 +21,9 @@ public final class MekanismFabricClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         MenuScreens.register(FabricMachineMenus.MACHINE.get(), MachineScreen::new);
+        // Flatten NeoForge composite block models (loader:"neoforge:composite") into vanilla models so they render on
+        // Fabric (e.g. the Chemical Crystallizer). Client-only; NeoForge keeps the original composite JSONs.
+        FabricCompositeModelFlattener.register();
         LOGGER.info("[Mekanism/Fabric] Client init — machine screen registered.");
         // Dev-only GUI screenshot harness (opens the machine screen + saves a PNG for visual review). Dormant unless
         // MEKANISM_GUI_SHOT=1 is set, so normal dev runs aren't interrupted by an auto-opening screen.

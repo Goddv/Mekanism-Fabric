@@ -26,7 +26,7 @@ import org.slf4j.Logger;
  * registered under their shared NeoForge id; (B) end-to-end the placed machine looks up its bundled datapack recipe via
  * the vanilla recipe manager, advances progress while consuming energy, and on completion produces the expected output.
  *
- * <p>Item&rarr;chemical machines (Chemical Oxidizer, Pigment Extractor, Chemical Conversion): feed an item + energy, tick,
+ * <p>Item&rarr;chemical machines (Chemical Oxidizer, Pigment Extractor): feed an item + energy, tick,
  * assert the internal chemical tank filled with {@code fabric_demo_chemical} and the input item was consumed. The
  * chemical&rarr;item Chemical Crystallizer: fill its input tank with {@code fabric_demo_chemical}, inject energy, tick,
  * assert the OUTPUT ITEM SLOT holds the expected item (diamond) and the input chemical was consumed.
@@ -53,7 +53,6 @@ public final class FabricChemicalMachineSelfTest {
         // ---- item -> chemical machines ----
         all &= validateItemToChemical(level, "oxidizing", "chemical_oxidizer", Items.REDSTONE, new BlockPos(8, 64, 30));
         all &= validateItemToChemical(level, "pigment_extracting", "pigment_extractor", Items.COAL, new BlockPos(8, 64, 33));
-        all &= validateItemToChemical(level, "chemical_conversion", "chemical_conversion", Items.CHARCOAL, new BlockPos(8, 64, 36));
         // ---- chemical -> item machine ----
         all &= validateChemicalToItem(level, "crystallizing", "chemical_crystallizer", Items.DIAMOND, new BlockPos(8, 64, 39));
         LOGGER.info("{} RESULT: {}", TAG, all ? "PASS" : "FAIL");

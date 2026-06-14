@@ -49,8 +49,8 @@ import org.jetbrains.annotations.Nullable;
  * and item I/O (input slot only). The chemical output is extract-only externally (no external insert).
  *
  * <p>Generalized over its recipe type: the host {@link ChemicalMachineBlock} carries the {@link Identifier} of the
- * {@code RecipeType} to run (e.g. {@code mekanism:oxidizing}, {@code mekanism:pigment_extracting},
- * {@code mekanism:chemical_conversion}); this BE reads it back via {@link ChemicalMachineBlock#recipeTypeId()} and
+ * {@code RecipeType} to run (e.g. {@code mekanism:oxidizing}, {@code mekanism:pigment_extracting}); this BE reads it
+ * back via {@link ChemicalMachineBlock#recipeTypeId()} and
  * resolves the type by id, exactly as {@link MachineBlockEntity} serves enrichment/crusher/smelter via its block's
  * {@code recipeType()}.
  */
