@@ -1,7 +1,11 @@
 package mekanism.api.recipes.ingredients;
 
+import java.util.List;
 import mekanism.api.MekanismAPIBase;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.TypedInstance;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
 import org.jetbrains.annotations.ApiStatus.Internal;
@@ -31,4 +35,21 @@ public interface IItemStackIngredientHelper {
      * Logs a diagnostic for an empty/incomplete ingredient (e.g. a missing tag). Only invoked for incomplete recipes.
      */
     void logMissingTags(Ingredient ingredient);
+
+    /**
+     * Builds a component-sensitive {@link Ingredient} matching the given component additions on the given item (the
+     * non-strict {@code DataComponentIngredient} path of {@code IItemStackIngredientCreator.from(ItemStack, int)}). This
+     * is a NeoForge-only ingredient form (vanilla {@code Ingredient} has no component matching); the Fabric path is not
+     * yet implemented (no Mekanism recipe constructs a component item-ingredient at runtime — recipes load from bundled
+     * JSON via the codec).
+     */
+    Ingredient componentIngredient(DataComponentPatch components, Holder<Item> item);
+
+    /**
+     * Combines multiple item {@link HolderSet}s into a single set matching any of them (the {@code OrHolderSet} path of
+     * {@code IItemStackIngredientCreator.from(HolderGetter, int, List)} for multi-tag ingredients). NeoForge-only; the
+     * Fabric path is not yet implemented (multi-tag ingredients are constructed only at datagen time, which runs on
+     * NeoForge).
+     */
+    HolderSet<Item> combineTags(List<HolderSet<Item>> tags);
 }

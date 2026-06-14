@@ -6,6 +6,7 @@ import com.mojang.serialization.JsonOps;
 import mekanism.api.Action;
 import mekanism.api.AutomationType;
 import mekanism.api.recipes.ingredients.ItemStackIngredient;
+import mekanism.api.recipes.ingredients.creator.IItemStackIngredientCreator;
 import mekanism.fabric.content.machine.MachineBlockEntity;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.core.BlockPos;
@@ -66,9 +67,23 @@ public final class FabricRecipeSelfTest {
             boolean vanillaSmeltOk = runMachine(level, new BlockPos(6, 64, 30), "energized_smelter", Items.RAW_IRON, Items.IRON_INGOT);
             boolean processOk = enrichOk && crushOk && smeltOk && vanillaSmeltOk;
 
-            ok = codecOk && roundTripOk && registrationOk && processOk;
-            LOGGER.info("{} {} codec={} roundTrip={} registration={} enriching={} crushing={} smelting={} vanillaSmelt={}",
-                  TAG, ok ? "OK  " : "FAIL", codecOk, roundTripOk, registrationOk, enrichOk, crushOk, smeltOk, vanillaSmeltOk);
+            // (D) The hoisted :common IItemStackIngredientCreator build path works on Fabric (vanilla Ingredient path):
+            // from(item)/from(item,amount) produce ingredients with NeoForge-identical count semantics + codec wire shape.
+            IItemStackIngredientCreator creator = FabricItemStackIngredientCreator.INSTANCE;
+            ItemStackIngredient builtCounted = creator.from(Items.DIRT, 3);
+            ItemStackIngredient builtSingle = creator.from(Items.IRON_INGOT);
+            boolean creatorBuildOk = builtCounted.count() == 3
+                  && builtCounted.test(new ItemStack(Items.DIRT, 3)) && !builtCounted.test(new ItemStack(Items.DIRT, 2))
+                  && builtSingle.count() == 1 && builtSingle.test(new ItemStack(Items.IRON_INGOT));
+            JsonElement builtJson = ItemStackIngredient.CODEC.encodeStart(
+                  level.registryAccess().createSerializationContext(JsonOps.INSTANCE), builtCounted).getOrThrow();
+            boolean creatorCodecOk = builtJson.toString().contains("\"ingredient\":\"minecraft:dirt\"")
+                  && builtJson.toString().contains("\"count\":3");
+            boolean creatorOk = creatorBuildOk && creatorCodecOk;
+
+            ok = codecOk && roundTripOk && registrationOk && processOk && creatorOk;
+            LOGGER.info("{} {} codec={} roundTrip={} registration={} enriching={} crushing={} smelting={} vanillaSmelt={} creator={}",
+                  TAG, ok ? "OK  " : "FAIL", codecOk, roundTripOk, registrationOk, enrichOk, crushOk, smeltOk, vanillaSmeltOk, creatorOk);
         } catch (Throwable t) {
             LOGGER.error("{} FAIL recipe test threw", TAG, t);
         }

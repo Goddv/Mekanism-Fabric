@@ -1,15 +1,21 @@
 package mekanism.common.recipe.ingredients;
 
+import java.util.List;
 import java.util.Optional;
 import mekanism.api.MekanismAPI;
 import mekanism.api.SerializerHelper;
 import mekanism.api.recipes.ingredients.IItemStackIngredientHelper;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.TypedInstance;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.neoforged.neoforge.common.crafting.DataComponentIngredient;
+import net.neoforged.neoforge.registries.holdersets.OrHolderSet;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 
 /**
@@ -50,5 +56,15 @@ public class NeoItemStackIngredientHelper implements IItemStackIngredientHelper 
                 MekanismAPI.logger.error("Empty ItemStackIngredient: {}", SerializerHelper.stringify(Ingredient.CODEC, ingredient));
             }
         }
+    }
+
+    @Override
+    public Ingredient componentIngredient(DataComponentPatch components, Holder<Item> item) {
+        return DataComponentIngredient.of(false, components, item);
+    }
+
+    @Override
+    public HolderSet<Item> combineTags(List<HolderSet<Item>> tags) {
+        return new OrHolderSet<>(tags);
     }
 }

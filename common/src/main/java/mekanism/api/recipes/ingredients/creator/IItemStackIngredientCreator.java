@@ -3,6 +3,7 @@ package mekanism.api.recipes.ingredients.creator;
 import java.util.List;
 import java.util.Objects;
 import mekanism.api.annotations.NothingNullByDefault;
+import mekanism.api.recipes.ingredients.IItemStackIngredientHelper;
 import mekanism.api.recipes.ingredients.ItemStackIngredient;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
@@ -17,9 +18,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
-import net.neoforged.neoforge.common.crafting.DataComponentIngredient;
-import net.neoforged.neoforge.common.crafting.SizedIngredient;
-import net.neoforged.neoforge.registries.holdersets.OrHolderSet;
 
 @NothingNullByDefault
 public interface IItemStackIngredientCreator extends IIngredientCreator<Item, ItemStack, ItemStackIngredient> {
@@ -51,7 +49,7 @@ public interface IItemStackIngredientCreator extends IIngredientCreator<Item, It
         // Note: Only bother making it a data component ingredient if the stack has non-default data, otherwise there is no point in doing the extra checks
         DataComponentPatch componentsPatch = stack.getComponentsPatch();
         if (!componentsPatch.isEmpty()) {
-            return from(DataComponentIngredient.of(false, componentsPatch, stack.typeHolder()), amount);
+            return from(IItemStackIngredientHelper.INSTANCE.componentIngredient(componentsPatch, stack.typeHolder()), amount);
         }
         return from(Ingredient.of(stack.getItem()), amount);
     }
@@ -80,7 +78,7 @@ public interface IItemStackIngredientCreator extends IIngredientCreator<Item, It
      * @param item Item provider that provides the item to match.
      *
      * @implNote This wraps via {@link #from(Ingredient)} so if there are any default components it will <strong>NOT</strong> be included in the ingredient. If this is
-     * not desired, manually create the ingredient via {@link DataComponentIngredient} and call {@link #from(Ingredient)}.
+     * not desired, manually create the ingredient via {@code DataComponentIngredient} and call {@link #from(Ingredient)}.
      */
     default ItemStackIngredient from(ItemLike item) {
         return from(item, 1);
@@ -93,7 +91,7 @@ public interface IItemStackIngredientCreator extends IIngredientCreator<Item, It
      * @param amount Amount needed.
      *
      * @implNote This wraps via {@link #from(Ingredient, int)} so if there are any default components it will <strong>NOT</strong> be included in the ingredient. If this
-     * is not desired, manually create the ingredient via {@link DataComponentIngredient} and call {@link #from(Ingredient, int)}.
+     * is not desired, manually create the ingredient via {@code DataComponentIngredient} and call {@link #from(Ingredient, int)}.
      */
     default ItemStackIngredient from(ItemLike item, int amount) {
         return from(Ingredient.of(item), amount);
@@ -106,7 +104,7 @@ public interface IItemStackIngredientCreator extends IIngredientCreator<Item, It
      *
      * @throws IllegalArgumentException if no items are passed.
      * @implNote This wraps via {@link #from(Ingredient)} so if there are any default components it will <strong>NOT</strong> be included in the ingredient. If this is
-     * not desired, manually create the ingredients via {@link DataComponentIngredient} and call {@link #from(Ingredient)}.
+     * not desired, manually create the ingredients via {@code DataComponentIngredient} and call {@link #from(Ingredient)}.
      * @since 10.6.0
      */
     default ItemStackIngredient from(ItemLike... items) {
@@ -121,7 +119,7 @@ public interface IItemStackIngredientCreator extends IIngredientCreator<Item, It
      *
      * @throws IllegalArgumentException if no items are passed.
      * @implNote This wraps via {@link #from(Ingredient, int)} so if there are any default components it will <strong>NOT</strong> be included in the ingredient. If this
-     * is not desired, manually create the ingredients via {@link DataComponentIngredient} and call {@link #from(Ingredient, int)}.
+     * is not desired, manually create the ingredients via {@code DataComponentIngredient} and call {@link #from(Ingredient, int)}.
      * @since 10.6.0
      */
     default ItemStackIngredient from(int amount, ItemLike... items) {
@@ -153,7 +151,7 @@ public interface IItemStackIngredientCreator extends IIngredientCreator<Item, It
      * @throws NullPointerException     if the given instance is null.
      * @throws IllegalArgumentException if the given instance is empty or an amount smaller than one; or if no types are passed.
      * @implNote This wraps via {@link #from(Ingredient)} so if there are any default components it will <strong>NOT</strong> be included in the ingredient. If this is
-     * not desired, manually create the ingredient via {@link DataComponentIngredient} and call {@link #from(Ingredient)}.
+     * not desired, manually create the ingredient via {@code DataComponentIngredient} and call {@link #from(Ingredient)}.
      * @since 10.6.0
      */
     default ItemStackIngredient from(int amount, Item... items) {
@@ -203,7 +201,7 @@ public interface IItemStackIngredientCreator extends IIngredientCreator<Item, It
             return from(lookup, tags.getFirst(), amount);
         }
         List<HolderSet<Item>> combinedTags = tags.stream().<HolderSet<Item>>map(lookup::getOrThrow).toList();
-        return from(Ingredient.of(new OrHolderSet<>(combinedTags)), amount);
+        return from(Ingredient.of(IItemStackIngredientHelper.INSTANCE.combineTags(combinedTags)), amount);
     }
 
     /**
@@ -229,19 +227,10 @@ public interface IItemStackIngredientCreator extends IIngredientCreator<Item, It
         return ItemStackIngredient.of(ingredient, amount);
     }
 
-    /**
-     * Creates an Item Stack Ingredient that matches a given ingredient and amount.
-     *
-     * @param ingredient Sized ingredient to match.
-     *
-     * @throws NullPointerException     if the given instance is null.
-     * @throws IllegalArgumentException if the given instance is empty.
-     * @since 10.6.0
-     */
-    default ItemStackIngredient from(SizedIngredient ingredient) {
-        Objects.requireNonNull(ingredient, "ItemStackIngredients cannot be created from a null ingredient.");
-        return ItemStackIngredient.of(ingredient.ingredient(), ingredient.count());
-    }
+    //Note: from(net.neoforged.neoforge.common.crafting.SizedIngredient) is intentionally NOT part of this :common
+    // interface - SizedIngredient is a NeoForge type a Fabric caller cannot name, and its only caller (CrTUtils, the
+    // NeoForge-only CraftTweaker integration) is disabled. The overload is retained on the concrete NeoForge
+    // ItemStackIngredientCreator for any future NeoForge-direct caller.
 
     /**
      * Creates an Item Stack Ingredient from a holder lookup given the item's id.
