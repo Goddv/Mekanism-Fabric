@@ -24,6 +24,7 @@ import mekanism.fabric.heat.FabricHeatSelfTest;
 import mekanism.fabric.recipe.FabricChemicalMachineSelfTest;
 import mekanism.fabric.recipe.FabricRecipeSelfTest;
 import mekanism.fabric.recipe.MekanismChemicalRecipeTypesRegistrar;
+import mekanism.fabric.recipe.MekanismDualItemRecipeTypesRegistrar;
 import mekanism.fabric.recipe.MekanismRecipeTypesRegistrar;
 import mekanism.fabric.registration.FabricRegistrationSelfTest;
 import mekanism.fabric.text.FabricTextFoundationSelfTest;
@@ -76,6 +77,9 @@ public final class MekanismFabric implements ModInitializer {
         // Transitional: the oxidizing (item -> chemical) RecipeType + RecipeSerializer (shared :common recipe classes),
         // backing the first chemical-processing machine on Fabric.
         MekanismChemicalRecipeTypesRegistrar.init();
+        // Transitional: the combining (item+item->item) + sawing (item->item+chance) RecipeTypes + RecipeSerializers
+        // (shared :common recipe classes), backing the Combiner + Precision Sawmill dual-item machines on Fabric.
+        MekanismDualItemRecipeTypesRegistrar.init();
         // Transitional: the FIRST chemical-processing machine — the Chemical Oxidizer (item input -> chemical output),
         // backed by a functional chemical-output block-entity (energy + item input + chemical tank + oxidizing recipes).
         FabricChemicalMachines.init();

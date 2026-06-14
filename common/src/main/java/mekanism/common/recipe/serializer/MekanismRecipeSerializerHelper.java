@@ -1,19 +1,29 @@
 package mekanism.common.recipe.serializer;
 
+import com.mojang.datafixers.util.Function3;
 import com.mojang.datafixers.util.Function4;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Optional;
 import java.util.function.BiFunction;
+import mekanism.api.ItemStackTemplateHelper;
 import mekanism.api.SerializationConstants;
+import mekanism.api.SerializerHelper;
 import mekanism.api.chemical.ChemicalStack;
+import mekanism.api.recipes.CombinerRecipe;
 import mekanism.api.recipes.ItemStackChemicalToItemStackRecipe;
+import mekanism.api.recipes.SawmillRecipe;
 import mekanism.api.recipes.basic.BasicChemicalCrystallizerRecipe;
+import mekanism.api.recipes.basic.BasicCombinerRecipe;
 import mekanism.api.recipes.basic.BasicItemStackToChemicalRecipe;
 import mekanism.api.recipes.basic.BasicItemStackToItemStackRecipe;
+import mekanism.api.recipes.basic.BasicSawmillRecipe;
 import mekanism.api.recipes.basic.IBasicItemStackOutput;
 import mekanism.api.recipes.ingredients.ChemicalStackIngredient;
 import mekanism.api.recipes.ingredients.ItemStackIngredient;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStackTemplate;
@@ -111,5 +121,69 @@ public final class MekanismRecipeSerializerHelper {
               ItemStackTemplate.STREAM_CODEC, BasicChemicalCrystallizerRecipe::getOutputRaw,
               factory
         ));
+    }
+
+    /**
+     * Loader-neutral item+item&rarr;item serializer factory for the Combiner ({@code combining}). Mirrors NeoForge's
+     * {@code MekanismRecipeSerializer.combining} EXACTLY: main input via {@link ItemStackIngredient#CODEC} under
+     * {@link SerializationConstants#MAIN_INPUT}, extra input via {@link ItemStackIngredient#CODEC} under
+     * {@link SerializationConstants#EXTRA_INPUT}, output via {@link ItemStackTemplate#CODEC} under
+     * {@link SerializationConstants#OUTPUT} (getters {@link CombinerRecipe#getMainInput()}/{@link CombinerRecipe#getExtraInput()}
+     * and {@link BasicCombinerRecipe#getOutputRaw()}). Built purely from vanilla {@link RecipeSerializer} + the hoisted
+     * {@link ItemStackIngredient}/{@link ItemStackTemplate} codecs, so the shared {@code combining} recipe JSON loads
+     * identically on both loaders. Used by {@link BasicCombinerRecipe}.
+     */
+    public static RecipeSerializer<BasicCombinerRecipe> combining(Function3<ItemStackIngredient, ItemStackIngredient, ItemStackTemplate, BasicCombinerRecipe> factory) {
+        return new RecipeSerializer<>(RecordCodecBuilder.mapCodec(instance -> instance.group(
+              ItemStackIngredient.CODEC.fieldOf(SerializationConstants.MAIN_INPUT).forGetter(CombinerRecipe::getMainInput),
+              ItemStackIngredient.CODEC.fieldOf(SerializationConstants.EXTRA_INPUT).forGetter(CombinerRecipe::getExtraInput),
+              ItemStackTemplate.CODEC.fieldOf(SerializationConstants.OUTPUT).forGetter(BasicCombinerRecipe::getOutputRaw)
+        ).apply(instance, factory)), StreamCodec.composite(
+              ItemStackIngredient.STREAM_CODEC, BasicCombinerRecipe::getMainInput,
+              ItemStackIngredient.STREAM_CODEC, BasicCombinerRecipe::getExtraInput,
+              ItemStackTemplate.STREAM_CODEC, BasicCombinerRecipe::getOutputRaw,
+              factory
+        ));
+    }
+
+    /**
+     * Loader-neutral item&rarr;item+chance-secondary serializer factory for the Precision Sawmill ({@code sawing}). Ports
+     * NeoForge's {@code SawmillRecipeSerializer.create} VERBATIM (it is pure Mojang/vanilla codec): input via
+     * {@link ItemStackIngredient#CODEC} under {@link SerializationConstants#INPUT}; main output via an optional
+     * {@link ItemStackTemplate#CODEC} under {@link SerializationConstants#MAIN_OUTPUT}; secondary output via an optional
+     * {@link ItemStackTemplate#CODEC} under {@link SerializationConstants#SECONDARY_OUTPUT}; secondary chance via an
+     * optional {@code Codec.DOUBLE} (validated {@code 0 < c <= 1}) under {@link SerializationConstants#SECONDARY_CHANCE}.
+     * Uses {@link SerializerHelper#oneRequired} (at least one output) + {@link SerializerHelper#dependentOptionality} (chance
+     * depends on the secondary output) and {@link ItemStackTemplateHelper#OPTIONAL_STREAM_CODEC} for the optional outputs,
+     * exactly like NeoForge — so the shared {@code sawing} recipe JSON + network payload are byte-identical on both loaders.
+     * Used by {@link BasicSawmillRecipe}.
+     */
+    public static RecipeSerializer<BasicSawmillRecipe> sawing(Function4<ItemStackIngredient, ItemStackTemplate, ItemStackTemplate, Double, BasicSawmillRecipe> factory) {
+        Codec<Double> chanceCodec = Codec.DOUBLE.validate(d -> d > 0 && d <= 1 ? DataResult.success(d) : DataResult.error(() -> "Expected secondaryChance to be greater than zero, and less than or equal to one. Found " + d));
+        MapCodec<Optional<Double>> secondaryChanceFieldBase = chanceCodec.optionalFieldOf(SerializationConstants.SECONDARY_CHANCE);
+        MapCodec<Optional<ItemStackTemplate>> mainOutputFieldBase = ItemStackTemplate.CODEC.optionalFieldOf(SerializationConstants.MAIN_OUTPUT);
+        RecordCodecBuilder<BasicSawmillRecipe, Optional<ItemStackTemplate>> secondaryOutputField = ItemStackTemplate.CODEC.optionalFieldOf(SerializationConstants.SECONDARY_OUTPUT).forGetter(BasicSawmillRecipe::getSecondaryOutputRaw);
+
+        MapCodec<BasicSawmillRecipe> codec = RecordCodecBuilder.mapCodec(instance -> instance.group(
+              ItemStackIngredient.CODEC.fieldOf(SerializationConstants.INPUT).forGetter(SawmillRecipe::getInput),
+              SerializerHelper.oneRequired(secondaryOutputField, mainOutputFieldBase, BasicSawmillRecipe::getMainOutputRaw),
+              secondaryOutputField,
+              SerializerHelper.dependentOptionality(secondaryOutputField, secondaryChanceFieldBase, sawmillRecipe -> {
+                  double secondaryChance = sawmillRecipe.getSecondaryChance();
+                  return secondaryChance == 0 ? Optional.empty() : Optional.of(secondaryChance);
+              })
+        ).apply(instance, (input, mainOutput, secondaryOutput, secondChance) ->
+              factory.apply(input, mainOutput.orElse(null), secondaryOutput.orElse(null), secondChance.orElse(0D))
+        ));
+        StreamCodec<RegistryFriendlyByteBuf, BasicSawmillRecipe> streamCodec = StreamCodec.composite(
+              ItemStackIngredient.STREAM_CODEC, SawmillRecipe::getInput,
+              ItemStackTemplateHelper.OPTIONAL_STREAM_CODEC, BasicSawmillRecipe::getMainOutputRaw,
+              ItemStackTemplateHelper.OPTIONAL_STREAM_CODEC, BasicSawmillRecipe::getSecondaryOutputRaw,
+              ByteBufCodecs.DOUBLE, SawmillRecipe::getSecondaryChance,
+              (input, mainOutput, secondaryOutput, secondChance) ->
+                    factory.apply(input, mainOutput.orElse(null), secondaryOutput.orElse(null), secondChance)
+        );
+
+        return new RecipeSerializer<>(codec, streamCodec);
     }
 }

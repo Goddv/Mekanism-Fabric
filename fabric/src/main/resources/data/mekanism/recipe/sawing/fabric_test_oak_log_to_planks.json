@@ -1,0 +1,16 @@
+{
+  "type": "mekanism:sawing",
+  "input": {
+    "count": 1,
+    "ingredient": "minecraft:oak_log"
+  },
+  "main_output": {
+    "count": 6,
+    "id": "minecraft:oak_planks"
+  },
+  "secondary_output": {
+    "count": 1,
+    "id": "minecraft:stick"
+  },
+  "secondary_chance": 0.25
+}

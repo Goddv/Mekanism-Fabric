@@ -26,12 +26,16 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
 /**
- * Transitional Fabric bring-up: registers REAL Mekanism machine blocks (enrichment_chamber, crusher, energized_smelter,
- * combiner) on Fabric — real ids whose facing/active blockstates + models + textures are already
+ * Transitional Fabric bring-up: registers REAL Mekanism machine blocks (enrichment_chamber, crusher, energized_smelter)
+ * on Fabric — real ids whose facing/active blockstates + models + textures are already
  * bundled — sharing one {@link MachineBlock} class + {@link MachineBlockEntity}. Block+item registration now goes through
  * the loader-neutral {@code :common} {@link MekanismBlockRegister} framework; the shared block-entity type + capability
- * wiring stay loader-specific. Adds the machines to the Mekanism creative tab. The processing loop is a demo; the real
- * recipe/GUI systems replace it once the machine framework is migrated to :common.
+ * wiring stay loader-specific. Adds the machines to the Mekanism creative tab.
+ *
+ * <p>Also registers the two dual-item machines (their own {@link DualItemMachineBlock} + distinct block-entities): the
+ * Combiner ({@code item + item -> item}, {@link CombinerMachineBlockEntity}) and the Precision Sawmill
+ * ({@code item -> item + chance secondary}, {@link SawmillMachineBlockEntity}), driven by the {@code mekanism:combining} /
+ * {@code mekanism:sawing} recipe types.
  */
 public final class FabricRealMachines {
 
@@ -43,10 +47,10 @@ public final class FabricRealMachines {
     private static final List<MekanismBlockHolder<MachineBlock, BlockItem>> MACHINES = new ArrayList<>();
 
     // NOTE: osmium_compressor is NOT here — it is an item+chemical->item machine, registered with a functional
-    // chemical-tank block-entity in FabricChemicalMachines. (combiner remains a placeholder until its dual-item
-    // recipe type is ported.)
+    // chemical-tank block-entity in FabricChemicalMachines. combiner + precision_sawmill are NOT here either — they are
+    // dual-item machines with distinct slot shapes, registered below as real DualItemMachineBlocks.
     private static final String[] MACHINE_NAMES = {
-          "enrichment_chamber", "crusher", "energized_smelter", "combiner"
+          "enrichment_chamber", "crusher", "energized_smelter"
     };
 
     static {
@@ -72,11 +76,44 @@ public final class FabricRealMachines {
         };
     }
 
-    /** Single block-entity type shared by all machine blocks. */
+    /** Single block-entity type shared by all item->item machine blocks. */
     public static final RegistrySupplier<BlockEntityType<MachineBlockEntity>> BE_TYPE = BE_TYPES.register(
           Identifier.fromNamespaceAndPath(MODID, "machine"), () ->
                 FabricBlockEntityTypeBuilder.create(MachineBlockEntity::new,
                       MACHINES.stream().map(MekanismBlockHolder::block).toArray(Block[]::new)).build());
+
+    // ---- dual-item machines (Combiner, Precision Sawmill): distinct slot shapes -> distinct BEs ----
+
+    /** The Combiner block (item + item -> item). Bundled blockstate has facing+active variants. */
+    public static final MekanismBlockHolder<DualItemMachineBlock, BlockItem> COMBINER = BLOCKS.register(
+          "combiner", properties -> new DualItemMachineBlock(properties
+                .strength(3.5F, 9.0F).requiresCorrectToolForDrops().sound(SoundType.METAL),
+                CombinerMachineBlockEntity::new, FabricRealMachines::combinerBeType));
+
+    /** Block-entity type for the Combiner. */
+    public static final RegistrySupplier<BlockEntityType<CombinerMachineBlockEntity>> COMBINER_BE_TYPE = BE_TYPES.register(
+          Identifier.fromNamespaceAndPath(MODID, "combiner"), () ->
+                FabricBlockEntityTypeBuilder.create(CombinerMachineBlockEntity::new, COMBINER.block()).build());
+
+    /** The Precision Sawmill block (item -> item + chance secondary). Bundled blockstate has facing+active variants. */
+    public static final MekanismBlockHolder<DualItemMachineBlock, BlockItem> PRECISION_SAWMILL = BLOCKS.register(
+          "precision_sawmill", properties -> new DualItemMachineBlock(properties
+                .strength(3.5F, 9.0F).requiresCorrectToolForDrops().sound(SoundType.METAL),
+                SawmillMachineBlockEntity::new, FabricRealMachines::sawmillBeType));
+
+    /** Block-entity type for the Precision Sawmill. */
+    public static final RegistrySupplier<BlockEntityType<SawmillMachineBlockEntity>> SAWMILL_BE_TYPE = BE_TYPES.register(
+          Identifier.fromNamespaceAndPath(MODID, "precision_sawmill"), () ->
+                FabricBlockEntityTypeBuilder.create(SawmillMachineBlockEntity::new, PRECISION_SAWMILL.block()).build());
+
+    /** Method indirection so the block's BE-type supplier doesn't form an illegal forward reference at field init. */
+    private static BlockEntityType<?> combinerBeType() {
+        return COMBINER_BE_TYPE.get();
+    }
+
+    private static BlockEntityType<?> sawmillBeType() {
+        return SAWMILL_BE_TYPE.get();
+    }
 
     private FabricRealMachines() {
     }
@@ -91,11 +128,20 @@ public final class FabricRealMachines {
         BE_TYPES.register();
         MekanismFabricEnergy.SIDED.registerForBlockEntity((be, context) -> be, BE_TYPE.get());
         ItemStorage.SIDED.registerForBlockEntity((be, direction) -> ContainerStorage.of(be, direction), BE_TYPE.get());
+
+        // ---- dual-item machines: energy sink + item I/O (Combiner: 2 inputs + 1 output; Sawmill: 1 input + 2 outputs) ----
+        MekanismFabricEnergy.SIDED.registerForBlockEntity((be, context) -> be, COMBINER_BE_TYPE.get());
+        ItemStorage.SIDED.registerForBlockEntity((be, direction) -> ContainerStorage.of(be, direction), COMBINER_BE_TYPE.get());
+        MekanismFabricEnergy.SIDED.registerForBlockEntity((be, context) -> be, SAWMILL_BE_TYPE.get());
+        ItemStorage.SIDED.registerForBlockEntity((be, direction) -> ContainerStorage.of(be, direction), SAWMILL_BE_TYPE.get());
+
         ResourceKey<CreativeModeTab> tab = ResourceKey.create(Registries.CREATIVE_MODE_TAB, Identifier.fromNamespaceAndPath(MODID, "mekanism"));
         for (MekanismBlockHolder<MachineBlock, BlockItem> machine : MACHINES) {
             // Pass the resolved BlockItem (an ItemLike) — items are finalized above; the holder is both ItemLike and
             // Supplier, which would make the append(...) overload ambiguous.
             CreativeTabRegistry.append(tab, machine.item().get());
         }
+        CreativeTabRegistry.append(tab, COMBINER.item().get());
+        CreativeTabRegistry.append(tab, PRECISION_SAWMILL.item().get());
     }
 }
