@@ -1,10 +1,12 @@
 package mekanism.fabric.content.generator;
 
+import dev.architectury.registry.menu.MenuRegistry;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -109,6 +111,16 @@ public class GeneratorBlock extends Block implements EntityBlock {
         // Return SUCCESS on both sides (consistent interaction); only the server mutates the fuel slot.
         if (!level.isClientSide() && generator.addFuel(stack) && !player.getAbilities().instabuild) {
             stack.shrink(1);
+        }
+        return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        // Empty-hand right-click opens the generator GUI (energy bar; fuel generators also show their fuel slot).
+        if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer
+              && level.getBlockEntity(pos) instanceof AbstractGeneratorBlockEntity generator) {
+            MenuRegistry.openExtendedMenu(serverPlayer, generator.menuProvider());
         }
         return InteractionResult.SUCCESS;
     }

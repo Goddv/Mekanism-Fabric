@@ -19,6 +19,8 @@ import mekanism.fabric.content.machine.FabricAutoIoSelfTest;
 import mekanism.fabric.content.machine.FabricChemicalMachines;
 import mekanism.fabric.content.machine.FabricMachineMenus;
 import mekanism.fabric.content.machine.FabricRealMachines;
+import mekanism.fabric.content.machine.gui.FabricMachineGuiSelfTest;
+import mekanism.fabric.content.machine.gui.MekanismMachineMenus;
 import mekanism.fabric.content.power.FabricPowerInfrastructure;
 import mekanism.fabric.content.power.FabricPowerSelfTest;
 import mekanism.fabric.content.transmitter.FabricTransmitterSelfTest;
@@ -75,6 +77,10 @@ public final class MekanismFabric implements ModInitializer {
         // Transitional: the machine container-menu (GUI) type — opened from the machine block's use handler;
         // the client screen is registered in MekanismFabricClient.
         FabricMachineMenus.init();
+        // Transitional: the ONE generic chemical/dual-item/generator menu type (extended — carries a GUI-shape ordinal),
+        // opened from those blocks' use handlers; its screen is registered in MekanismFabricClient. Gives every machine +
+        // generator that lacked a GUI a working slots+energy(+tank)+progress screen.
+        MekanismMachineMenus.init();
         // Transitional: the enriching RecipeType + RecipeSerializer (shared :common recipe classes), so machines run
         // REAL datapack recipes instead of the demo move-item loop.
         MekanismRecipeTypesRegistrar.init();
@@ -115,6 +121,7 @@ public final class MekanismFabric implements ModInitializer {
             FabricPowerSelfTest.run();
             FabricTransmitterSelfTest.run();
             FabricGeneratorSelfTest.run();
+            FabricMachineGuiSelfTest.run();
             FabricAutoIoSelfTest.run();
             FabricConfigSelfTest.run();
             FabricRegistrationSelfTest.run();

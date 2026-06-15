@@ -2,6 +2,7 @@ package mekanism.fabric.content.generator;
 
 import mekanism.api.Action;
 import mekanism.api.AutomationType;
+import mekanism.fabric.content.machine.gui.MachineGuiType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -81,6 +82,17 @@ public abstract class AbstractFuelGeneratorBlockEntity extends AbstractGenerator
 
     public boolean isBurning() {
         return burnTime > 0;
+    }
+
+    // ---- GUI: a fuel slot + energy bar (no recipe progress) ----
+    @Override
+    protected MachineGuiType menuGuiType() {
+        return MachineGuiType.FUEL_GENERATOR;
+    }
+
+    @Override
+    protected Container menuContainer() {
+        return this; // the 1-slot fuel inventory IS the menu's machine container
     }
 
     // ---- fuel inventory (Container) ----

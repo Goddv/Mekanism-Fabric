@@ -14,6 +14,8 @@ import mekanism.api.energy.IMekanismStrictEnergyHandler;
 import mekanism.api.recipes.ItemStackChemicalToItemStackRecipe;
 import mekanism.api.recipes.vanilla_input.SingleItemChemicalRecipeInput;
 import mekanism.common.capabilities.energy.BasicEnergyContainer;
+import mekanism.fabric.content.machine.gui.MachineGuiType;
+import mekanism.fabric.content.machine.gui.MekanismMenuProvider;
 import mekanism.fabric.content.power.EnergyTransferHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -29,6 +31,7 @@ import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -202,9 +205,44 @@ public class ItemChemicalToItemMachineBlockEntity extends BlockEntity implements
         return progress * 1000 / MAX_PROGRESS;
     }
 
+    /** Input-tank fill as 0..1000 permille (for the GUI tank bar). */
+    public int getTankPermille() {
+        long cap = inputTank.getCapacity();
+        return cap <= 0L ? 0 : (int) (inputTank.getStored() * 1000L / cap);
+    }
+
     /** Direct access to the input chemical tank for the self-test. */
     public IChemicalTank getInputTank() {
         return inputTank;
+    }
+
+    /** Live ContainerData for the GUI: [0]=energy permille, [1]=progress permille, [2]=input-tank permille. */
+    public ContainerData containerData() {
+        return new ContainerData() {
+            @Override
+            public int get(int index) {
+                return switch (index) {
+                    case 0 -> getEnergyStoredPermille();
+                    case 1 -> getProgressPermille();
+                    case 2 -> getTankPermille();
+                    default -> 0;
+                };
+            }
+
+            @Override
+            public void set(int index, int value) {
+            }
+
+            @Override
+            public int getCount() {
+                return MachineGuiType.ITEM_CHEMICAL_TO_ITEM.dataSize();
+            }
+        };
+    }
+
+    /** The extended menu provider opened from the block's use handler (item input + input tank + item output + energy). */
+    public MekanismMenuProvider menuProvider() {
+        return new MekanismMenuProvider(getDisplayName(), this, containerData(), MachineGuiType.ITEM_CHEMICAL_TO_ITEM);
     }
 
     // ---- energy capability ----
@@ -355,9 +393,9 @@ public class ItemChemicalToItemMachineBlockEntity extends BlockEntity implements
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
-        // No dedicated chemical GUI yet (the item-shaped MachineMenu doesn't model a chemical tank). The machine is
-        // fully functional headless; a real chemical-tank screen comes with the machine-framework migration.
-        return null;
+        // Item input + input chemical tank + item output + energy bar. Opened in-game via the block's use handler over
+        // the extended menu path ({@link #menuProvider()}); this direct create path also backs the gui self-test.
+        return menuProvider().createMenu(containerId, playerInventory, player);
     }
 
     // ---- persistence ----

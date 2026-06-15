@@ -4,9 +4,16 @@ import java.util.List;
 import mekanism.api.energy.IEnergyContainer;
 import mekanism.api.energy.IMekanismStrictEnergyHandler;
 import mekanism.common.capabilities.energy.BasicEnergyContainer;
+import mekanism.fabric.content.machine.gui.MachineGuiType;
+import mekanism.fabric.content.machine.gui.MekanismMenuProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -54,6 +61,56 @@ public abstract class AbstractGeneratorBlockEntity extends BlockEntity implement
     /** Convenience for self-tests / GUIs: current stored energy in the (single) reservoir. */
     public long getStoredEnergy() {
         return energy.getEnergy();
+    }
+
+    /** Energy fill as 0..1000 permille (for the GUI energy bar). */
+    public int getEnergyStoredPermille() {
+        long max = energy.getMaxEnergy();
+        return max <= 0L ? 0 : (int) (energy.getEnergy() * 1000L / max);
+    }
+
+    /** GUI shape for this generator: passive (Solar/Wind) is energy-only; fuel generators override to {@code FUEL_GENERATOR}. */
+    protected MachineGuiType menuGuiType() {
+        return MachineGuiType.PASSIVE_GENERATOR;
+    }
+
+    /** Inventory backing the generator's menu: passive generators have none (an empty, position-validated container). */
+    protected Container menuContainer() {
+        return new SimpleContainer(0) {
+            @Override
+            public boolean stillValid(Player player) {
+                return Container.stillValidBlockEntity(AbstractGeneratorBlockEntity.this, player);
+            }
+        };
+    }
+
+    /** Live ContainerData for the GUI: [0]=energy permille, [1]=progress permille (generators have no recipe progress). */
+    public ContainerData containerData() {
+        return new ContainerData() {
+            @Override
+            public int get(int index) {
+                return index == 0 ? getEnergyStoredPermille() : 0;
+            }
+
+            @Override
+            public void set(int index, int value) {
+            }
+
+            @Override
+            public int getCount() {
+                return menuGuiType().dataSize();
+            }
+        };
+    }
+
+    /** The extended menu provider opened from the generator block's use handler (energy bar + any fuel slot). */
+    public MekanismMenuProvider menuProvider() {
+        return new MekanismMenuProvider(getDisplayName(), menuContainer(), containerData(), menuGuiType());
+    }
+
+    /** Display title for the menu (the block's name). */
+    public Component getDisplayName() {
+        return getBlockState().getBlock().getName();
     }
 
     // ---- energy capability ----

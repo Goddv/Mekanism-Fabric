@@ -8,6 +8,8 @@ import mekanism.api.energy.IEnergyContainer;
 import mekanism.api.energy.IMekanismStrictEnergyHandler;
 import mekanism.api.recipes.CombinerRecipe;
 import mekanism.common.capabilities.energy.BasicEnergyContainer;
+import mekanism.fabric.content.machine.gui.MachineGuiType;
+import mekanism.fabric.content.machine.gui.MekanismMenuProvider;
 import mekanism.fabric.content.power.EnergyTransferHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -23,6 +25,7 @@ import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeInput;
@@ -179,6 +182,34 @@ public class CombinerMachineBlockEntity extends BlockEntity implements WorldlyCo
         return progress * 1000 / MAX_PROGRESS;
     }
 
+    /** Live ContainerData for the GUI: [0]=energy permille, [1]=progress permille (no chemical tank). */
+    public ContainerData containerData() {
+        return new ContainerData() {
+            @Override
+            public int get(int index) {
+                return switch (index) {
+                    case 0 -> getEnergyStoredPermille();
+                    case 1 -> getProgressPermille();
+                    default -> 0;
+                };
+            }
+
+            @Override
+            public void set(int index, int value) {
+            }
+
+            @Override
+            public int getCount() {
+                return MachineGuiType.COMBINER.dataSize();
+            }
+        };
+    }
+
+    /** The extended menu provider opened from the block's use handler (main input + extra input + output + energy). */
+    public MekanismMenuProvider menuProvider() {
+        return new MekanismMenuProvider(getDisplayName(), this, containerData(), MachineGuiType.COMBINER);
+    }
+
     /** A two-item {@link RecipeInput} matching what {@link CombinerRecipe} reads (slot 0 = main, slot 1 = extra). */
     private record TwoItemRecipeInput(ItemStack main, ItemStack extra) implements RecipeInput {
         @Override
@@ -296,9 +327,9 @@ public class CombinerMachineBlockEntity extends BlockEntity implements WorldlyCo
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
-        // No dedicated two-input GUI yet (the item-shaped MachineMenu models one input). The machine is fully
-        // functional headless; a real combiner screen comes with the machine-framework migration.
-        return null;
+        // Main input + extra input + output + energy bar. Opened in-game via the block's use handler over the extended
+        // menu path ({@link #menuProvider()}); this direct create path also backs the gui self-test.
+        return menuProvider().createMenu(containerId, playerInventory, player);
     }
 
     // ---- persistence ----
