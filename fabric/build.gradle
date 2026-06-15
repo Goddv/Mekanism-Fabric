@@ -84,6 +84,26 @@ processResources {
         details.relativePath.pathString == 'assets/mekanismgenerators/items/wind_generator.json'
               && details.file.absolutePath.contains('datagen')
     }
+    // The four basic transmitters (universal cable / pressurized tube / thermodynamic conductor / logistical
+    // transporter) ship REAL multipart blockstates keyed on per-side connection properties + a custom
+    // "mekanism:special/transmitter" model loader that vanilla/Fabric can't parse — they error at load and the
+    // transitional connection-less block wouldn't render from them anyway. We ship Fabric-only SIMPLE blockstates +
+    // cube models + item models (assets/mekanism/{blockstates,models/block,items}/basic_*.json in src/main/resources,
+    // each a cube using the transmitter's own bundled multipart texture). Drop ONLY the NeoForge datagen blockstate +
+    // item-model copies so our overrides are the sole definitions; the block-model copies are kept (harmless) but ours
+    // win by id. Connected multipart rendering is deferred.
+    exclude { details ->
+        def p = details.relativePath.pathString
+        details.file.absolutePath.contains('datagen') && (
+              p == 'assets/mekanism/blockstates/basic_universal_cable.json'
+                    || p == 'assets/mekanism/blockstates/basic_pressurized_tube.json'
+                    || p == 'assets/mekanism/blockstates/basic_thermodynamic_conductor.json'
+                    || p == 'assets/mekanism/blockstates/basic_logistical_transporter.json'
+                    || p == 'assets/mekanism/items/basic_universal_cable.json'
+                    || p == 'assets/mekanism/items/basic_pressurized_tube.json'
+                    || p == 'assets/mekanism/items/basic_thermodynamic_conductor.json'
+                    || p == 'assets/mekanism/items/basic_logistical_transporter.json')
+    }
 }
 
 // Pull in Mekanism's datagen-generated ASSETS (sounds.json, lang/en_us, models, blockstates, item models,

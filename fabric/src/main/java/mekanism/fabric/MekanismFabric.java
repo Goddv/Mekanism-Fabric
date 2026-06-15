@@ -21,6 +21,8 @@ import mekanism.fabric.content.machine.FabricMachineMenus;
 import mekanism.fabric.content.machine.FabricRealMachines;
 import mekanism.fabric.content.power.FabricPowerInfrastructure;
 import mekanism.fabric.content.power.FabricPowerSelfTest;
+import mekanism.fabric.content.transmitter.FabricTransmitterSelfTest;
+import mekanism.fabric.content.transmitter.FabricTransmitters;
 import mekanism.fabric.energy.FabricEnergySelfTest;
 import mekanism.fabric.heat.FabricHeatSelfTest;
 import mekanism.fabric.recipe.FabricChemicalMachineSelfTest;
@@ -92,6 +94,11 @@ public final class MekanismFabric implements ModInitializer {
         // module — real blocks/models, each a BasicEnergyContainer exposed via the energy capability so the demo cable
         // relays their output. Must come AFTER FabricPowerInfrastructure (reuses the same energy capability/cable).
         FabricGenerators.init();
+        // Transitional: the four core Mekanism transmitters (basic tier) — Universal Cable (energy), Pressurized Tube
+        // (chemical), Thermodynamic Conductor (heat), Logistical Transporter (items) — as functional adjacent-relays.
+        // Must come AFTER FabricPowerInfrastructure (the energy cable relay logic + capability are reused). NOT the real
+        // Mekanism transmitter-network graph; connected multipart rendering is likewise deferred.
+        FabricTransmitters.init();
         // Transitional: leaf DataComponentTypes via the :common DataComponentDeferredRegister framework, proving the
         // DataComponent registration shape on Fabric (the real MekanismDataComponents reuses this framework).
         FabricDataComponentDemo.init();
@@ -106,6 +113,7 @@ public final class MekanismFabric implements ModInitializer {
             FabricRecipeSelfTest.run();
             FabricChemicalMachineSelfTest.run();
             FabricPowerSelfTest.run();
+            FabricTransmitterSelfTest.run();
             FabricGeneratorSelfTest.run();
             FabricAutoIoSelfTest.run();
             FabricConfigSelfTest.run();
