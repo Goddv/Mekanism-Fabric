@@ -29,7 +29,9 @@ import org.slf4j.Logger;
  * Crystallizer).
  *
  * <p>This is a {@link PreparableModelLoadingPlugin}: its data-loader phase scans every {@code assets/<ns>/models/block/*.json}
- * resource off-thread, and for each whose JSON has {@code "loader":"neoforge:composite"} it FLATTENS it &mdash;
+ * resource off-thread &mdash; across ALL namespaces, so it covers both {@code mekanism} and the separate
+ * {@code mekanismgenerators} module (e.g. the Bio Generator's composite model) &mdash; and for each whose JSON has
+ * {@code "loader":"neoforge:composite"} it FLATTENS it &mdash;
  * concatenating every child's {@code elements} (in declaration order), merging the parent textures with every child's
  * textures, forcing {@code parent="minecraft:block/block"} and {@code render_type="minecraft:cutout"} (translucent
  * children render as cutout, acceptable for now) &mdash; then deserializes the rewritten JSON into a vanilla
@@ -74,6 +76,7 @@ public final class FabricCompositeModelFlattener {
         return CompletableFuture.supplyAsync(() -> {
             ResourceManager resourceManager = sharedState.resourceManager();
             Map<Identifier, UnbakedModel> flattened = new HashMap<>();
+            Map<String, Integer> perNamespace = new HashMap<>();
             Map<Identifier, Resource> blockModels = resourceManager.listResources(
                   MODELS_BLOCK_DIR, id -> id.getPath().endsWith(JSON_SUFFIX));
             for (Map.Entry<Identifier, Resource> entry : blockModels.entrySet()) {
@@ -97,13 +100,17 @@ public final class FabricCompositeModelFlattener {
                     try (StringReader reader = new StringReader(flatJson)) {
                         model = UnbakedModelDeserializer.deserialize(reader);
                     }
-                    flattened.put(modelIdOf(resourceId), model);
+                    Identifier modelId = modelIdOf(resourceId);
+                    flattened.put(modelId, model);
+                    perNamespace.merge(modelId.getNamespace(), 1, Integer::sum);
                 } catch (RuntimeException e) {
                     LOGGER.error("{} failed to flatten composite model {}", TAG, resourceId, e);
                 }
             }
-            LOGGER.info("{} scanned {} block model(s); flattened {} composite(s).",
-                  TAG, blockModels.size(), flattened.size());
+            // Break the flatten count down per namespace so the mekanismgenerators composites (e.g. bio_generator) are
+            // visibly accounted for alongside the mekanism ones.
+            LOGGER.info("{} scanned {} block model(s); flattened {} composite(s) {}.",
+                  TAG, blockModels.size(), flattened.size(), perNamespace);
             return flattened;
         }, executor);
     }

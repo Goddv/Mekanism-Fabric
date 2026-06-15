@@ -61,11 +61,28 @@ processResources {
     filesMatching('fabric.mod.json') {
         expand version: project.version
     }
+    // A generated + hand-written generator asset could theoretically land on the same relative path; keep the last
+    // one rather than failing the build. (No collisions exist today, but the two mekanismgenerators srcDirs make this
+    // possible.)
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
     // Drop ONLY the NeoForge-datagen generated DATA (recipes/loot/tags) — it references blocks/items not yet
     // registered on Fabric and would spam "unknown item" errors. Fabric's OWN data/ (src/main/resources/data,
     // e.g. ported recipes) is kept. Matched by the datagen source's absolute path, not a blanket data/** exclude.
+    // This also covers the mekanismgenerators datagen data/ (its absolute path likewise contains "datagen").
     exclude { details ->
         details.relativePath.pathString.startsWith('data/') && details.file.absolutePath.contains('datagen')
+    }
+    // The hand-written generators source dir (src/generators/resources) carries a NeoForge mod descriptor
+    // (META-INF/neoforge.mods.toml); it's irrelevant on Fabric and must not ship in the Fabric jar.
+    exclude 'META-INF/neoforge.mods.toml'
+    // The datagen wind_generator ITEM model uses a NeoForge "minecraft:special" + custom BER model loader
+    // (mekanismgenerators:wind_generator_model) that vanilla/Fabric can't parse — it errors at load. We ship a
+    // Fabric-only static replacement (assets/mekanismgenerators/items/wind_generator.json in src/main/resources, a
+    // plain steel-cube model) since the animated windmill renderer isn't ported. Drop ONLY the NeoForge datagen copy
+    // so our override is the sole definition. (The wind BLOCK model + the solar/heat/bio item models parse fine.)
+    exclude { details ->
+        details.relativePath.pathString == 'assets/mekanismgenerators/items/wind_generator.json'
+              && details.file.absolutePath.contains('datagen')
     }
 }
 
@@ -78,6 +95,15 @@ processResources {
 // generated resources via :common.
 sourceSets.main.resources {
     srcDir project(':neoforge').file('src/datagen/generated/mekanism')
+    // mekanismgenerators (Solar/Wind/Heat/Bio etc.) is a SEPARATE Mekanism module whose assets are not yet
+    // bundled on Fabric. Mirror the mekanism wiring above: pull in BOTH the datagen-generated assets
+    // (item-model defs, lang) AND the hand-written assets (blockstates, block models, textures, sounds) so the
+    // four generator blocks render + are named in-game. As with mekanism, generated/hand-written DATA
+    // (recipes/loot/tags) is EXCLUDED — it references generator blocks/items not yet registered on Fabric and
+    // would spam "unknown item" errors. The data/** exclude below (matched on the datagen + generators paths) keeps
+    // only assets/lang/blockstates/models/textures/sounds.
+    srcDir project(':neoforge').file('src/datagen/generated/mekanismgenerators')
+    srcDir project(':neoforge').file('src/generators/resources')
 }
 
 tasks.named('jar', Jar) {

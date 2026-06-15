@@ -13,6 +13,8 @@ import mekanism.fabric.content.FabricBringUpContent;
 import mekanism.fabric.content.FabricDataComponentDemo;
 import mekanism.fabric.content.FabricDataComponentSelfTest;
 import mekanism.fabric.content.energy.FabricEnergyBlockDemo;
+import mekanism.fabric.content.generator.FabricGenerators;
+import mekanism.fabric.content.generator.FabricGeneratorSelfTest;
 import mekanism.fabric.content.machine.FabricAutoIoSelfTest;
 import mekanism.fabric.content.machine.FabricChemicalMachines;
 import mekanism.fabric.content.machine.FabricMachineMenus;
@@ -86,6 +88,10 @@ public final class MekanismFabric implements ModInitializer {
         // Transitional: a fuel-burning generator + energy cables so machines can be powered in-game (generator ->
         // cable -> machine) for manual testing, until the real generators + transmitter network are ported.
         FabricPowerInfrastructure.init();
+        // Transitional: the four core Mekanism generators (Solar/Wind/Heat/Bio) from the separate mekanismgenerators
+        // module — real blocks/models, each a BasicEnergyContainer exposed via the energy capability so the demo cable
+        // relays their output. Must come AFTER FabricPowerInfrastructure (reuses the same energy capability/cable).
+        FabricGenerators.init();
         // Transitional: leaf DataComponentTypes via the :common DataComponentDeferredRegister framework, proving the
         // DataComponent registration shape on Fabric (the real MekanismDataComponents reuses this framework).
         FabricDataComponentDemo.init();
@@ -100,6 +106,7 @@ public final class MekanismFabric implements ModInitializer {
             FabricRecipeSelfTest.run();
             FabricChemicalMachineSelfTest.run();
             FabricPowerSelfTest.run();
+            FabricGeneratorSelfTest.run();
             FabricAutoIoSelfTest.run();
             FabricConfigSelfTest.run();
             FabricRegistrationSelfTest.run();
