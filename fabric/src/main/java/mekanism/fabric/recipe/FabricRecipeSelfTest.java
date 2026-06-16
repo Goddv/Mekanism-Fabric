@@ -65,6 +65,11 @@ public final class FabricRecipeSelfTest {
             // generator->cable->machine power chain is validated separately in FabricPowerSelfTest).
             boolean enrichOk = runMachine(level, new BlockPos(0, 64, 30), "enrichment_chamber", Items.DIRT, Items.DIAMOND);
             boolean crushOk = runMachine(level, new BlockPos(2, 64, 30), "crusher", Items.COBBLESTONE, Items.GRAVEL);
+            // (C2) REAL bundled datapack recipe (NOT a Fabric-only test recipe): the build-time recipe filter copies the
+            // real Mekanism datagen enriching recipe glowstone -> 4 glowstone_dust (vanilla-only ids) into the jar. This
+            // proves the ~570 real item-recipes now load + process on Fabric, which is the whole point of the fix.
+            boolean realEnrichOk = runMachineMinCount(level, new BlockPos(12, 64, 30), "enrichment_chamber",
+                  Items.GLOWSTONE, Items.GLOWSTONE_DUST, 4);
             boolean smeltOk = runMachine(level, new BlockPos(4, 64, 30), "energized_smelter", Items.SAND, Items.GLASS);
             // Vanilla-furnace fallback: raw_iron has no mekanism:smelting recipe, so the smelter resolves it via
             // minecraft:smelting (raw_iron -> iron_ingot).
@@ -74,7 +79,7 @@ public final class FabricRecipeSelfTest {
             // secondary is chance-based, so it is logged but not asserted strictly).
             boolean combineOk = runCombiner(level, new BlockPos(8, 64, 30), Items.COBBLESTONE, Items.FLINT, Items.GRAVEL);
             boolean sawOk = runSawmill(level, new BlockPos(10, 64, 30), Items.OAK_LOG, Items.OAK_PLANKS);
-            boolean processOk = enrichOk && crushOk && smeltOk && vanillaSmeltOk && combineOk && sawOk;
+            boolean processOk = enrichOk && crushOk && smeltOk && vanillaSmeltOk && combineOk && sawOk && realEnrichOk;
 
             // (D) The hoisted :common IItemStackIngredientCreator build path works on Fabric, resolved through the
             // creator-access SEAM (CommonIngredientCreatorAccess.item() -> IMekanismAccessBase service -> the Fabric impl,
@@ -93,8 +98,8 @@ public final class FabricRecipeSelfTest {
             boolean creatorOk = creatorBuildOk && creatorCodecOk;
 
             ok = codecOk && roundTripOk && registrationOk && processOk && creatorOk;
-            LOGGER.info("{} {} codec={} roundTrip={} registration={} enriching={} crushing={} smelting={} vanillaSmelt={} combining={} sawing={} creator={}",
-                  TAG, ok ? "OK  " : "FAIL", codecOk, roundTripOk, registrationOk, enrichOk, crushOk, smeltOk, vanillaSmeltOk, combineOk, sawOk, creatorOk);
+            LOGGER.info("{} {} codec={} roundTrip={} registration={} enriching={} crushing={} smelting={} vanillaSmelt={} combining={} sawing={} realEnrich(glowstone->glowstone_dust)={} creator={}",
+                  TAG, ok ? "OK  " : "FAIL", codecOk, roundTripOk, registrationOk, enrichOk, crushOk, smeltOk, vanillaSmeltOk, combineOk, sawOk, realEnrichOk, creatorOk);
         } catch (Throwable t) {
             LOGGER.error("{} FAIL recipe test threw", TAG, t);
         }
@@ -124,6 +129,32 @@ public final class FabricRecipeSelfTest {
             LOGGER.info("{} {} {}: {} -> {} (got {} x{})", TAG, ok ? "OK" : "FAIL", blockId,
                   BuiltInRegistries.ITEM.getKey(input), BuiltInRegistries.ITEM.getKey(expectedOutput),
                   BuiltInRegistries.ITEM.getKey(out.getItem()), out.getCount());
+        }
+        level.removeBlock(pos, false);
+        return ok;
+    }
+
+    /**
+     * Like {@link #runMachine} but also asserts the output stack reached {@code minCount} — used for a REAL bundled
+     * datapack recipe (glowstone -> 4 glowstone_dust) so we verify both the item AND the recipe's output count.
+     */
+    private static boolean runMachineMinCount(ServerLevel level, BlockPos pos, String blockId, Item input,
+          Item expectedOutput, int minCount) {
+        level.getChunk(pos.getX() >> 4, pos.getZ() >> 4);
+        Block block = BuiltInRegistries.BLOCK.getValue(Identifier.fromNamespaceAndPath("mekanism", blockId));
+        level.setBlock(pos, block.defaultBlockState(), 3);
+        boolean ok = false;
+        if (level.getBlockEntity(pos) instanceof MachineBlockEntity machine) {
+            machine.setItem(0, new ItemStack(input, 8));
+            machine.getEnergyContainers(null).getFirst().insert(1_000_000L, Action.EXECUTE, AutomationType.INTERNAL);
+            for (int i = 0; i < MachineBlockEntity.MAX_PROGRESS + 5 && machine.getItem(1).isEmpty(); i++) {
+                machine.serverTick(level.getBlockState(pos));
+            }
+            ItemStack out = machine.getItem(1);
+            ok = out.is(expectedOutput) && out.getCount() >= minCount && machine.getItem(0).getCount() < 8;
+            LOGGER.info("{} {} {}: {} -> {} x{} (got {} x{}, min {})", TAG, ok ? "OK" : "FAIL", blockId,
+                  BuiltInRegistries.ITEM.getKey(input), BuiltInRegistries.ITEM.getKey(expectedOutput), minCount,
+                  BuiltInRegistries.ITEM.getKey(out.getItem()), out.getCount(), minCount);
         }
         level.removeBlock(pos, false);
         return ok;

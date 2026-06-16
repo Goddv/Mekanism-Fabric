@@ -49,6 +49,10 @@ public final class FabricFactorySelfTest {
     private static void validate(ServerLevel level) {
         boolean all = true;
         all &= itemToItem(level, "basic_enriching_factory", new int[] {0, 1, 2}, Items.DIRT, Items.DIAMOND, new BlockPos(40, 64, 60));
+        // REAL bundled datapack recipe (NOT a Fabric-only test recipe): the build-time recipe filter copies the real
+        // Mekanism enriching recipe glowstone -> 4 glowstone_dust into the jar. Running it through the factory proves the
+        // real recipes now drive the factory tier system on Fabric too.
+        all &= itemToItem(level, "basic_enriching_factory", new int[] {0, 1, 2}, Items.GLOWSTONE, Items.GLOWSTONE_DUST, new BlockPos(43, 64, 60));
         all &= itemToItem(level, "ultimate_smelting_factory", new int[] {0, 4, 8}, Items.SAND, Items.GLASS, new BlockPos(40, 64, 63));
         all &= itemChemicalToItem(level, "basic_compressing_factory", new int[] {0, 1, 2}, Items.IRON_INGOT, Items.GOLD_INGOT, new BlockPos(40, 64, 66));
         all &= combining(level, "basic_combining_factory", new int[] {0, 1, 2}, Items.COBBLESTONE, Items.FLINT, Items.GRAVEL, new BlockPos(40, 64, 69));

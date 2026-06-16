@@ -1,3 +1,5 @@
+import groovy.json.JsonSlurper
+
 apply plugin: 'dev.architectury.loom-no-remap'
 apply plugin: 'architectury-plugin'
 
@@ -21,6 +23,191 @@ loom {
 
 repositories {
     maven { url = 'https://maven.architectury.dev/' }
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Bundle the REAL Mekanism datagen recipes whose every referenced item id is REGISTERED on Fabric.
+//
+// WHY: the processResources block below drops ALL generated datagen data/ (it references hundreds of unported
+// blocks/items and would spam "unknown item"/"Couldn't parse recipe" errors). That left enriching with ONLY the 13
+// Fabric-only test recipes, so real processing (e.g. glowstone -> glowstone_dust) had no recipe to match. But ~570 of
+// the datagen recipes reference ONLY vanilla minecraft: items (plus the handful of mekanism ids we DO register) and work
+// immediately once bundled.
+//
+// HOW: this build-time task parses each datagen recipe JSON (JsonSlurper), extracts every item id + tag ref, and copies
+// the file into build/generated/fabricRecipes/... iff ALL of:
+//   (a) the recipe `type` is one of the Mekanism recipe types actually REGISTERED on Fabric;
+//   (b) every referenced raw ITEM id is in the allowlist = all minecraft:* (vanilla) + the exact set of
+//       mekanism(generators) ids registered on Fabric (derived below, kept in sync with the Fabric registration
+//       classes) — an unknown raw item id is a hard parse failure ("unknown item");
+//   (c) every TAG ref resolves to a tag that EXISTS on Fabric (#minecraft:* always, or a fabric-api conventional #c:*
+//       tag that Mekanism's own datagen does NOT define) — the Mekanism codec resolves tags eagerly, so a missing tag
+//       is ALSO a hard load error ("Missing tag '...'");
+//   (d) the file carries no NeoForge-specific ingredient/condition type (neoforge:or / neoforge:conditions / ...),
+//       which would fail with "unknown ingredient type".
+// The qualifying dir is added as a resources srcDir; the existing datagen exclusion keeps the NON-qualifying raw
+// datagen recipes out, and the 13 Fabric-only test recipes (src/main/resources) are untouched.
+// ---------------------------------------------------------------------------------------------------------------------
+
+// Mekanism recipe types REGISTERED on Fabric (see MekanismRecipeTypesRegistrar / MekanismDualItemRecipeTypesRegistrar /
+// MekanismChemicalRecipeTypesRegistrar). A recipe of any OTHER type (washing/rotary/reaction/chemical_conversion/...) is
+// NOT bundled — its serializer/type isn't present, so it would fail to load. Chemical-input types ARE listed here, but
+// their recipes reference chemical ids (mekanism:hydrogen, ...) that are NOT in the allowlist, so they self-exclude.
+def fabricRegisteredRecipeTypes = [
+        'mekanism:enriching', 'mekanism:crushing', 'mekanism:smelting',
+        'mekanism:combining', 'mekanism:sawing',
+        'mekanism:oxidizing', 'mekanism:pigment_extracting', 'mekanism:crystallizing',
+        'mekanism:compressing', 'mekanism:purifying', 'mekanism:injecting',
+        'mekanism:metallurgic_infusing', 'mekanism:painting',
+] as Set
+
+// The exact mekanism / mekanismgenerators ITEM+BLOCK ids registered on Fabric (block-items count). Mirrors the Fabric
+// registration classes; keep in sync if those change. Conservative: anything not listed here is treated as unregistered,
+// so recipes referencing it are skipped.
+def mekanismSimpleItems = [
+        'enriched_iron', 'salt', 'sawdust', 'substrate', 'bio_fuel', 'dye_base', 'fluorite_gem',
+        'hdpe_pellet', 'hdpe_rod', 'hdpe_sheet', 'hdpe_stick', 'electrolytic_core', 'teleportation_core',
+        'yellow_cake_uranium', 'reprocessed_fissile_fragment', 'pellet_antimatter', 'pellet_plutonium', 'pellet_polonium',
+] // FabricBringUpContent.SIMPLE_ITEM_NAMES
+def mekanismResourceBlockSuffixes = [
+        'osmium', 'raw_osmium', 'tin', 'raw_tin', 'lead', 'raw_lead', 'uranium', 'raw_uranium',
+        'bronze', 'refined_obsidian', 'charcoal', 'refined_glowstone', 'steel', 'fluorite',
+] // FabricBringUpContent.RESOURCE_BLOCKS -> block_<suffix>
+def mekanismMachineBlocks = [
+        'enrichment_chamber', 'crusher', 'energized_smelter',                // FabricRealMachines item->item
+        'combiner', 'precision_sawmill',                                     // FabricRealMachines dual-item
+        'chemical_oxidizer', 'chemical_crystallizer', 'osmium_compressor',   // FabricChemicalMachines
+        'purification_chamber', 'chemical_injection_chamber', 'metallurgic_infuser',
+        'painting_machine', 'pigment_extractor',
+        'electrolytic_separator',                                            // FabricElectrolyticSeparator
+        'basic_fluid_tank',                                                  // FabricStorage
+        'basic_universal_cable', 'basic_pressurized_tube',                   // FabricTransmitters
+        'basic_thermodynamic_conductor', 'basic_logistical_transporter', 'basic_mechanical_pipe',
+]
+def factoryTiers = ['basic', 'advanced', 'elite', 'ultimate']
+def factoryTypeComponents = ['smelting', 'enriching', 'crushing', 'sawing', 'compressing',
+                             'purifying', 'injecting', 'metallurgic_infusing', 'combining']
+def mekanismFactoryBlocks = [factoryTiers, factoryTypeComponents].combinations()
+        .collect { tier, type -> "${tier}_${type}_factory".toString() }   // FabricFactories: 36 blocks
+def generatorBlocks = ['solar_generator', 'wind_generator', 'heat_generator', 'bio_generator'] // FabricGenerators
+
+def registeredItemIds = [] as Set
+mekanismSimpleItems.each { registeredItemIds.add("mekanism:${it}".toString()) }
+mekanismResourceBlockSuffixes.each { registeredItemIds.add("mekanism:block_${it}".toString()) }
+(mekanismMachineBlocks + mekanismFactoryBlocks).each { registeredItemIds.add("mekanism:${it}".toString()) }
+generatorBlocks.each { registeredItemIds.add("mekanismgenerators:${it}".toString()) }
+
+def datagenRecipeRoots = [
+        project(':neoforge').file('src/datagen/generated/mekanism/data/mekanism/recipe'),
+        project(':neoforge').file('src/datagen/generated/mekanismgenerators/data/mekanismgenerators/recipe'),
+]
+def filteredRecipesDir = layout.buildDirectory.dir('generated/fabricRecipes').get().asFile
+
+// UNSAFE item-tags: conventional (c:) item-tags that the Mekanism datagen DEFINES (data/c/tags/item/**). On NeoForge
+// those tags exist (Mekanism's datagen provides them); on Fabric those datagen tag-definition files are EXCLUDED (they
+// live in the dropped datagen tree), so the tag is MISSING. A recipe ingredient that references a missing tag is a HARD
+// load error here ("Missing tag '...' in 'minecraft:item'") — NOT a silent empty-ingredient — because the Mekanism
+// ItemStackIngredient codec resolves the tag eagerly. So any recipe using one of these tags must be skipped.
+//   minecraft: tags are ALWAYS safe (vanilla ships them; Mekanism's data/minecraft/tags/** files only ADD to them with
+//   replace:false, so the base tag still exists on Fabric).
+//   c: tags NOT defined by Mekanism datagen are the fabric-api conventional tags (cobblestones/crops/dyes/sands/...),
+//   which fabric-api populates on Fabric -> safe.
+// SAFE_C_TAG_EXCEPTIONS: c: tags that Mekanism datagen also defines BUT fabric-api/vanilla independently provides on
+// Fabric (verified present at runtime), so they are safe despite appearing in the datagen set. Currently just
+// c:dusts/wood (the charcoal_dust enriching recipe), confirmed loaded OK in :fabric:runServer.
+def safeCTagExceptions = ['c:dusts/wood'] as Set
+def datagenTagRoots = [
+        project(':neoforge').file('src/datagen/generated/mekanism/data/c/tags/item'),
+        project(':neoforge').file('src/datagen/generated/mekanismgenerators/data/c/tags/item'),
+]
+def unsafeTags = [] as Set
+datagenTagRoots.each { tagRoot ->
+    if (!tagRoot.exists()) return
+    tagRoot.eachFileRecurse(groovy.io.FileType.FILES) { tf ->
+        if (!tf.name.endsWith('.json')) return
+        def rel = tagRoot.toPath().relativize(tf.toPath()).toString().replace('\\', '/')
+        def tag = '#c:' + rel.substring(0, rel.length() - '.json'.length())
+        if (!safeCTagExceptions.contains(tag.substring(1))) unsafeTags.add(tag)
+    }
+}
+
+// Recursively gather every id string from a parsed recipe node, split into TAG refs ('#...') and raw item/block ids
+// (anything else containing ':'). Both are validated by the caller (raw ids vs the allowlist, tags vs the on-Fabric tag
+// set). The `type` key is excluded so the recipe's own type isn't mistaken for an item id.
+def collectItemIds
+collectItemIds = { Object node, Set<String> ids, Set<String> tags ->
+    if (node instanceof String) {
+        if (node.startsWith('#')) {
+            tags.add(node)
+        } else if (node.contains(':')) {
+            ids.add(node)
+        }
+    } else if (node instanceof Map) {
+        node.each { k, v -> if (k != 'type') collectItemIds(v, ids, tags) }
+    } else if (node instanceof List) {
+        node.each { collectItemIds(it, ids, tags) }
+    }
+}
+
+tasks.register('filterMekanismRecipes') {
+    description = 'Copies the real Mekanism datagen recipes whose every item id is registered on Fabric into build/generated/fabricRecipes.'
+    inputs.files(datagenRecipeRoots.collect { fileTree(it) })
+    inputs.files(datagenTagRoots.findAll { it.exists() }.collect { fileTree(it) })
+    inputs.property('registeredItemIds', registeredItemIds.toSorted())
+    inputs.property('registeredRecipeTypes', fabricRegisteredRecipeTypes.toSorted())
+    inputs.property('unsafeTags', unsafeTags.toSorted())
+    outputs.dir(filteredRecipesDir)
+    doLast {
+        delete filteredRecipesDir
+        def slurper = new JsonSlurper()
+        def perType = [:].withDefault { 0 }
+        def bundled = 0
+        datagenRecipeRoots.each { root ->
+            if (!root.exists()) return
+            // Mirror the on-disk namespace under the recipe root: <recipeRoot>/.. is data/<ns>/recipe; rebuild that.
+            // root path ends with: data/<ns>/recipe  -> recompute the data/.../recipe relative prefix from it.
+            def ns = root.parentFile.name                 // e.g. 'mekanism' or 'mekanismgenerators'
+            def destRecipeRoot = new File(filteredRecipesDir, "data/${ns}/recipe")
+            root.eachFileRecurse(groovy.io.FileType.FILES) { f ->
+                if (!f.name.endsWith('.json')) return
+                def text = f.text
+                // Reject anything carrying a NeoForge-specific reference (neoforge:conditions wrappers, or NeoForge
+                // compound-ingredient types like neoforge:or / neoforge:not / neoforge:tag_empty). Those ingredient/
+                // condition types are NOT registered on Fabric and would hard-fail with "unknown ingredient type" at
+                // load — exactly the kind of recipe-load error this filter must never produce.
+                if (text.contains('neoforge:')) return
+                def data
+                try {
+                    data = slurper.parseText(text)
+                } catch (ignored) {
+                    return // unparseable -> skip (never bundle something that won't load)
+                }
+                if (!(data instanceof Map)) return
+                def type = data['type']
+                if (!fabricRegisteredRecipeTypes.contains(type)) return
+                def ids = [] as Set
+                def tags = [] as Set
+                collectItemIds(data, ids, tags)
+                // Every raw item id must be vanilla or a registered mekanism(generators) id (unknown raw ids are a hard
+                // parse failure).
+                if (!ids.every { it.startsWith('minecraft:') || registeredItemIds.contains(it) }) return
+                // Tags must be present on Fabric or the eager codec hard-fails with "Missing tag". Allow only:
+                //   - #minecraft:* (vanilla, always present),
+                //   - #c:* that are NOT Mekanism-datagen-defined (i.e. fabric-api conventional tags),
+                //   (the safe-exceptions are already removed from unsafeTags). Any other namespace, or a Mekanism-defined
+                //   c: tag (which would be missing on Fabric), -> skip.
+                if (!tags.every { (it.startsWith('#minecraft:') || it.startsWith('#c:')) && !unsafeTags.contains(it) }) return
+                def rel = root.toPath().relativize(f.toPath()).toString()
+                def dest = new File(destRecipeRoot, rel)
+                dest.parentFile.mkdirs()
+                dest.bytes = f.bytes
+                bundled++
+                perType[type] = perType[type] + 1
+            }
+        }
+        logger.lifecycle("[filterMekanismRecipes] bundled ${bundled} recipes into ${filteredRecipesDir}")
+        perType.toSorted { -it.value }.each { t, c -> logger.lifecycle("[filterMekanismRecipes]   ${t}: ${c}") }
+    }
 }
 
 configurations {
@@ -57,6 +244,8 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 processResources {
+    // Generate the filtered real recipes before they're copied into the jar/dev resources.
+    dependsOn tasks.named('filterMekanismRecipes')
     inputs.property 'version', project.version
     filesMatching('fabric.mod.json') {
         expand version: project.version
@@ -133,6 +322,11 @@ sourceSets.main.resources {
     // only assets/lang/blockstates/models/textures/sounds.
     srcDir project(':neoforge').file('src/datagen/generated/mekanismgenerators')
     srcDir project(':neoforge').file('src/generators/resources')
+    // The build-time-filtered REAL Mekanism recipes (only those whose every item id is registered on Fabric). These
+    // sit OUTSIDE the datagen tree so the "datagen" path exclude below does NOT drop them; they reach both the dev run
+    // and the jar. Wired to the filterMekanismRecipes task via processResources.dependsOn (and builtBy below so the dev
+    // sourceSet resolution triggers it too).
+    srcDir(files(filteredRecipesDir).builtBy(tasks.named('filterMekanismRecipes')))
 }
 
 tasks.named('jar', Jar) {
