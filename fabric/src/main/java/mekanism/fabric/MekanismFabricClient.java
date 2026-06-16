@@ -4,6 +4,8 @@ import com.mojang.logging.LogUtils;
 import mekanism.fabric.client.FabricCompositeModelFlattener;
 import mekanism.fabric.content.machine.FabricMachineMenus;
 import mekanism.fabric.content.machine.MachineScreen;
+import mekanism.fabric.content.machine.factory.FactoryMenus;
+import mekanism.fabric.content.machine.factory.FactoryScreen;
 import mekanism.fabric.content.machine.gui.MekanismMachineMenus;
 import mekanism.fabric.content.machine.gui.MekanismMachineScreen;
 import net.fabricmc.api.ClientModInitializer;
@@ -25,6 +27,8 @@ public final class MekanismFabricClient implements ClientModInitializer {
         MenuScreens.register(FabricMachineMenus.MACHINE.get(), MachineScreen::new);
         // The generic chemical/dual-item/generator screen (one screen for all those shapes; it reads the menu's GUI type).
         MenuScreens.register(MekanismMachineMenus.MEKANISM_MACHINE.get(), MekanismMachineScreen::new);
+        // The generic factory screen (one screen for all 36 factories; it reads the menu's slot layout: N inputs+outputs).
+        MenuScreens.register(FactoryMenus.FACTORY.get(), FactoryScreen::new);
         // Flatten NeoForge composite block models (loader:"neoforge:composite") into vanilla models so they render on
         // Fabric (e.g. the Chemical Crystallizer). Client-only; NeoForge keeps the original composite JSONs.
         FabricCompositeModelFlattener.register();

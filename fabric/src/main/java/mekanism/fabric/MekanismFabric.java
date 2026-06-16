@@ -19,6 +19,9 @@ import mekanism.fabric.content.machine.FabricAutoIoSelfTest;
 import mekanism.fabric.content.machine.FabricChemicalMachines;
 import mekanism.fabric.content.machine.FabricMachineMenus;
 import mekanism.fabric.content.machine.FabricRealMachines;
+import mekanism.fabric.content.machine.factory.FabricFactories;
+import mekanism.fabric.content.machine.factory.FabricFactorySelfTest;
+import mekanism.fabric.content.machine.factory.FactoryMenus;
 import mekanism.fabric.content.machine.gui.FabricMachineGuiSelfTest;
 import mekanism.fabric.content.machine.gui.MekanismMachineMenus;
 import mekanism.fabric.content.power.FabricPowerInfrastructure;
@@ -93,6 +96,14 @@ public final class MekanismFabric implements ModInitializer {
         // Transitional: the FIRST chemical-processing machine — the Chemical Oxidizer (item input -> chemical output),
         // backed by a functional chemical-output block-entity (energy + item input + chemical tank + oxidizing recipes).
         FabricChemicalMachines.init();
+        // Transitional: all 36 Mekanism FACTORY blocks (4 tiers x 9 types) — multi-process versions of the base machines,
+        // each running its base recipe type N times in parallel (basic=3/advanced=5/elite=7/ultimate=9). One generic
+        // FactoryBlockEntity backs them all; they reuse the base recipe types (no new recipe types). Must come AFTER the
+        // recipe-type registrars + base machines (it resolves those recipe types at tick time).
+        FabricFactories.init();
+        // Transitional: the ONE generic factory menu type (extended — carries the factory-type ordinal + process count),
+        // opened from factory blocks' use handlers; its screen is registered in MekanismFabricClient.
+        FactoryMenus.init();
         // Transitional: a fuel-burning generator + energy cables so machines can be powered in-game (generator ->
         // cable -> machine) for manual testing, until the real generators + transmitter network are ported.
         FabricPowerInfrastructure.init();
@@ -122,6 +133,7 @@ public final class MekanismFabric implements ModInitializer {
             FabricTransmitterSelfTest.run();
             FabricGeneratorSelfTest.run();
             FabricMachineGuiSelfTest.run();
+            FabricFactorySelfTest.run();
             FabricAutoIoSelfTest.run();
             FabricConfigSelfTest.run();
             FabricRegistrationSelfTest.run();
