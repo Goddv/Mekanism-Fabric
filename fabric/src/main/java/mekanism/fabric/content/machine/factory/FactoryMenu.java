@@ -65,25 +65,34 @@ public class FactoryMenu extends AbstractContainerMenu {
     }
 
     private void addPlayerInventory(Inventory playerInventory) {
-        // Place the player inventory below the (tier-dependent) factory slot grid, so wider tiers don't overlap it.
+        // Place the player inventory below the factory grid (below the bottom output row), centered under the window.
         int invTop = playerInventoryTop();
+        int invLeft = playerInventoryLeft();
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
-                addSlot(new Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, invTop + row * 18));
+                addSlot(new Slot(playerInventory, col + row * 9 + 9, invLeft + col * 18, invTop + row * 18));
             }
         }
         for (int col = 0; col < 9; col++) {
-            addSlot(new Slot(playerInventory, col, 8 + col * 18, invTop + 58));
+            addSlot(new Slot(playerInventory, col, invLeft + col * 18, invTop + 58));
         }
     }
 
-    /** Y of the first player-inventory row: below the factory grid (a row per process). Shared by the screen for sizing. */
+    /** Y of the first player-inventory row: below the factory grid (input row + output row(s)). Shared by the screen for sizing. */
     public int playerInventoryTop() {
-        return GRID_TOP + layout.rows() * ROW_SPACING + 14;
+        return layout.bottomRowY() + ROW_SPACING + 14;
     }
 
-    /** First factory-slot-grid row Y (matches {@link FactorySlotLayout}). */
-    public static final int GRID_TOP = 17;
+    /** Left x of the player inventory (9 slots, 18px each), centered within the (tier-dependent) window width. */
+    public int playerInventoryLeft() {
+        return (layout.contentWidth() - 9 * 18) / 2;
+    }
+
+    /** Window width needed to fit the process grid (grows with tier). Shared by the screen for sizing. */
+    public int contentWidth() {
+        return layout.contentWidth();
+    }
+
     private static final int ROW_SPACING = 18;
 
     public FactorySlotLayout layout() {

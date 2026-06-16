@@ -9,34 +9,34 @@ import java.util.List;
  * shape is sent over the open packet (ordinal) by the BE's {@link mekanism.fabric.content.machine.gui.MekanismMenuProvider}
  * so the client builds the matching dummy container/data + lays out the same slots the server did.
  *
- * <p>Positions mirror the real Mekanism electric-machine family (input 56/64,17 / output 116,35) closely enough for a
- * clean transitional screen; the real GuiElement widget layouts arrive with the machine-framework migration to {@code
- * :common}.
+ * <p>Positions mirror the REAL Mekanism electric-machine family exactly (input 64,17 -&gt; arrow -&gt; output 116,35),
+ * so each machine reads as a horizontal input -&gt; arrow -&gt; output flow; the real GuiElement widget layouts arrive
+ * with the machine-framework migration to {@code :common}.
  */
 public enum MachineGuiType {
 
-    /** Item input -&gt; chemical output (Chemical Oxidizer, Pigment Extractor): 1 item input slot, 1 output tank, arrow. */
-    ITEM_TO_CHEMICAL(List.of(new SlotSpec(0, 56, 17, SlotType.INPUT)), 1, true),
+    /** Item input -&gt; chemical output (Chemical Oxidizer, Pigment Extractor): 1 item input slot (26,36), 1 output tank, arrow. */
+    ITEM_TO_CHEMICAL(List.of(new SlotSpec(0, 26, 36, SlotType.INPUT)), 1, true),
 
-    /** Chemical input -&gt; item output (Chemical Crystallizer): 1 item output slot, 1 input tank, arrow. */
-    CHEMICAL_TO_ITEM(List.of(new SlotSpec(0, 116, 35, SlotType.OUTPUT)), 1, true),
+    /** Chemical input -&gt; item output (Chemical Crystallizer): 1 item output slot (129,57), 1 input tank, arrow. */
+    CHEMICAL_TO_ITEM(List.of(new SlotSpec(0, 129, 57, SlotType.OUTPUT)), 1, true),
 
-    /** Item + chemical input -&gt; item output (Compressor/Purifier/Injector/Infuser/Painter): in+out item, 1 tank, arrow. */
+    /** Item + chemical input -&gt; item output (Compressor/Purifier/Injector/Infuser/Painter): input 64,17 -&gt; output 116,35, 1 tank, arrow. */
     ITEM_CHEMICAL_TO_ITEM(List.of(
-          new SlotSpec(0, 56, 17, SlotType.INPUT),
+          new SlotSpec(0, 64, 17, SlotType.INPUT),
           new SlotSpec(1, 116, 35, SlotType.OUTPUT)), 1, true),
 
-    /** Item + item -&gt; item (Combiner): main input, extra input, output, no tank, arrow. */
+    /** Item + item -&gt; item (Combiner): main input 64,17, extra input 64,53, output 116,35, no tank, arrow. */
     COMBINER(List.of(
-          new SlotSpec(0, 56, 17, SlotType.INPUT),
-          new SlotSpec(1, 56, 53, SlotType.INPUT),
+          new SlotSpec(0, 64, 17, SlotType.INPUT),
+          new SlotSpec(1, 64, 53, SlotType.INPUT),
           new SlotSpec(2, 116, 35, SlotType.OUTPUT)), 0, true),
 
-    /** Item -&gt; item + chance secondary (Precision Sawmill): input, main output, secondary output, no tank, arrow. */
+    /** Item -&gt; item + chance secondary (Precision Sawmill): input 56,17, main output 116,35, secondary output 132,35, no tank, arrow. */
     SAWMILL(List.of(
-          new SlotSpec(0, 56, 35, SlotType.INPUT),
-          new SlotSpec(1, 112, 26, SlotType.OUTPUT),
-          new SlotSpec(2, 112, 44, SlotType.OUTPUT)), 0, true),
+          new SlotSpec(0, 56, 17, SlotType.INPUT),
+          new SlotSpec(1, 116, 35, SlotType.OUTPUT),
+          new SlotSpec(2, 132, 35, SlotType.OUTPUT)), 0, true),
 
     /** Fuel-burning generator (Heat, Bio): 1 fuel input slot, no tank, no recipe arrow. */
     FUEL_GENERATOR(List.of(new SlotSpec(0, 80, 53, SlotType.INPUT)), 0, false),
