@@ -42,7 +42,10 @@ public enum MachineGuiType {
     FUEL_GENERATOR(List.of(new SlotSpec(0, 80, 53, SlotType.INPUT)), 0, false),
 
     /** Passive generator (Solar, Wind): no inventory slots, no tank, no recipe arrow (energy bar only). */
-    PASSIVE_GENERATOR(List.of(), 0, false);
+    PASSIVE_GENERATOR(List.of(), 0, false),
+
+    /** Fluid Tank storage: no inventory slots, 1 fluid-tank bar, no recipe arrow (and the energy bar reads empty). */
+    FLUID_TANK(List.of(), 1, false);
 
     private final List<SlotSpec> slots;
     private final int tankCount;
@@ -71,6 +74,11 @@ public enum MachineGuiType {
     /** Whether this shape draws a recipe-progress arrow (machines yes, generators no). */
     public boolean hasProgress() {
         return hasProgress;
+    }
+
+    /** Bar-tooltip label for this shape's tanks ("Fluid" for the fluid tank, "Chemical" for chemical machines). */
+    public String tankLabel() {
+        return this == FLUID_TANK ? "Fluid" : "Chemical";
     }
 
     /**

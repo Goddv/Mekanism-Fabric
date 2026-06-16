@@ -26,6 +26,8 @@ import mekanism.fabric.content.machine.gui.FabricMachineGuiSelfTest;
 import mekanism.fabric.content.machine.gui.MekanismMachineMenus;
 import mekanism.fabric.content.power.FabricPowerInfrastructure;
 import mekanism.fabric.content.power.FabricPowerSelfTest;
+import mekanism.fabric.content.storage.FabricStorage;
+import mekanism.fabric.content.storage.FabricFluidContentSelfTest;
 import mekanism.fabric.content.transmitter.FabricTransmitterSelfTest;
 import mekanism.fabric.content.transmitter.FabricTransmitters;
 import mekanism.fabric.energy.FabricEnergySelfTest;
@@ -116,6 +118,10 @@ public final class MekanismFabric implements ModInitializer {
         // Must come AFTER FabricPowerInfrastructure (the energy cable relay logic + capability are reused). NOT the real
         // Mekanism transmitter-network graph; connected multipart rendering is likewise deferred.
         FabricTransmitters.init();
+        // Transitional: Mekanism fluid STORAGE — the Basic Fluid Tank — a BasicFluidTank exposed via the fluid
+        // capability so the Mechanical Pipe (and the self-test) can fill+drain it. Must come AFTER FabricTransmitters
+        // (reuses the same fluid capability the Mechanical Pipe registers against) and the GUI menu registration.
+        FabricStorage.init();
         // Transitional: leaf DataComponentTypes via the :common DataComponentDeferredRegister framework, proving the
         // DataComponent registration shape on Fabric (the real MekanismDataComponents reuses this framework).
         FabricDataComponentDemo.init();
@@ -131,6 +137,7 @@ public final class MekanismFabric implements ModInitializer {
             FabricChemicalMachineSelfTest.run();
             FabricPowerSelfTest.run();
             FabricTransmitterSelfTest.run();
+            FabricFluidContentSelfTest.run();
             FabricGeneratorSelfTest.run();
             FabricMachineGuiSelfTest.run();
             FabricFactorySelfTest.run();

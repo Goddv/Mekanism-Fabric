@@ -92,6 +92,12 @@ processResources {
     // each a cube using the transmitter's own bundled multipart texture). Drop ONLY the NeoForge datagen blockstate +
     // item-model copies so our overrides are the sole definitions; the block-model copies are kept (harmless) but ours
     // win by id. Connected multipart rendering is deferred.
+    // The Mechanical Pipe (fluid transmitter) follows the same story as the four transmitters above: its datagen
+    // blockstate uses the unparseable "mekanism:special/transmitter" loader and its item-model parents a transmitter
+    // model. We ship Fabric-only SIMPLE blockstate + cube model + item model (basic_mechanical_pipe.json) and drop the
+    // datagen blockstate + item-model copies. The Basic Fluid Tank's blockstate + block models ARE parseable vanilla
+    // JSON (kept as-is); only its datagen ITEM-model copy uses a NeoForge custom loader (minecraft:special +
+    // mekanism:fluid_tank), so we ship a Fabric-only simple item-model def and drop just that datagen copy.
     exclude { details ->
         def p = details.relativePath.pathString
         details.file.absolutePath.contains('datagen') && (
@@ -99,10 +105,13 @@ processResources {
                     || p == 'assets/mekanism/blockstates/basic_pressurized_tube.json'
                     || p == 'assets/mekanism/blockstates/basic_thermodynamic_conductor.json'
                     || p == 'assets/mekanism/blockstates/basic_logistical_transporter.json'
+                    || p == 'assets/mekanism/blockstates/basic_mechanical_pipe.json'
                     || p == 'assets/mekanism/items/basic_universal_cable.json'
                     || p == 'assets/mekanism/items/basic_pressurized_tube.json'
                     || p == 'assets/mekanism/items/basic_thermodynamic_conductor.json'
-                    || p == 'assets/mekanism/items/basic_logistical_transporter.json')
+                    || p == 'assets/mekanism/items/basic_logistical_transporter.json'
+                    || p == 'assets/mekanism/items/basic_mechanical_pipe.json'
+                    || p == 'assets/mekanism/items/basic_fluid_tank.json')
     }
 }
 

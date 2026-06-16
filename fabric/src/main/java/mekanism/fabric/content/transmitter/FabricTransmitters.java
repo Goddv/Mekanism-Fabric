@@ -5,6 +5,7 @@ import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
 import mekanism.fabric.chemical.MekanismFabricChemical;
 import mekanism.fabric.energy.MekanismFabricEnergy;
+import mekanism.fabric.fluid.MekanismFabricFluid;
 import mekanism.fabric.heat.MekanismFabricHeat;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.core.registries.Registries;
@@ -40,6 +41,7 @@ public final class FabricTransmitters {
     private static final Identifier PRESSURIZED_TUBE_ID = id("basic_pressurized_tube");
     private static final Identifier THERMODYNAMIC_CONDUCTOR_ID = id("basic_thermodynamic_conductor");
     private static final Identifier LOGISTICAL_TRANSPORTER_ID = id("basic_logistical_transporter");
+    private static final Identifier MECHANICAL_PIPE_ID = id("basic_mechanical_pipe");
 
     private static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(MODID, Registries.BLOCK);
     private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(MODID, Registries.ITEM);
@@ -77,6 +79,14 @@ public final class FabricTransmitters {
           BE_TYPES.register(LOGISTICAL_TRANSPORTER_ID, () -> FabricBlockEntityTypeBuilder.create(
                 LogisticalTransporterBlockEntity::new, LOGISTICAL_TRANSPORTER.get()).build());
 
+    // ---- Mechanical Pipe (fluid) ----
+    public static final RegistrySupplier<Block> MECHANICAL_PIPE = BLOCKS.register(MECHANICAL_PIPE_ID, () -> new TransmitterBlock(
+          props(MECHANICAL_PIPE_ID), MechanicalPipeBlockEntity::new, FabricTransmitters::mechanicalPipeBeType));
+    public static final RegistrySupplier<Item> MECHANICAL_PIPE_ITEM = blockItem(MECHANICAL_PIPE_ID, MECHANICAL_PIPE);
+    public static final RegistrySupplier<BlockEntityType<MechanicalPipeBlockEntity>> MECHANICAL_PIPE_BE_TYPE =
+          BE_TYPES.register(MECHANICAL_PIPE_ID, () -> FabricBlockEntityTypeBuilder.create(
+                MechanicalPipeBlockEntity::new, MECHANICAL_PIPE.get()).build());
+
     private FabricTransmitters() {
     }
 
@@ -91,12 +101,14 @@ public final class FabricTransmitters {
         MekanismFabricEnergy.SIDED.registerForBlockEntity((be, context) -> be, UNIVERSAL_CABLE_BE_TYPE.get());
         MekanismFabricChemical.SIDED.registerForBlockEntity((be, context) -> be, PRESSURIZED_TUBE_BE_TYPE.get());
         MekanismFabricHeat.SIDED.registerForBlockEntity((be, context) -> be, THERMODYNAMIC_CONDUCTOR_BE_TYPE.get());
+        MekanismFabricFluid.SIDED.registerForBlockEntity((be, context) -> be, MECHANICAL_PIPE_BE_TYPE.get());
 
         ResourceKey<CreativeModeTab> tab = ResourceKey.create(Registries.CREATIVE_MODE_TAB, id("mekanism"));
         CreativeTabRegistry.append(tab, UNIVERSAL_CABLE_ITEM.get());
         CreativeTabRegistry.append(tab, PRESSURIZED_TUBE_ITEM.get());
         CreativeTabRegistry.append(tab, THERMODYNAMIC_CONDUCTOR_ITEM.get());
         CreativeTabRegistry.append(tab, LOGISTICAL_TRANSPORTER_ITEM.get());
+        CreativeTabRegistry.append(tab, MECHANICAL_PIPE_ITEM.get());
     }
 
     private static Identifier id(String path) {
@@ -128,5 +140,9 @@ public final class FabricTransmitters {
 
     private static BlockEntityType<?> logisticalTransporterBeType() {
         return LOGISTICAL_TRANSPORTER_BE_TYPE.get();
+    }
+
+    private static BlockEntityType<?> mechanicalPipeBeType() {
+        return MECHANICAL_PIPE_BE_TYPE.get();
     }
 }

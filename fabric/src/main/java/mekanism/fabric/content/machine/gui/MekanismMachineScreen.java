@@ -118,7 +118,7 @@ public class MekanismMachineScreen extends AbstractContainerScreen<MekanismMachi
         for (int t = 0; t < tankCount; t++) {
             int tx = x + TANK_BASE_X + t * TANK_SPACING;
             if (inBar(mouseX, mouseY, tx, y + TANK_Y)) {
-                graphics.setTooltipForNextFrame(Component.literal("Chemical: " + percent(this.menu.getTankPermille(t))), mouseX, mouseY);
+                graphics.setTooltipForNextFrame(Component.literal(this.menu.guiType().tankLabel() + ": " + percent(this.menu.getTankPermille(t))), mouseX, mouseY);
                 return;
             }
         }
