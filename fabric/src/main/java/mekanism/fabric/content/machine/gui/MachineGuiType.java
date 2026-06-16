@@ -45,7 +45,14 @@ public enum MachineGuiType {
     PASSIVE_GENERATOR(List.of(), 0, false),
 
     /** Fluid Tank storage: no inventory slots, 1 fluid-tank bar, no recipe arrow (and the energy bar reads empty). */
-    FLUID_TANK(List.of(), 1, false);
+    FLUID_TANK(List.of(), 1, false),
+
+    /**
+     * Fluid input -&gt; two chemical outputs (Electrolytic Separator): no inventory slots, 3 tank bars (bar 0 = the fluid
+     * INPUT, bars 1 &amp; 2 = the LEFT/RIGHT chemical OUTPUTS), recipe arrow. The screen tints bar 0 differently so it
+     * reads as fluid.
+     */
+    FLUID_TO_CHEMICAL(List.of(), 3, true);
 
     private final List<SlotSpec> slots;
     private final int tankCount;

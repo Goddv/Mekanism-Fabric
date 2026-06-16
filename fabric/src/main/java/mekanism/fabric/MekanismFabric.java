@@ -17,6 +17,8 @@ import mekanism.fabric.content.generator.FabricGenerators;
 import mekanism.fabric.content.generator.FabricGeneratorSelfTest;
 import mekanism.fabric.content.machine.FabricAutoIoSelfTest;
 import mekanism.fabric.content.machine.FabricChemicalMachines;
+import mekanism.fabric.content.machine.FabricElectrolyticSeparator;
+import mekanism.fabric.content.machine.FabricFluidMachineSelfTest;
 import mekanism.fabric.content.machine.FabricMachineMenus;
 import mekanism.fabric.content.machine.FabricRealMachines;
 import mekanism.fabric.content.machine.factory.FabricFactories;
@@ -122,6 +124,12 @@ public final class MekanismFabric implements ModInitializer {
         // capability so the Mechanical Pipe (and the self-test) can fill+drain it. Must come AFTER FabricTransmitters
         // (reuses the same fluid capability the Mechanical Pipe registers against) and the GUI menu registration.
         FabricStorage.init();
+        // Transitional: the FIRST fluid-input machine — the Electrolytic Separator (fluid input -> two chemical outputs),
+        // backed by a functional block-entity (energy + fluid input tank + two chemical output tanks + a Fabric-only
+        // in-code electrolysis recipe). Must come AFTER FabricStorage (reuses the same fluid capability) + the chemical
+        // registry (its outputs are the demo chemical). The real BasicElectrolysisRecipe (FluidStackIngredient) stays on
+        // the NeoForge hoist wall, so this uses a transitional Fabric-side recipe shape.
+        FabricElectrolyticSeparator.init();
         // Transitional: leaf DataComponentTypes via the :common DataComponentDeferredRegister framework, proving the
         // DataComponent registration shape on Fabric (the real MekanismDataComponents reuses this framework).
         FabricDataComponentDemo.init();
@@ -138,6 +146,7 @@ public final class MekanismFabric implements ModInitializer {
             FabricPowerSelfTest.run();
             FabricTransmitterSelfTest.run();
             FabricFluidContentSelfTest.run();
+            FabricFluidMachineSelfTest.run();
             FabricGeneratorSelfTest.run();
             FabricMachineGuiSelfTest.run();
             FabricFactorySelfTest.run();

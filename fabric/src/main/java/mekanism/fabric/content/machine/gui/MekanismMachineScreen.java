@@ -87,15 +87,20 @@ public class MekanismMachineScreen extends AbstractContainerScreen<MekanismMachi
             graphics.fillGradient(x + ENERGY_X + 1, fillTop, x + ENERGY_X + 5, y + ENERGY_Y + 1 + BAR_INNER_H,
                   0xFF5BE05B, 0xFF2FA82F);
         }
-        // Chemical tank bars (left side), one per tank, colored a generic cyan so they read as fluid/chemical.
+        // Tank bars (left side), one per tank. Chemical tanks read cyan; for the fluid->chemical shape, bar 0 is the
+        // fluid INPUT and is tinted blue so it reads distinctly as fluid.
         int tankCount = this.menu.guiType().tankCount();
+        boolean fluidShape = this.menu.guiType() == MachineGuiType.FLUID_TO_CHEMICAL;
         for (int t = 0; t < tankCount; t++) {
             int tx = x + TANK_BASE_X + t * TANK_SPACING;
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BAR_FRAME, tx, y + TANK_Y, 6, BAR_INNER_H + 2);
             int tankFill = Math.round(BAR_INNER_H * (this.menu.getTankPermille(t) / 1000.0F));
             if (tankFill > 0) {
                 int fillTop = y + TANK_Y + 1 + (BAR_INNER_H - tankFill);
-                graphics.fillGradient(tx + 1, fillTop, tx + 5, y + TANK_Y + 1 + BAR_INNER_H, 0xFF4FC3F7, 0xFF0277BD);
+                boolean fluidBar = fluidShape && t == 0;
+                int top = fluidBar ? 0xFF2196F3 : 0xFF4FC3F7;
+                int bottom = fluidBar ? 0xFF0D47A1 : 0xFF0277BD;
+                graphics.fillGradient(tx + 1, fillTop, tx + 5, y + TANK_Y + 1 + BAR_INNER_H, top, bottom);
             }
         }
     }
@@ -115,10 +120,12 @@ public class MekanismMachineScreen extends AbstractContainerScreen<MekanismMachi
             return;
         }
         int tankCount = this.menu.guiType().tankCount();
+        boolean fluidShape = this.menu.guiType() == MachineGuiType.FLUID_TO_CHEMICAL;
         for (int t = 0; t < tankCount; t++) {
             int tx = x + TANK_BASE_X + t * TANK_SPACING;
             if (inBar(mouseX, mouseY, tx, y + TANK_Y)) {
-                graphics.setTooltipForNextFrame(Component.literal(this.menu.guiType().tankLabel() + ": " + percent(this.menu.getTankPermille(t))), mouseX, mouseY);
+                String label = fluidShape ? (t == 0 ? "Fluid" : "Chemical") : this.menu.guiType().tankLabel();
+                graphics.setTooltipForNextFrame(Component.literal(label + ": " + percent(this.menu.getTankPermille(t))), mouseX, mouseY);
                 return;
             }
         }
