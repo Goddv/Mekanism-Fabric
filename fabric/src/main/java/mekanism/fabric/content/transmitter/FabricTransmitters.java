@@ -49,7 +49,8 @@ public final class FabricTransmitters {
 
     // ---- Universal Cable (energy) ----
     public static final RegistrySupplier<Block> UNIVERSAL_CABLE = BLOCKS.register(UNIVERSAL_CABLE_ID, () -> new TransmitterBlock(
-          props(UNIVERSAL_CABLE_ID), UniversalCableBlockEntity::new, FabricTransmitters::universalCableBeType));
+          props(UNIVERSAL_CABLE_ID), UniversalCableBlockEntity::new, FabricTransmitters::universalCableBeType,
+          TransmitterRenderType.UNIVERSAL_CABLE));
     public static final RegistrySupplier<Item> UNIVERSAL_CABLE_ITEM = blockItem(UNIVERSAL_CABLE_ID, UNIVERSAL_CABLE);
     public static final RegistrySupplier<BlockEntityType<UniversalCableBlockEntity>> UNIVERSAL_CABLE_BE_TYPE =
           BE_TYPES.register(UNIVERSAL_CABLE_ID, () -> FabricBlockEntityTypeBuilder.create(
@@ -57,7 +58,8 @@ public final class FabricTransmitters {
 
     // ---- Pressurized Tube (chemical) ----
     public static final RegistrySupplier<Block> PRESSURIZED_TUBE = BLOCKS.register(PRESSURIZED_TUBE_ID, () -> new TransmitterBlock(
-          props(PRESSURIZED_TUBE_ID), PressurizedTubeBlockEntity::new, FabricTransmitters::pressurizedTubeBeType));
+          props(PRESSURIZED_TUBE_ID), PressurizedTubeBlockEntity::new, FabricTransmitters::pressurizedTubeBeType,
+          TransmitterRenderType.PRESSURIZED_TUBE));
     public static final RegistrySupplier<Item> PRESSURIZED_TUBE_ITEM = blockItem(PRESSURIZED_TUBE_ID, PRESSURIZED_TUBE);
     public static final RegistrySupplier<BlockEntityType<PressurizedTubeBlockEntity>> PRESSURIZED_TUBE_BE_TYPE =
           BE_TYPES.register(PRESSURIZED_TUBE_ID, () -> FabricBlockEntityTypeBuilder.create(
@@ -65,7 +67,8 @@ public final class FabricTransmitters {
 
     // ---- Thermodynamic Conductor (heat) ----
     public static final RegistrySupplier<Block> THERMODYNAMIC_CONDUCTOR = BLOCKS.register(THERMODYNAMIC_CONDUCTOR_ID, () -> new TransmitterBlock(
-          props(THERMODYNAMIC_CONDUCTOR_ID), ThermodynamicConductorBlockEntity::new, FabricTransmitters::thermodynamicConductorBeType));
+          props(THERMODYNAMIC_CONDUCTOR_ID), ThermodynamicConductorBlockEntity::new, FabricTransmitters::thermodynamicConductorBeType,
+          TransmitterRenderType.THERMODYNAMIC_CONDUCTOR));
     public static final RegistrySupplier<Item> THERMODYNAMIC_CONDUCTOR_ITEM = blockItem(THERMODYNAMIC_CONDUCTOR_ID, THERMODYNAMIC_CONDUCTOR);
     public static final RegistrySupplier<BlockEntityType<ThermodynamicConductorBlockEntity>> THERMODYNAMIC_CONDUCTOR_BE_TYPE =
           BE_TYPES.register(THERMODYNAMIC_CONDUCTOR_ID, () -> FabricBlockEntityTypeBuilder.create(
@@ -73,7 +76,8 @@ public final class FabricTransmitters {
 
     // ---- Logistical Transporter (items) ----
     public static final RegistrySupplier<Block> LOGISTICAL_TRANSPORTER = BLOCKS.register(LOGISTICAL_TRANSPORTER_ID, () -> new TransmitterBlock(
-          props(LOGISTICAL_TRANSPORTER_ID), LogisticalTransporterBlockEntity::new, FabricTransmitters::logisticalTransporterBeType));
+          props(LOGISTICAL_TRANSPORTER_ID), LogisticalTransporterBlockEntity::new, FabricTransmitters::logisticalTransporterBeType,
+          TransmitterRenderType.LOGISTICAL_TRANSPORTER));
     public static final RegistrySupplier<Item> LOGISTICAL_TRANSPORTER_ITEM = blockItem(LOGISTICAL_TRANSPORTER_ID, LOGISTICAL_TRANSPORTER);
     public static final RegistrySupplier<BlockEntityType<LogisticalTransporterBlockEntity>> LOGISTICAL_TRANSPORTER_BE_TYPE =
           BE_TYPES.register(LOGISTICAL_TRANSPORTER_ID, () -> FabricBlockEntityTypeBuilder.create(
@@ -81,7 +85,8 @@ public final class FabricTransmitters {
 
     // ---- Mechanical Pipe (fluid) ----
     public static final RegistrySupplier<Block> MECHANICAL_PIPE = BLOCKS.register(MECHANICAL_PIPE_ID, () -> new TransmitterBlock(
-          props(MECHANICAL_PIPE_ID), MechanicalPipeBlockEntity::new, FabricTransmitters::mechanicalPipeBeType));
+          props(MECHANICAL_PIPE_ID), MechanicalPipeBlockEntity::new, FabricTransmitters::mechanicalPipeBeType,
+          TransmitterRenderType.MECHANICAL_PIPE));
     public static final RegistrySupplier<Item> MECHANICAL_PIPE_ITEM = blockItem(MECHANICAL_PIPE_ID, MECHANICAL_PIPE);
     public static final RegistrySupplier<BlockEntityType<MechanicalPipeBlockEntity>> MECHANICAL_PIPE_BE_TYPE =
           BE_TYPES.register(MECHANICAL_PIPE_ID, () -> FabricBlockEntityTypeBuilder.create(

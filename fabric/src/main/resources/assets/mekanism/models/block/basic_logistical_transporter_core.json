@@ -1,0 +1,21 @@
+{
+  "__comment": "Fabric-only connected-render: 6x6x6 center core of the universal cable. The arm model joins it per connected side via the multipart blockstate.",
+  "textures": {
+    "tex": "mekanism:block/models/multipart/basic_logistical_transporter",
+    "particle": "mekanism:block/models/multipart/basic_logistical_transporter"
+  },
+  "elements": [
+    {
+      "from": [5, 5, 5],
+      "to": [11, 11, 11],
+      "faces": {
+        "north": {"uv": [5, 5, 11, 11], "texture": "#tex"},
+        "south": {"uv": [5, 5, 11, 11], "texture": "#tex"},
+        "east": {"uv": [5, 5, 11, 11], "texture": "#tex"},
+        "west": {"uv": [5, 5, 11, 11], "texture": "#tex"},
+        "up": {"uv": [5, 5, 11, 11], "texture": "#tex"},
+        "down": {"uv": [5, 5, 11, 11], "texture": "#tex"}
+      }
+    }
+  ]
+}

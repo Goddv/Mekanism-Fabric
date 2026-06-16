@@ -1,0 +1,21 @@
+{
+  "__comment": "Fabric-only connected-render: a 4x4 arm of the universal cable from the core out the +Z (south) face. The multipart blockstate rotates this toward each connected side.",
+  "textures": {
+    "tex": "mekanism:block/models/multipart/basic_thermodynamic_conductor",
+    "particle": "mekanism:block/models/multipart/basic_thermodynamic_conductor"
+  },
+  "elements": [
+    {
+      "from": [6, 6, 11],
+      "to": [10, 10, 16],
+      "faces": {
+        "north": {"uv": [6, 6, 10, 10], "texture": "#tex"},
+        "south": {"uv": [6, 6, 10, 10], "texture": "#tex"},
+        "east": {"uv": [11, 6, 16, 10], "texture": "#tex"},
+        "west": {"uv": [11, 6, 16, 10], "texture": "#tex"},
+        "up": {"uv": [6, 11, 10, 16], "texture": "#tex"},
+        "down": {"uv": [6, 11, 10, 16], "texture": "#tex"}
+      }
+    }
+  ]
+}

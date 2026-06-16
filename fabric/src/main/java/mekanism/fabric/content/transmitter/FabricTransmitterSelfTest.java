@@ -55,9 +55,86 @@ public final class FabricTransmitterSelfTest {
         boolean chemical = validateChemical(level);
         boolean heat = validateHeat(level);
         boolean items = validateItems(level);
-        boolean all = energy && chemical && heat && items;
-        LOGGER.info("{} RESULT: energy={} chemical={} heat={} items={} => {}", TAG, energy, chemical, heat, items,
-              all ? "PASS" : "FAIL");
+        boolean connections = validateConnections(level);
+        boolean all = energy && chemical && heat && items && connections;
+        LOGGER.info("{} RESULT: energy={} chemical={} heat={} items={} connections={} => {}", TAG, energy, chemical, heat,
+              items, connections, all ? "PASS" : "FAIL");
+    }
+
+    /**
+     * Connected-render LOGIC proof (the multipart then renders it): for each of the five transmitters, place TWO
+     * same-type transmitters adjacent (east) and assert the connection BooleanProperty toward the neighbour is TRUE and
+     * toward an empty side is FALSE. Additionally, for the cable, place a transmitter next to a machine that exposes the
+     * matching energy capability and assert the toward-machine property is TRUE — proving the capability-detection path
+     * (not just transmitter-to-transmitter).
+     */
+    private static boolean validateConnections(ServerLevel level) {
+        boolean ok = true;
+        ok &= checkPairConnects(level, FabricTransmitters.UNIVERSAL_CABLE.get(), "universal_cable", new BlockPos(20, 64, 56));
+        ok &= checkPairConnects(level, FabricTransmitters.PRESSURIZED_TUBE.get(), "pressurized_tube", new BlockPos(20, 64, 58));
+        ok &= checkPairConnects(level, FabricTransmitters.THERMODYNAMIC_CONDUCTOR.get(), "thermodynamic_conductor", new BlockPos(20, 64, 60));
+        ok &= checkPairConnects(level, FabricTransmitters.LOGISTICAL_TRANSPORTER.get(), "logistical_transporter", new BlockPos(20, 64, 62));
+        ok &= checkPairConnects(level, FabricTransmitters.MECHANICAL_PIPE.get(), "mechanical_pipe", new BlockPos(20, 64, 64));
+        ok &= checkCapabilityConnects(level, new BlockPos(20, 64, 66));
+        return ok;
+    }
+
+    /**
+     * Place two same-type transmitters at {@code basePos} and {@code basePos.east()}, then assert via the live
+     * blockstate that the base connects EAST (toward the neighbour) and NOT WEST/UP (empty sides). The base is placed
+     * first, then the neighbour — the neighbour placement fires {@code neighborChanged} on the base, which recomputes
+     * and re-sets its EAST property (proving the neighbour-update connection path).
+     */
+    private static boolean checkPairConnects(ServerLevel level, net.minecraft.world.level.block.Block block, String label, BlockPos basePos) {
+        boolean ok = false;
+        BlockPos eastPos = basePos.east();
+        try {
+            level.getChunk(basePos.getX() >> 4, basePos.getZ() >> 4);
+            // Place the base with all connections false; placing the EAST neighbour fires neighbour updates that drive
+            // TransmitterBlock.neighborChanged -> recompute EAST true.
+            level.setBlock(basePos, block.defaultBlockState(), 3);
+            level.setBlock(eastPos, block.defaultBlockState(), 3);
+
+            BlockState base = level.getBlockState(basePos);
+            boolean connectsEast = base.getValue(TransmitterBlock.EAST);
+            boolean connectsWest = base.getValue(TransmitterBlock.WEST);
+            boolean connectsUp = base.getValue(TransmitterBlock.UP);
+            ok = connectsEast && !connectsWest && !connectsUp;
+            log(ok, "connections " + label + ": pair adjacent -> EAST(neighbour)=" + connectsEast
+                  + " WEST(empty)=" + connectsWest + " UP(empty)=" + connectsUp);
+            removeAll(level, basePos, eastPos);
+        } catch (Throwable t) {
+            LOGGER.error("{} FAIL connections {} pair test threw", TAG, label, t);
+        }
+        return ok;
+    }
+
+    /**
+     * Place a universal cable next to a machine that exposes the energy capability and assert the cable connects toward
+     * the machine (capability-detection path, distinct from transmitter-to-transmitter). The cable is placed first, then
+     * the machine — placing the machine fires {@code neighborChanged} on the cable, recomputing its EAST connection from
+     * the energy capability the machine exposes on its west face.
+     */
+    private static boolean checkCapabilityConnects(ServerLevel level, BlockPos cablePos) {
+        boolean ok = false;
+        BlockPos machinePos = cablePos.east();
+        try {
+            level.getChunk(cablePos.getX() >> 4, cablePos.getZ() >> 4);
+            level.setBlock(cablePos, FabricTransmitters.UNIVERSAL_CABLE.get().defaultBlockState(), 3);
+            // The enrichment chamber exposes MekanismFabricEnergy.SIDED, matching the cable's render type.
+            level.setBlock(machinePos, FabricRealMachines.enrichmentChamber().block().defaultBlockState(), 3);
+
+            BlockState base = level.getBlockState(cablePos);
+            boolean connectsEast = base.getValue(TransmitterBlock.EAST);
+            boolean connectsWest = base.getValue(TransmitterBlock.WEST);
+            ok = connectsEast && !connectsWest;
+            log(ok, "connections capability: universal_cable next to enrichment_chamber -> EAST(machine cap)=" + connectsEast
+                  + " WEST(empty)=" + connectsWest);
+            removeAll(level, cablePos, machinePos);
+        } catch (Throwable t) {
+            LOGGER.error("{} FAIL connections capability test threw", TAG, t);
+        }
+        return ok;
     }
 
     /** generator -> basic_universal_cable -> enrichment_chamber; assert energy crossed the cable (machine made diamond). */

@@ -1,7 +1,12 @@
 {
-  "variants": {
-    "": {
-      "model": "mekanism:block/basic_pressurized_tube"
-    }
-  }
+  "__comment": "Fabric-only connected (fence-style) multipart: always-present center core + one arm per connected side (NORTH..DOWN booleans set server-side by TransmitterBlock). The arm model points +Z (south); rotations aim it at each face.",
+  "multipart": [
+    {"apply": {"model": "mekanism:block/basic_pressurized_tube_core"}},
+    {"when": {"south": "true"}, "apply": {"model": "mekanism:block/basic_pressurized_tube_arm"}},
+    {"when": {"north": "true"}, "apply": {"model": "mekanism:block/basic_pressurized_tube_arm", "y": 180}},
+    {"when": {"east": "true"}, "apply": {"model": "mekanism:block/basic_pressurized_tube_arm", "y": 270}},
+    {"when": {"west": "true"}, "apply": {"model": "mekanism:block/basic_pressurized_tube_arm", "y": 90}},
+    {"when": {"up": "true"}, "apply": {"model": "mekanism:block/basic_pressurized_tube_arm", "x": 270}},
+    {"when": {"down": "true"}, "apply": {"model": "mekanism:block/basic_pressurized_tube_arm", "x": 90}}
+  ]
 }
